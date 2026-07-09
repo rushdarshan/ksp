@@ -1,0 +1,184 @@
+/* Dropdown — Apple Light Theme */
+
+.DropdownMenuContent,
+.DropdownMenuSubContent {
+  min-width: 100px;
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 11px;
+  padding: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 14px;
+}
+
+.DropdownMenuContent[data-side='top'],
+.DropdownMenuSubContent[data-side='top'] {
+  animation-name: slideDownAndFade;
+}
+.DropdownMenuContent[data-side='right'],
+.DropdownMenuSubContent[data-side='right'] {
+  animation-name: slideLeftAndFade;
+}
+.DropdownMenuContent[data-side='bottom'],
+.DropdownMenuSubContent[data-side='bottom'] {
+  animation-name: slideUpAndFade;
+}
+.DropdownMenuContent[data-side='left'],
+.DropdownMenuSubContent[data-side='left'] {
+  animation-name: slideRightAndFade;
+}
+
+.DropdownMenuItem,
+.DropdownMenuCheckboxItem,
+.DropdownMenuRadioItem,
+.DropdownMenuSubTrigger {
+  font-size: 14px;
+  line-height: 1;
+  color: #1d1d1f;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  position: relative;
+  padding-left: 28px;
+  user-select: none;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.DropdownMenuItem:hover,
+.DropdownMenuCheckboxItem:hover,
+.DropdownMenuRadioItem:hover,
+.DropdownMenuSubTrigger:hover {
+  background-color: #f5f5f7;
+}
+
+.DropdownMenuSubTrigger[data-state='open'] {
+  background-color: #f5f5f7;
+}
+
+.DropdownMenuItem[data-disabled],
+.DropdownMenuCheckboxItem[data-disabled],
+.DropdownMenuRadioItem[data-disabled],
+.DropdownMenuSubTrigger[data-disabled] {
+  color: #aeaeb2;
+  pointer-events: none;
+}
+
+.DropdownMenuItem[data-highlighted],
+.DropdownMenuCheckboxItem[data-highlighted],
+.DropdownMenuRadioItem[data-highlighted],
+.DropdownMenuSubTrigger[data-highlighted] {
+  background-color: #0071e3;
+  color: #ffffff;
+}
+
+.DropdownMenuLabel {
+  padding-left: 28px;
+  font-size: 12px;
+  line-height: 28px;
+  color: #6e6e73;
+}
+
+.DropdownMenuSeparator {
+  height: 1px;
+  background-color: #eaeaea;
+  margin: 4px;
+}
+
+.DropdownMenuItemIndicator {
+  position: absolute;
+  left: 0;
+  width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DropdownMenuArrow {
+  fill: #ffffff;
+}
+
+.IconButton {
+  font-family: inherit;
+  border-radius: 9999px;
+  padding: 5px 12px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d1d1f;
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.IconButton:hover {
+  background-color: #f5f5f7;
+}
+
+.IconButton:focus {
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+  outline: 2px solid #0071e3;
+  outline-offset: 2px;
+}
+
+.RightSlot {
+  margin-left: auto;
+  padding-left: 20px;
+  color: #6e6e73;
+}
+
+[data-highlighted] > .RightSlot {
+  color: #ffffff;
+}
+
+[data-disabled] .RightSlot {
+  color: #aeaeb2;
+}
+
+@keyframes slideUpAndFade {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideRightAndFade {
+  from { opacity: 0; transform: translateX(-2px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideDownAndFade {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideLeftAndFade {
+  from { opacity: 0; transform: translateX(2px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.loading_screen {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.css-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--border, #e8e6e3);
+  border-top-color: var(--accent, #1a3a5c);
+  animation: css-spin 0.7s linear infinite;
+}
+
+@keyframes css-spin {
+  to { transform: rotate(360deg); }
+}

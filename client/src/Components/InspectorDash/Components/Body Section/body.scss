@@ -1,0 +1,13 @@
+.mainContent {
+  width: 82%;
+  height: 100%;
+  padding: 32px;
+  overflow: auto;
+  background-color: #f5f5f7;
+
+  .bottom {
+    margin-top: 32px;
+    gap: 24px;
+    align-items: flex-start;
+  }
+}

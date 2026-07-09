@@ -1,0 +1,236 @@
+/* Shell Sidebar — Apple Light Theme */
+
+.sideBar {
+  background: var(--surface);
+  border-right: 1px solid var(--border-light);
+  width: 220px;
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: none;
+  transition: transform var(--duration-base) var(--easing);
+  z-index: 100;
+}
+
+.sideBar::-webkit-scrollbar {
+  display: none;
+}
+
+.logoDiv {
+  display: flex;
+  align-items: center;
+  padding: var(--space-xl) var(--space-xl) var(--space-lg);
+  gap: var(--space-sm);
+
+  img {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+  }
+
+  h2 {
+    font-size: var(--size-body);
+    font-weight: 500;
+    color: var(--text);
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+.menu_close_wrapper {
+  margin-left: auto;
+  display: none;
+}
+
+.menu_close_btn {
+  display: flex;
+  padding: 4px;
+  font-size: 18px;
+  background: var(--bg);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s var(--easing);
+
+  &:hover {
+    background-color: var(--border-light);
+    color: var(--text);
+  }
+}
+
+.searchDiv {
+  padding: 0 var(--space-xl) var(--space-md);
+  position: relative;
+
+  .searchIcon {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 13px;
+  }
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--size-caption);
+  outline: none;
+  transition: border-color 0.2s var(--easing);
+
+  &::placeholder {
+    color: var(--muted);
+  }
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.12);
+  }
+}
+
+.menuDiv {
+  padding: 0 var(--space-md);
+}
+
+.divTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: var(--space-lg) var(--space-sm) var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+
+  &.clickable {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &:hover {
+      color: var(--text);
+    }
+  }
+
+  .arrow {
+    font-size: 10px;
+    transition: transform 0.2s var(--easing);
+    display: inline-block;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.menuLists {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0;
+}
+
+.listItem {
+  list-style: none;
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 7px 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: var(--font-body);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.15s var(--easing);
+
+  .icon {
+    font-size: 15px;
+    opacity: 0.7;
+  }
+
+  .smallText {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &:hover {
+    background: var(--bg);
+    color: var(--text);
+    text-decoration: none;
+
+    .icon {
+      opacity: 1;
+    }
+  }
+}
+
+.menuLink.active {
+  background: var(--accent);
+  color: var(--text-inverse);
+
+  .icon {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--accent-hover);
+    color: var(--text-inverse);
+  }
+}
+
+/* Sidebar Card */
+.sideBarCard {
+  margin: var(--space-lg) var(--space-md);
+  padding: var(--space-lg);
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  text-align: center;
+
+  .icon {
+    font-size: 24px;
+    color: var(--muted);
+    margin-bottom: var(--space-sm);
+  }
+
+  h3 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: var(--space-xs);
+  }
+
+  p {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+/* Responsive */
+@media screen and (max-width: 1050px) {
+  .sideBar {
+    position: absolute;
+    transform: translateX(-100%);
+    z-index: 1002;
+  }
+
+  .sideBar.open {
+    transform: translateX(0%);
+  }
+
+  .sideBar .logoDiv .menu_close_wrapper {
+    display: block;
+  }
+}

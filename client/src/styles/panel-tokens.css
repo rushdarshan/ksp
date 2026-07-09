@@ -1,0 +1,367 @@
+/* panel-tokens.css — Apple light theme overrides for all panels. */
+
+/* === Base panel container === */
+.panel, .panel-box {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-light) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* === All divs inside panels === */
+.panel div, .panel-box div {
+  background: inherit !important;
+  border-radius: inherit !important;
+  color: var(--text) !important;
+}
+
+/* === Cards and boxes inside panels === */
+.panel [style*="borderRadius"],
+.panel [style*="border-radius"],
+.panel-box [style*="borderRadius"],
+.panel-box [style*="border-radius"] {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* === Kill dark backgrounds everywhere === */
+.panel [style*="background: #0A0A0A"],
+.panel [style*="background:#0A0A0A"],
+.panel [style*="background: #121212"],
+.panel [style*="background:#121212"],
+.panel [style*="background: #1a1a1a"],
+.panel [style*="background:#1a1a1a"],
+.panel-box [style*="background: #0A0A0A"],
+.panel-box [style*="background:#0A0A0A"],
+.panel-box [style*="background: #121212"],
+.panel-box [style*="background:#121212"] {
+  background: var(--surface) !important;
+}
+
+/* === Dark surfaces → white === */
+.panel [style*="background: #000000"],
+.panel [style*="background:#000000"],
+.panel-box [style*="background: #000000"],
+.panel-box [style*="background:#000000"] {
+  background: var(--surface) !important;
+}
+
+/* === Blue backgrounds → pastel blue === */
+.panel [style*="background: #3b82f6"],
+.panel [style*="background:#3b82f6"],
+.panel [style*="background: #eff6ff"],
+.panel [style*="background:#eff6ff"],
+.panel-box [style*="background: #3b82f6"],
+.panel-box [style*="background:#3b82f6"],
+.panel-box [style*="background: #eff6ff"],
+.panel-box [style*="background:#eff6ff"] {
+  background: var(--pastel-blue) !important;
+}
+
+/* === Red error backgrounds → pastel red === */
+.panel [style*="background: #fef2f2"],
+.panel [style*="background:#fef2f2"],
+.panel-box [style*="background: #fef2f2"],
+.panel-box [style*="background:#fef2f2"] {
+  background: var(--pastel-red) !important;
+}
+
+/* === Blue text → accent === */
+.panel [style*="color: #3b82f6"],
+.panel [style*="color:#3b82f6"],
+.panel [style*="color: #1d4ed8"],
+.panel [style*="color:#1d4ed8"],
+.panel-box [style*="color: #3b82f6"],
+.panel-box [style*="color:#3b82f6"],
+.panel-box [style*="color: #1d4ed8"],
+.panel-box [style*="color:#1d4ed8"] {
+  color: var(--accent) !important;
+}
+
+/* === Red text → pastel red text === */
+.panel [style*="color: #ef4444"],
+.panel [style*="color:#ef4444"],
+.panel [style*="color: #dc2626"],
+.panel [style*="color:#dc2626"],
+.panel-box [style*="color: #ef4444"],
+.panel-box [style*="color:#ef4444"],
+.panel-box [style*="color: #dc2626"],
+.panel-box [style*="color:#dc2626"] {
+  color: var(--pastel-red-text) !important;
+}
+
+/* === Gray text → muted === */
+.panel [style*="color: #6b7280"],
+.panel [style*="color:#6b7280"],
+.panel [style*="color: #9ca3af"],
+.panel [style*="color:#9ca3af"],
+.panel [style*="color: #64748b"],
+.panel [style*="color:#64748b"],
+.panel-box [style*="color: #6b7280"],
+.panel-box [style*="color:#6b7280"],
+.panel-box [style*="color: #9ca3af"],
+.panel-box [style*="color:#9ca3af"] {
+  color: var(--muted) !important;
+}
+
+/* === Dark text → text === */
+.panel [style*="color: #374151"],
+.panel [style*="color:#374151"],
+.panel [style*="color: #4b5563"],
+.panel [style*="color:#4b5563"],
+.panel-box [style*="color: #374151"],
+.panel-box [style*="color:#374151"] {
+  color: var(--text) !important;
+}
+
+/* === Borders → light border === */
+.panel [style*="border: 1px solid #e5e7eb"],
+.panel [style*="border:1px solid #e5e7eb"],
+.panel [style*="border: 1px solid #d1d5db"],
+.panel [style*="border:1px solid #d1d5db"],
+.panel [style*="border: 1px solid #e2e8f0"],
+.panel [style*="border:1px solid #e2e8f0"],
+.panel-box [style*="border: 1px solid #e5e7eb"],
+.panel-box [style*="border:1px solid #e5e7eb"],
+.panel-box [style*="border: 1px solid #d1d5db"],
+.panel-box [style*="border:1px solid #d1d5db"] {
+  border-color: var(--border-light) !important;
+}
+
+/* === Dark borders → light === */
+.panel [style*="border: 1px solid #1a1a1a"],
+.panel [style*="border:1px solid #1a1a1a"],
+.panel-box [style*="border: 1px solid #1a1a1a"],
+.panel-box [style*="border:1px solid #1a1a1a"] {
+  border-color: var(--border-light) !important;
+}
+
+/* === Inputs and form controls inside panels === */
+.panel input, .panel select, .panel textarea,
+.panel-box input, .panel-box select, .panel-box textarea {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--size-body) !important;
+}
+
+.panel input::placeholder, .panel-box input::placeholder {
+  color: var(--muted) !important;
+}
+
+/* === Buttons inside panels === */
+.panel button, .panel-box button {
+  font-family: var(--font-body) !important;
+  border-radius: var(--radius-full) !important;
+}
+
+/* === Tables inside panels === */
+.panel table, .panel-box table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-family: var(--font-body) !important;
+}
+
+.panel th, .panel td,
+.panel-box th, .panel-box td {
+  border: 1px solid var(--border-light) !important;
+  border-radius: 0 !important;
+  padding: 10px 14px !important;
+  font-size: var(--size-sub) !important;
+}
+
+.panel th, .panel-box th {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-weight: 600 !important;
+}
+
+/* === Scrollbars inside panels === */
+.panel ::-webkit-scrollbar, .panel-box ::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.panel ::-webkit-scrollbar-track, .panel-box ::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.panel ::-webkit-scrollbar-thumb, .panel-box ::-webkit-scrollbar-thumb {
+  background: var(--border) !important;
+  border-radius: var(--radius-full) !important;
+}
+
+/* === Green text → pastel green text === */
+.panel [style*="color: #16a34a"],
+.panel [style*="color:#16a34a"],
+.panel [style*="color: #22c55e"],
+.panel [style*="color:#22c55e"],
+.panel [style*="color: #10b981"],
+.panel [style*="color:#10b981"],
+.panel-box [style*="color: #16a34a"],
+.panel-box [style*="color:#16a34a"] {
+  color: var(--pastel-green-text) !important;
+}
+
+/* === Amber/orange text → pastel yellow text === */
+.panel [style*="color: #d97706"],
+.panel [style*="color:#d97706"],
+.panel [style*="color: #f59e0b"],
+.panel [style*="color:#f59e0b"],
+.panel-box [style*="color: #d97706"],
+.panel-box [style*="color:#d97706"] {
+  color: var(--pastel-yellow-text) !important;
+}
+
+/* === Purple text → accent === */
+.panel [style*="color: #7c3aed"],
+.panel [style*="color:#7c3aed"],
+.panel [style*="color: #6d28d9"],
+.panel [style*="color:#6d28d9"],
+.panel [style*="color: #6366f1"],
+.panel [style*="color:#6366f1"],
+.panel-box [style*="color: #7c3aed"],
+.panel-box [style*="color:#7c3aed"] {
+  color: var(--accent) !important;
+}
+
+/* === Cyan/teal text → muted === */
+.panel [style*="color: #0891b2"],
+.panel [style*="color:#0891b2"],
+.panel-box [style*="color: #0891b2"],
+.panel-box [style*="color:#0891b2"] {
+  color: var(--muted) !important;
+}
+
+/* === Dark blue text → text === */
+.panel [style*="color: #1e40af"],
+.panel [style*="color:#1e40af"],
+.panel [style*="color: #1e293b"],
+.panel [style*="color:#1e293b"],
+.panel-box [style*="color: #1e40af"],
+.panel-box [style*="color:#1e40af"] {
+  color: var(--text) !important;
+}
+
+/* === Button colors → accent === */
+.panel button[style*="background: #0d6efd"],
+.panel button[style*="background:#0d6efd"],
+.panel button[style*="background: #3b82f6"],
+.panel button[style*="background:#3b82f6"],
+.panel button[style*="background: #16a34a"],
+.panel button[style*="background:#16a34a"],
+.panel button[style*="background: #dc2626"],
+.panel button[style*="background:#dc2626"] {
+  background: var(--accent) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* === Canvas elements === */
+.panel canvas {
+  background: transparent !important;
+}
+
+/* === Catch-all: disable janky transitions === */
+.panel *, .panel-box * {
+  transition: none !important;
+}
+
+/* === Green backgrounds → pastel green === */
+.panel [style*="background: #f0fdf4"],
+.panel [style*="background:#f0fdf4"],
+.panel-box [style*="background: #f0fdf4"],
+.panel-box [style*="background:#f0fdf4"] {
+  background: var(--pastel-green) !important;
+}
+
+/* === Amber backgrounds → pastel yellow === */
+.panel [style*="background: #fffbeb"],
+.panel [style*="background:#fffbeb"],
+.panel-box [style*="background: #fffbeb"],
+.panel-box [style*="background:#fffbeb"] {
+  background: var(--pastel-yellow) !important;
+}
+
+/* === Light blue backgrounds → pastel blue === */
+.panel [style*="background: #e0f2fe"],
+.panel [style*="background:#e0f2fe"],
+.panel-box [style*="background: #e0f2fe"],
+.panel-box [style*="background:#e0f2fe"] {
+  background: var(--pastel-blue) !important;
+}
+
+/* === Pink backgrounds → pastel red === */
+.panel [style*="background: #fdf2f8"],
+.panel [style*="background:#fdf2f8"],
+.panel-box [style*="background: #fdf2f8"],
+.panel-box [style*="background:#fdf2f8"] {
+  background: var(--pastel-red) !important;
+}
+
+/* === Purple backgrounds → pastel blue === */
+.panel [style*="background: #f5f3ff"],
+.panel [style*="background:#f5f3ff"],
+.panel-box [style*="background: #f5f3ff"],
+.panel-box [style*="background:#f5f3ff"] {
+  background: var(--pastel-blue) !important;
+}
+
+/* === Slate backgrounds (table headers) → bg === */
+.panel [style*="background: #f1f5f9"],
+.panel [style*="background:#f1f5f9"],
+.panel-box [style*="background: #f1f5f9"],
+.panel-box [style*="background:#f1f5f9"] {
+  background: var(--bg) !important;
+}
+
+/* === Slate/neutral card backgrounds → surface === */
+.panel [style*="background: #f8fafc"],
+.panel [style*="background:#f8fafc"],
+.panel [style*="background: #f3f4f6"],
+.panel [style*="background:#f3f4f6"],
+.panel [style*="background: #fafafa"],
+.panel [style*="background:#fafafa"],
+.panel [style*="background: #e2e8f0"],
+.panel [style*="background:#e2e8f0"],
+.panel [style*="background: #f9fafb"],
+.panel [style*="background:#f9fafb"],
+.panel-box [style*="background: #f8fafc"],
+.panel-box [style*="background:#f8fafc"],
+.panel-box [style*="background: #f3f4f6"],
+.panel-box [style*="background:#f3f4f6"],
+.panel-box [style*="background: #fafafa"],
+.panel-box [style*="background:#fafafa"],
+.panel-box [style*="background: #e2e8f0"],
+.panel-box [style*="background:#e2e8f0"],
+.panel-box [style*="background: #f9fafb"],
+.panel-box [style*="background:#f9fafb"] {
+  background: var(--surface) !important;
+}
+
+/* === Apple-system gray text → muted === */
+.panel [style*="color: #6e6e73"],
+.panel [style*="color:#6e6e73"],
+.panel-box [style*="color: #6e6e73"],
+.panel-box [style*="color:#6e6e73"] {
+  color: var(--muted) !important;
+}
+
+/* === Light borders → border === */
+.panel [style*="border: 1px solid #fecaca"],
+.panel [style*="border:1px solid #fecaca"],
+.panel [style*="border: 1px solid #fbcfe8"],
+.panel [style*="border:1px solid #fbcfe8"],
+.panel [style*="border: 1px solid #fde68a"],
+.panel [style*="border:1px solid #fde68a"],
+.panel [style*="border: 1px solid #bfdbfe"],
+.panel [style*="border:1px solid #bfdbfe"],
+.panel [style*="border: 1px solid #bbf7d0"],
+.panel [style*="border:1px solid #bbf7d0"],
+.panel-box [style*="border: 1px solid #fecaca"],
+.panel-box [style*="border:1px solid #fecaca"],
+.panel-box [style*="border: 1px solid #fbcfe8"],
+.panel-box [style*="border:1px solid #fbcfe8"] {
+  border-color: var(--border-light) !important;
+}

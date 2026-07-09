@@ -1,0 +1,28 @@
+.alertsContainer {
+    padding: 15px;
+    border: 2px solid red;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #fff5f5;
+}
+
+.alertsTitle {
+    color: red;
+    margin-top: 0;
+}
+
+.alertsList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.alertItem {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #ffcccc;
+    border-radius: 5px;
+}
+
+.alertDescription {
+    margin: 5px 0;
+}

@@ -1,0 +1,134 @@
+/* Shell Top Bar — Apple Light Theme */
+
+.topSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-xl);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .topContent {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .menu_wrapper {
+    display: none;
+  }
+
+  .ham_menu_btn {
+    font-size: 18px;
+    padding: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all 0.2s var(--easing);
+
+    &:hover {
+      background-color: var(--bg);
+      color: var(--text);
+    }
+  }
+
+  .title {
+    h1 {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    p {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-body);
+      line-height: 1;
+      margin-top: 2px;
+    }
+  }
+
+  .adminDiv {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-left: auto;
+
+    .chat_btn {
+      color: var(--muted);
+      padding: 0;
+      display: flex;
+      background-color: var(--surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: all 0.2s var(--easing);
+
+      &:hover {
+        background-color: var(--bg);
+      }
+    }
+
+    .icon {
+      font-size: 18px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      padding: 5px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s var(--easing);
+
+      &:hover {
+        background: var(--bg);
+        color: var(--text);
+      }
+    }
+
+    .adminImage {
+      border: 2px solid var(--surface);
+      border-radius: var(--radius-sm);
+      width: 32px;
+      height: 32px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1050px) {
+  .topSection {
+    .title {
+      margin-left: auto;
+    }
+
+    .menu_wrapper {
+      display: flex;
+    }
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .topSection {
+    .title {
+      display: none;
+    }
+  }
+}

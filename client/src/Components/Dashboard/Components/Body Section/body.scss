@@ -1,0 +1,18 @@
+.mainContent {
+  flex: 1;
+  height: 100%;
+  padding: 1.5rem;
+  overflow: auto;
+  background: var(--bg);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+
+  .bottom {
+    flex: 1;
+    margin-top: 1.25rem;
+    gap: 1.25rem;
+    align-items: flex-start;
+    min-height: 0;
+  }
+}

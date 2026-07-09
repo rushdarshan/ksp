@@ -1,0 +1,134 @@
+:root{
+    --primaryColor: hsl(94, 55%, 56%);
+    --hoverColor: hs1(96, 75%, 89%);
+    --paleGreen: hsl(93, 75%, 76%);
+    --whiteColor: hsl(0, 0%, 100%);
+    --blackColor: hs1(0, 0%, 18%);
+    --greyText: hsl(0, 0%, 75%);
+    --bgColor: hsl(113, 11%, 85%);
+    --inputColor: hsl(330, 12%, 97%);
+   // --inputColor: hs1(154, 14%, 90%);
+
+    /* Font and Typography */
+    --biggestFontSize: 2.5rem;
+    --h1FontSize: 1.5rem;
+    --h2FontSize: 1.25rem;
+    --h3FontSize: 1rem;
+    --normalFontSize: .938rem;
+    --smallFontSize: .813rem;
+    --smallestFontSize: .75rem;
+
+}
+
+.topSection {
+  .headerSection {
+    display: flex; /* Add display flex to make the children align in a row */
+    justify-content: center;
+    width:100%;
+    margin-bottom: 1rem ;
+      .title {
+        h1 {
+          font-size: var(--h1FontSize);
+          color: var(--blackColor);
+          font-weight: 700;
+        }
+  
+        p {
+          font-size: var(--normalFontSize);
+          color: var(--textColor);
+          font-weight: 500;
+        }
+      }
+  
+      .searchBar {
+        display: flex; /* Add display flex to align icon and input in a row */
+        padding: 1rem 2rem;
+        background: var(--whiteColor);
+        border-radius: 10px;
+        gap: 1rem;
+        box-shadow: 0 2px 4px var(--inputColor);
+        width: 50%;
+        justify-content: space-between;
+        input {
+          border: none;
+          outline: none;
+          background: none;
+          width:100%;
+        }
+  
+        .icon {
+          color: var(--textColor);
+          &:hover {
+            color: var(--primaryColor);
+          }
+        }
+      }
+  
+      .adminDiv {
+        display: flex; /* Add display flex to align icons and image in a row */
+        gap: 1rem;
+  
+        .icon {
+          font-size: var(--biggestFontSize);
+          background: var(--whiteColor);
+          border-radius: 5px;
+          padding: 5px;
+          box-shadow: 0 2px 4px var(--inputColor);
+          color: var(--textColor);
+        }
+  
+        .adminImage {
+          border: 3px solid var(--whiteColor);
+          border-radius: 10px;
+          width: 3rem; /* Change width to a fixed value */
+          overflow: hidden;
+          box-shadow: 0 2px 4px var(--inputColor);
+  
+          img {
+            width: 100%; /* Change width to 100% to fill the container */
+            height: auto; /* Automatically adjust height to maintain aspect ratio */
+            border-radius: 10px;
+          }
+        }
+      }
+    }
+  }
+  .option_selector{
+    display: flex;
+    width: 100%;
+    justify-content: end;
+    align-items: center;
+    gap:2rem;
+    padding: 5px 1.5rem;
+    margin: 1rem ;
+  }
+  .option_selector > select{
+    padding : 10px 15px;
+    background-color: white;
+    border: 0px;
+    border-radius: 5px;
+  }
+  .fade_circle {
+    animation: fadeInOut 3s infinite;
+    transform: scale(1);
+    // animation : ping 1s cubic-bezier(0, 0, 0.2, 1) infinite
+    // position: relative;
+}
+// .fade_circle::after{ 
+//   // content: '';
+//   position:absolute;
+//   width :150%;
+//   background-color: pink;
+
+// }
+@keyframes fadeInOut {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  
+}

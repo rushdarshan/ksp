@@ -1,0 +1,11 @@
+CourtID,CourtName,DistrictID,StateID,Active
+1,District Court Bengaluru Urban,1,1,1
+2,District Court Mysuru,2,1,1
+3,District Court Mangaluru,3,1,1
+4,District Court Hubballi-Dharwad,4,1,1
+5,District Court Belagavi,5,1,1
+6,District Court Kalaburagi,6,1,1
+7,District Court Ballari,7,1,1
+8,District Court Shivamogga,8,1,1
+9,District Court Tumakuru,9,1,1
+10,District Court Vijayapura,10,1,1

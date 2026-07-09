@@ -1,0 +1,96 @@
+.notif_wrapper {
+  position: relative;
+}
+
+.notif_cont {
+  position: absolute;
+  top: 110%;
+  display: flex;
+  right: -50px;
+  flex-direction: column;
+  width: 20rem;
+  height: 20rem;
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 11px;
+  overflow: auto;
+  transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.notif_cont.open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.notif_btn {
+  position: relative;
+  font-size: 18px;
+  color: #6e6e73;
+  padding: 5px;
+  display: flex;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notif_btn:hover {
+  background-color: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.notif_list_ele {
+  padding: 10px 14px;
+  border-top: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.notif_list_ele:hover {
+  background-color: #f5f5f7;
+}
+
+.notif_cont:first-child {
+  border-top-color: #0071e3;
+}
+
+.notif_ele > p {
+  color: #6e6e73;
+  font-size: 14px;
+  line-height: 1.4;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, sans-serif);
+}
+
+.unread_wrapper {
+  display: inline;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  background-color: #ff3b30;
+}
+
+.unread_background {
+  display: inline-flex;
+  position: absolute;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  background-color: #ff3b30;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}

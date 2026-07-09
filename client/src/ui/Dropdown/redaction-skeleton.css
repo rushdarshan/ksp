@@ -1,0 +1,38 @@
+.redaction-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  width: 100%;
+}
+
+.redaction-skeleton .skeleton-bar {
+  height: 8px;
+  background: linear-gradient(90deg, var(--redaction-navy), var(--redaction-amber));
+  border-radius: 2px;
+  opacity: 0.12;
+  animation: redaction-pulse 2s ease-in-out infinite;
+}
+
+@keyframes redaction-pulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.16; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .redaction-skeleton .skeleton-bar {
+    animation: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
