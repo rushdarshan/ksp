@@ -47,6 +47,8 @@ const ArrestVectorPanel = React.lazy(() => import('./Components/ArrestVectorPane
 const RetractionRatePanel = React.lazy(() => import('./Components/RetractionRatePanel'))
 const CoAccusedNetworkPanel = React.lazy(() => import('./Components/CoAccusedNetworkPanel'))
 const PredictivePanel = React.lazy(() => import('./Components/PredictivePanel'))
+const PersonPage = React.lazy(() => import('./Components/PersonPage'))
+
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
 
@@ -86,6 +88,7 @@ const sharedChildren = [
   { path: "co-accused", element: <Lazy><CoAccusedNetworkPanel/></Lazy> },
   { path: "predictive", element: <Lazy><PredictivePanel/></Lazy> },
   { path: "arrest-vector", element: <PanelGuard requiredRole="admin"><Lazy><ArrestVectorPanel/></Lazy></PanelGuard> },
+  { path: "person/:personId", element: <Lazy><PersonPage/></Lazy> },
   { index: true, path: "network", element: <Lazy><NetworkGraph/></Lazy> },
 ];
 
@@ -134,7 +137,6 @@ const router = createHashRouter([
     path: "/dashboard",
     element: <ProtectedRoute element={<Dashboard />} />,
     children: [{ path: "home", element: <Body /> }, ...sharedChildren,
-      { path: "checkout", element: <div>hi</div> },
       { path: "details", element: <Details/> },
     ]
   },

@@ -30,8 +30,8 @@ const Shell = ({ basePath = '/dashboard' }) => {
               <span className="badge">LIVE</span>
             </div>
             <div style={{ marginTop: '12px', paddingBottom: '4px', borderTop: '1px solid var(--border)', fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>Powered by Zoho Catalyst</span>
-              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>· 11 Catalyst Services</span>
+              <span>State Crime Records Bureau (SCRB) Network</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>· Secure Node (KSP-INET)</span>
             </div>
           </div>
           <div style={{ display: 'flex', flex: 1, overflow: 'hidden', padding: '16px 24px 24px' }}>

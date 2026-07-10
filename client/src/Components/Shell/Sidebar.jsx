@@ -21,32 +21,67 @@ import { useAuth } from '../../AuthContext';
 
 const SECTIONS = [
   {
-    id: 'analytics',
-    label: 'Analytics',
+    id: 'cases',
+    label: 'Cases',
     items: [
-      { to: 'veracity', icon: <RiShieldCheckLine className="icon" />, label: 'FIR Veracity' },
-      { to: 'topology', icon: <TbGraphFilled className="icon" />, label: 'Crime Links' },
-      { to: 'victim-risk', icon: <FaShieldHeart className="icon" />, label: 'Victim Risk' },
-      { to: 'gbv', icon: <MdFemale className="icon" />, label: 'Gender Violence' },
-      { to: 'dark-figure', icon: <FaEye className="icon" />, label: 'Unreported Crime' },
-      { to: 'predictive', icon: <FaBrain className="icon" />, label: 'Predictive Intel' },
+      { to: 'addfir', icon: <FaWpforms className="icon" />, label: 'Register FIR' },
+      { to: 'firdetails', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: 'All Cases' }
     ]
   },
   {
-    id: 'operations',
-    label: 'Operations',
+    id: 'people',
+    label: 'People',
     items: [
-      { to: 'chargesheet-clock', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, label: 'Chargesheet Clock' },
-      { to: 'accused-at-large', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: 'Accused at Large' },
-      { to: 'arrest-vector', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, label: 'Arrest Vector' },
-      { to: 'retraction-rate', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: 'Retraction Rate' },
-      { to: 'co-accused', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="5" r="1"/><circle cx="19" cy="19" r="1"/><circle cx="5" cy="19" r="1"/></svg>, label: 'Co-Accused Network' },
-      { to: 'beat-optimizer', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, label: 'Beat Optimizer' },
+      { to: 'officers', icon: <GrUserPolice className="icon" />, label: 'Officers' },
+      { to: 'victim-risk', icon: <FaShieldHeart className="icon" />, label: 'Victims' },
+      { to: 'accused-at-large', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: 'Accused' }
+    ]
+  },
+  {
+    id: 'intelligence',
+    label: 'Intelligence',
+    items: [
+      { to: 'location', icon: <FaLocationCrosshairs className="icon" />, label: 'District Intel' },
+      { to: 'network', icon: <TbGraphFilled className="icon" />, label: 'Crime Network' },
+      { to: 'predictive', icon: <FaBrain className="icon" />, label: 'Prediction' },
+      { to: 'beat-optimizer', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, label: 'Beat Optimizer' }
+    ]
+  },
+  {
+    id: 'ai',
+    label: 'AI',
+    items: [
+      { to: 'voice', icon: <BsQuestionCircle className="icon" />, label: 'Legal Assistant' },
+      { to: 'veracity', icon: <RiShieldCheckLine className="icon" />, label: 'Case Intelligence' }
+    ]
+  },
+  {
+    id: 'justice',
+    label: 'Justice',
+    items: [
+      { to: 'chargesheet-clock', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, label: 'Chargesheet' },
+      { to: 'arrest-vector', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, label: 'Arrest Tracker' }
+    ]
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    items: [
+      { to: 'gbv', icon: <MdFemale className="icon" />, label: 'Gender Violence' },
+      { to: 'dark-figure', icon: <FaEye className="icon" />, label: 'Unreported Crime' },
+      { to: 'retraction-rate', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: 'Retraction Rate' }
+    ]
+  },
+  {
+    id: 'administration',
+    label: 'Administration',
+    items: [
       { to: 'notifications', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: 'Notifications' },
-      { to: 'deterrence', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, label: 'Public Dashboard' },
+      { to: 'deterrence', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, label: 'Public Portal' }
     ]
   }
 ];
+
 
 const Sidebar = ({ basePath, sidebarOpen, setSidebarOpen, userRole, isCollapsed, setIsCollapsed }) => {
   const trigger = useRef(null);
@@ -90,11 +125,7 @@ const Sidebar = ({ basePath, sidebarOpen, setSidebarOpen, userRole, isCollapsed,
   }, []);
 
   const quickMenuItems = [
-    { to: `${basePath}/home`, icon: <IoMdSpeedometer className="icon" />, label: 'Dashboard' },
-    { to: 'officers', icon: <GrUserPolice className="icon" />, label: 'Officers' },
-    { to: 'location', icon: <FaLocationCrosshairs className="icon" />, label: 'Location' },
-    { to: 'firdetails', icon: <PiTrendUp className="icon" />, label: 'FIR Details' },
-    { to: 'addfir', icon: <FaWpforms className="icon" />, label: 'Register FIR' },
+    { to: `${basePath}/home`, icon: <IoMdSpeedometer className="icon" />, label: 'My Day' },
   ];
 
   return (
@@ -147,7 +178,7 @@ const Sidebar = ({ basePath, sidebarOpen, setSidebarOpen, userRole, isCollapsed,
       {/* Quick Menu */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <div className="menuDiv" style={{ padding: '0 12px' }}>
-          {!isCollapsed && <h3 className="divTitle">Quick Menu</h3>}
+          {!isCollapsed && <h3 className="divTitle">Home</h3>}
           <ul className="menuLists grid" style={{ gap: '4px' }}>
             {quickMenuItems.map(item => (
               <li className="listItem" key={item.to}>

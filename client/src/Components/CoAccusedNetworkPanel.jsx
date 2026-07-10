@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ForceGraph2D from 'react-force-graph-2d'
 
@@ -6,7 +6,7 @@ const PERSON_COLORS = { A1: '#dc2626', A2: '#d97706', A3: '#6b7280' }
 const LINK_COLORS = { 'A1-A1': '#dc2626', 'A1-A2': '#d97706', 'A1-A3': '#9ca3af' }
 const PERSON_LABELS = { A1: 'Primary Accused', A2: 'Co-Accused', A3: 'Mentioned' }
 
-export default function CoAccusedNetworkPanel() {
+export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToFirNo = null, hideHeader = false }) {
   const [data, setData] = useState(null)
   const [selected, setSelected] = useState(null)
   const [gangFilter, setGangFilter] = useState(0)
@@ -25,54 +25,81 @@ export default function CoAccusedNetworkPanel() {
       .then(r => r.json())
       .then(d => {
         setData(d)
-        const person = searchParams.get('person')
+        const person = focusPersonName || searchParams.get('person')
         if (person) {
           const match = d.nodes.find(n => n.id.toLowerCase() === person.toLowerCase())
           if (match) setSelected(match)
         }
       })
       .catch(() => {})
-  }, [searchParams])
+  }, [searchParams, focusPersonName])
+
+  const filtered = useMemo(() => {
+    if (!data) return null;
+    let n = data.nodes;
+    let l = data.links;
+
+    if (gangFilter !== 0) {
+      n = n.filter(node => node.community === gangFilter);
+      l = l.filter(link => {
+        const s = data.nodes.find(node => node.id === link.source)
+        const t = data.nodes.find(node => node.id === link.target)
+        return s?.community === gangFilter && t?.community === gangFilter
+      });
+    }
+
+    if (limitToFirNo) {
+      // Normalize FIR Numbers, e.g. "KSP-2026-0142" vs "142/2026"
+      const cleanFir = limitToFirNo.replace('KSP-', '').replace('/', '-'); // e.g. "142-2026" or "2026-142"
+      const matchKey = cleanFir.split('-')[0]; // e.g. "142" or "2026"
+      const isMatch = (firList) => {
+        if (!firList) return false;
+        return firList.some(f => {
+          const cleanF = f.replace('KSP-', '').replace('/', '-');
+          return cleanF.includes(matchKey) || limitToFirNo.includes(cleanF) || cleanF.includes(limitToFirNo);
+        });
+      };
+      
+      n = n.filter(node => isMatch(node.firNos));
+      l = l.filter(link => isMatch(link.firNos));
+    }
+
+    return { ...data, nodes: n, links: l };
+  }, [data, gangFilter, limitToFirNo]);
 
   if (!data) return <div className="panel"><div className="panel-box"><p style={{ color: 'var(--text-secondary)' }}>Loading...</p></div></div>
 
-  const filtered = gangFilter === 0 ? data : {
-    ...data,
-    nodes: data.nodes.filter(n => n.community === gangFilter),
-    links: data.links.filter(l => {
-      const s = data.nodes.find(n => n.id === l.source)
-      const t = data.nodes.find(n => n.id === l.target)
-      return s?.community === gangFilter && t?.community === gangFilter
-    }),
-  }
-
   return (
-    <div className="panel">
-      <div className="panel-box">
-        <h2 style={{ marginBottom: 4 }}>Co-Accused Network</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-sub)', marginBottom: 20, maxWidth: 600 }}>
-          Force-directed graph of accused linked by shared FIRs. A1 nodes (red) = primary accused.
-          Red edges = A1-A1 links — the strongest gang signal.
-        </p>
+    <div className="panel" style={hideHeader ? { border: 'none', background: 'transparent', padding: 0 } : {}}>
+      <div className="panel-box" style={hideHeader ? { border: 'none', background: 'transparent', padding: 0 } : {}}>
+        {!hideHeader && (
+          <>
+            <h2 style={{ marginBottom: 4 }}>Co-Accused Network</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-sub)', marginBottom: 20, maxWidth: 600 }}>
+              Force-directed graph of accused linked by shared FIRs. A1 nodes (red) = primary accused.
+              Red edges = A1-A1 links — the strongest gang signal.
+            </p>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ACCUSED</div>
-            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.totalAccused}</div>
-          </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: '#dc262608', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>A1 (PRIMARY)</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{data.summary.A1Count}</div>
-          </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>GANGS</div>
-            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.gangs}</div>
-          </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>LINKS</div>
-            <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.links.length}</div>
-          </div>
-        </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+              <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ACCUSED</div>
+                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.totalAccused}</div>
+              </div>
+              <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: '#dc262608', minWidth: 100 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>A1 (PRIMARY)</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{data.summary.A1Count}</div>
+              </div>
+              <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>GANGS</div>
+                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.gangs}</div>
+              </div>
+              <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>LINKS</div>
+                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.links.length}</div>
+              </div>
+            </div>
+          </>
+        )}
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
           {[{ k: 0, l: 'All Networks' }, { k: 1, l: 'Gang 1' }, { k: 2, l: 'Gang 2' }].map(({ k, l }) => (

@@ -3,6 +3,29 @@ import { defineMockApi } from './mock-api-data.js';
 export default function mockServerPlugin() {
   const mockApi = defineMockApi();
 
+  // Precompile route patterns for key matching
+  const compiledRoutes = Object.keys(mockApi).map(routeKey => {
+    const spaceIdx = routeKey.indexOf(' ');
+    if (spaceIdx === -1) return null;
+    const method = routeKey.slice(0, spaceIdx);
+    const pathPattern = routeKey.slice(spaceIdx + 1);
+    
+    // Convert e.g., /server/cases/:id/stage to regex
+    const regexStr = '^' + pathPattern
+      .replace(/\/:[a-zA-Z0-9_]+/g, '/([^/]+)') // match parameters
+      .replace(/\*/g, '.*') + '$';
+    
+    const paramNames = (pathPattern.match(/:[a-zA-Z0-9_]+/g) || []).map(p => p.slice(1));
+    
+    return {
+      routeKey,
+      method,
+      regex: new RegExp(regexStr),
+      paramNames,
+      handler: mockApi[routeKey]
+    };
+  }).filter(Boolean);
+
   return {
     name: 'mock-server',
     configureServer(server) {
@@ -27,12 +50,11 @@ export default function mockServerPlugin() {
           });
         }
 
-        const handler = mockApi[key];
-
         // Try exact match first
-        if (handler) {
+        const exactHandler = mockApi[key];
+        if (exactHandler) {
           try {
-            const result = handler({ query, body, params: {} });
+            const result = exactHandler({ query, body, params: {} });
             res.setHeader('Content-Type', 'application/json');
             res.statusCode = 200;
             res.end(JSON.stringify(result));
@@ -43,22 +65,28 @@ export default function mockServerPlugin() {
           return;
         }
 
-        // Try pattern match (replace last segment with :id)
-        const parts = path.split('/');
-        const lastSeg = parts.pop();
-        const patternKey = `${method} ${parts.join('/')}/:id`;
-        const patternHandler = mockApi[patternKey];
-        if (patternHandler) {
-          try {
-            const result = patternHandler({ query, body, params: { id: lastSeg } });
-            res.setHeader('Content-Type', 'application/json');
-            res.statusCode = 200;
-            res.end(JSON.stringify(result));
-          } catch (err) {
-            res.statusCode = 500;
-            res.end(JSON.stringify({ error: err.message }));
+        // Try precompiled route pattern matching
+        for (const route of compiledRoutes) {
+          if (route.method === method) {
+            const match = path.match(route.regex);
+            if (match) {
+              const params = {};
+              route.paramNames.forEach((name, idx) => {
+                params[name] = match[idx + 1];
+              });
+              
+              try {
+                const result = route.handler({ query, body, params });
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 200;
+                res.end(JSON.stringify(result));
+              } catch (err) {
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: err.message }));
+              }
+              return;
+            }
           }
-          return;
         }
 
         // Fallback: return empty but valid JSON

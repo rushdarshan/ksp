@@ -6,7 +6,28 @@ const DeterrenceDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const DISTRICTS = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, name: `District ${i + 1}` }));
+    const DISTRICTS = [
+        { id: 1, name: 'Bengaluru City' },
+        { id: 2, name: 'Mysuru City' },
+        { id: 3, name: 'Mangaluru City' },
+        { id: 4, name: 'Hubballi-Dharwad City' },
+        { id: 5, name: 'Belagavi City' },
+        { id: 6, name: 'Kalaburagi City' },
+        { id: 7, name: 'Shivamogga' },
+        { id: 8, name: 'Tumakuru' },
+        { id: 9, name: 'Davanagere' },
+        { id: 10, name: 'Ballari' },
+        { id: 11, name: 'Vijayapura' },
+        { id: 12, name: 'Bidar' },
+        { id: 13, name: 'Hassan' },
+        { id: 14, name: 'Udupi' },
+        { id: 15, name: 'Dharwad' },
+        { id: 16, name: 'Kolar' },
+        { id: 17, name: 'Chikkamagaluru' },
+        { id: 18, name: 'Mandya' },
+        { id: 19, name: 'Bagalkote' },
+        { id: 20, name: 'Chitradurga' }
+    ];
 
     const load = async () => {
         setLoading(true);

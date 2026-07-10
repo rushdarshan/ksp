@@ -11,11 +11,24 @@ const BeatOptimizerPanel = () => {
     const [tab, setTab] = useState('beats');
     const [flowMode, setFlowMode] = useState(false);
 
+    const KARNATAKA_DISTRICTS = [
+        { id: 1, name: 'Bengaluru City' },
+        { id: 2, name: 'Mysuru City' },
+        { id: 3, name: 'Mangaluru City' },
+        { id: 4, name: 'Hubballi-Dharwad City' },
+        { id: 5, name: 'Belagavi City' },
+        { id: 6, name: 'Kalaburagi City' },
+        { id: 7, name: 'Shivamogga' },
+        { id: 8, name: 'Tumakuru' },
+        { id: 9, name: 'Davanagere' },
+        { id: 10, name: 'Ballari' }
+    ];
+
     useEffect(() => {
         fetch('/server/beat_optimizer/districts')
             .then(r => r.json())
             .then(setDistricts)
-            .catch(() => setDistricts(Array.from({ length: 10 }, (_, i) => ({ id: i + 1, name: `District ${i + 1}` }))));
+            .catch(() => setDistricts(KARNATAKA_DISTRICTS));
     }, []);
 
     const load = async () => {

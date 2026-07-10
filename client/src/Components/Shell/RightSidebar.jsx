@@ -25,7 +25,7 @@ const RightSidebar = () => {
       fetch('/server/case_management/case-management/notifications')
         .then(res => res.ok ? res.json() : { notifications: [] })
         .then(data => {
-          setNotifications((data.notifications || []).slice(0, 4));
+          setNotifications((Array.isArray(data) ? data : data.notifications || []).slice(0, 4));
           setLoadingNotifs(false);
         })
         .catch(err => {
@@ -143,7 +143,7 @@ const RightSidebar = () => {
                     color: 'var(--text-secondary)',
                     fontFamily: 'var(--font-mono)'
                   }}>
-                    {new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(alert.created_at || alert.timestamp || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                   {alert.recommendation && (
                     <span style={{
