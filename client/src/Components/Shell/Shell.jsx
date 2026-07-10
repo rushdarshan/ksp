@@ -35,10 +35,24 @@ const Shell = ({ basePath = '/dashboard' }) => {
             </div>
           </div>
           <div style={{ display: 'flex', flex: 1, overflow: 'hidden', padding: '16px 24px 24px' }}>
-            <div className="scrollContainer" style={{ flex: 1, overflowY: 'auto', paddingRight: '16px', minWidth: 0 }}>
-              <ErrorBoundary>
-                <Outlet />
-              </ErrorBoundary>
+            <div className="scrollContainer" style={{ flex: 1, overflowY: 'auto', paddingRight: '16px', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ flex: 1 }}>
+                <ErrorBoundary>
+                  <Outlet />
+                </ErrorBoundary>
+              </div>
+              <footer style={{ 
+                marginTop: '32px', 
+                padding: '16px 0', 
+                borderTop: '1px solid var(--border-light)', 
+                textAlign: 'center', 
+                fontSize: '11px', 
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-body)',
+                letterSpacing: '0.5px'
+              }}>
+                Powered by Zoho Catalyst · 11 Services (Slate, Functions, Data Store, QuickML, Zia, Signals, Cache, Job Scheduling, User Management, AppSail, Stratus)
+              </footer>
             </div>
             <div className="rightSidebar" style={{
               width: '300px',
