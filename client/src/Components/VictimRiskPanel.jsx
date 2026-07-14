@@ -191,4 +191,4 @@ const VictimRiskPanel = () => {
     );
 };
 
-export default VictimRiskPanel;
+export default React.memo(VictimRiskPanel);

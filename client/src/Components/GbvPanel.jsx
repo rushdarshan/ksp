@@ -226,4 +226,4 @@ const GbvPanel = () => {
     );
 };
 
-export default GbvPanel;
+export default React.memo(GbvPanel);

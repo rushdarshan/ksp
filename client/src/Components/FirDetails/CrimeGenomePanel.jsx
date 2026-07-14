@@ -772,7 +772,7 @@ function AmbientMemory({ firId }) {
 // Main export: Crime Genome Panel
 // ──────────────────────────────────────────────────────
 
-export default function CrimeGenomePanel({ firId = 'KSP-2026-0142', briefOnly = false, theoryOnly = false }) {
+function CrimeGenomePanel({ firId = 'KSP-2026-0142', briefOnly = false, theoryOnly = false }) {
   if (briefOnly) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -820,3 +820,4 @@ export default function CrimeGenomePanel({ firId = 'KSP-2026-0142', briefOnly = 
   );
 }
 
+export default React.memo(CrimeGenomePanel);

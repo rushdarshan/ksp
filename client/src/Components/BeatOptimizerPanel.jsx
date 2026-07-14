@@ -212,4 +212,4 @@ const BeatOptimizerPanel = () => {
 const th = { textAlign: 'left', padding: '10px 12px', fontSize: '11px', color: '#64748b', fontWeight: 600 };
 const td = { padding: '10px 12px' };
 
-export default BeatOptimizerPanel;
+export default React.memo(BeatOptimizerPanel);

@@ -96,7 +96,7 @@ function QualityBadge({ firData }) {
     </div>;
 }
 
-export default function DetailedFir() {
+function DetailedFir() {
   const { FirNo, FirYear } = useParams();
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -778,3 +778,5 @@ export default function DetailedFir() {
     </div>
   );
 }
+
+export default React.memo(DetailedFir);
