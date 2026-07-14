@@ -18,7 +18,7 @@ import { FaGavel, FaListCheck, FaRegCircleCheck } from "react-icons/fa6";
 import { FaClipboardList } from "react-icons/fa";
 import AnimatedNumber from "../../Details/AnimatedNumber";
 import { FaUserClock } from "react-icons/fa";
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 export default function SubordinateDetails() {
   const { id } = useParams();

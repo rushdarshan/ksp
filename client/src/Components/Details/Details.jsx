@@ -21,7 +21,7 @@ import { FaUserClock } from "react-icons/fa";
 import { FaGavel } from "react-icons/fa";
 
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 export default function SubordinateDetails() {
   const id = undefined;

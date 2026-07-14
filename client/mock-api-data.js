@@ -435,24 +435,9 @@ export function defineMockApi() {
       return { districtId: parseInt(query.district) || 1, crimeType: query.crimeType || 'theft', detections, detectedTransits: detections, totalToday: 2 };
     },
 
-    // === Case Management - Cases List ===
-    'GET /server/case-management/cases': ({ query }) => ({
-      cases: [
-        { id: 1, firNo: 'KSP-2026-0142', stage: query.stage || 'investigation', severity: 'felony', io: 'PI Dharmendra', dateRegistered: '2026-03-15', nextHearing: '2026-07-20', expiringSoon: false },
-        { id: 2, firNo: 'KSP-2026-0089', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Maruti', dateRegistered: '2026-02-28', nextHearing: '2026-07-12', expiringSoon: true },
-        { id: 3, firNo: 'KSP-2026-0201', stage: 'trial', severity: 'felony', io: 'PI Anjumala', dateRegistered: '2026-01-10', nextHearing: '2026-07-15', expiringSoon: false },
-        { id: 4, firNo: 'KSP-2026-0156', stage: 'investigation', severity: 'petty', io: 'SI Ramesh', dateRegistered: '2026-04-01', nextHearing: null, expiringSoon: false },
-        { id: 5, firNo: 'KSP-2026-0234', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Dharmendra', dateRegistered: '2026-03-20', nextHearing: '2026-07-18', expiringSoon: true },
-      ],
-      total: 5,
-    }),
-    'GET /server/case-management/cases/expiring': () => ({
-      cases: [
-        { id: 2, firNo: 'KSP-2026-0089', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Maruti', dateRegistered: '2026-02-28', nextHearing: '2026-07-12', expiringSoon: true, daysRemaining: 6 },
-        { id: 5, firNo: 'KSP-2026-0234', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Dharmendra', dateRegistered: '2026-03-20', nextHearing: '2026-07-18', expiringSoon: true, daysRemaining: 12 },
-      ],
-      total: 2,
-    }),
+
+    // === Case Management (legacy hyphen aliases — canonical routes use underscore below) ===
+
 
     // === Chargesheet Clock ===
     'GET /server/chargesheet-clock/stats': () => {
@@ -972,44 +957,11 @@ export function defineMockApi() {
       };
     },
 
-    // === Co-Accused Network Graph Mock ===
-    'GET /server/co_accused_network/graph': () => ({
-      nodes: [
-        { id: 'Mohan Kumar', role: 'A1', gangId: 1, community: 0 },
-        { id: 'Kiran Joseph', role: 'A2', gangId: 1, community: 0 },
-        { id: 'Venkatesh Gowda', role: 'A1', gangId: 2, community: 1 },
-        { id: 'Girish Poojary', role: 'A2', gangId: 2, community: 1 },
-        { id: 'Arun Nair', role: 'A1', gangId: 3, community: 2 },
-        { id: 'Rajesh Kumar', role: 'A3', gangId: 1, community: 0 }
-      ],
-      links: [
-        { source: 'Mohan Kumar', target: 'Kiran Joseph', type: 'A1-A2', value: 3 },
-        { source: 'Venkatesh Gowda', target: 'Girish Poojary', type: 'A1-A2', value: 2 },
-        { source: 'Mohan Kumar', target: 'Rajesh Kumar', type: 'A1-A3', value: 1 }
-      ],
-      gangs: [
-        { id: 1, name: 'M G Road Snatchers', size: 3 },
-        { id: 2, name: 'Mysuru Highway Assault Gang', size: 2 },
-        { id: 3, name: 'Vasanthnagar Phishing Ring', size: 1 }
-      ]
-    }),
+    // === Co-Accused Network Graph Mock (REMOVED - duplicate of line 556 above) ===
 
-    // === Network Analysis / Entity Graph Mock ===
-    'GET /server/network_analysis/graph': () => ({
-      nodes: [
-        { id: 'theft', label: 'Theft', size: 22, community: 0 },
-        { id: 'burglary', label: 'Burglary', size: 18, community: 0 },
-        { id: 'robbery', label: 'Robbery', size: 16, community: 1 },
-        { id: 'assault', label: 'Assault', size: 20, community: 1 },
-        { id: 'murder', label: 'Murder', size: 10, community: 2 }
-      ],
-      links: [
-        { source: 'theft', target: 'burglary', weight: 0.28 },
-        { source: 'theft', target: 'robbery', weight: 0.19 },
-        { source: 'robbery', target: 'assault', weight: 0.25 },
-        { source: 'assault', target: 'murder', weight: 0.12 }
-      ]
-    }),
+
+    // === Network Analysis / Entity Graph Mock (REMOVED - duplicate of line 277 above) ===
+
 
     // === Person 360 API Mock ===
     'GET /server/fir_api/person/:id': ({ params }) => {
@@ -1031,6 +983,213 @@ export function defineMockApi() {
         ],
         coAccused: ['Mohan Kumar', 'Rajesh Kumar']
       };
-    }
+    },
+
+    // === Crime Genome Intelligence: ZIA Case Intelligence Brief ===
+    'GET /server/zia/case_brief/:firId': ({ params }) => ({
+      firId: params.firId || 'KSP-2026-0142',
+      generatedAt: new Date().toISOString(),
+      confidence: 0.82,
+      summary: `Good morning Inspector. The case for FIR ${params.firId || 'KSP-2026-0142'} became significantly stronger overnight. A suspect phone has now been linked directly to FIR-0089. Based on this link and the modus operandi, this appears to be a gang-coordinated snatch robbery consistent with the M G Road Snatchers group. I highly recommend interviewing witness Raju before reviewing the CCTV from SH-9 junction, because doing so could invalidate Theory T2.\n\nEstimated review time: 4 minutes.`,
+      keyFindings: [
+        { finding: 'MO matches 4 prior incidents (chain snatching, 2-wheeler getaway)', confidence: 0.91, source: 'Pattern DB' },
+        { finding: 'Primary accused linked to M G Road Snatchers gang', confidence: 0.87, source: 'Co-Accused Network' },
+        { finding: 'Incident location is hotspot — 3rd crime in 30 days in same grid', confidence: 0.94, source: 'Predictive Intelligence' },
+        { finding: 'Victim profile: solo women commuters, 08:00–09:30 AM window', confidence: 0.78, source: 'Gender Violence Module' }
+      ],
+      recommendations: [
+        { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
+        { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
+        { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
+        { priority: 'LOW', action: 'File supplementary chargesheet sections 395/397 IPC', deadline: '2026-07-25T18:00:00Z' }
+      ],
+      sources: ['FIR Database', 'Pattern DB', 'Co-Accused Network', 'Predictive Intelligence', 'Gender Violence Module'],
+      orchestrationSteps: [
+        { step: 1, agent: 'MO Matcher', status: 'complete', result: '4 similar cases found' },
+        { step: 2, agent: 'Gang Linker', status: 'complete', result: 'Network cluster identified' },
+        { step: 3, agent: 'Hotspot Analyser', status: 'complete', result: 'Grid-level risk confirmed' },
+        { step: 4, agent: 'Legal Advisor', status: 'complete', result: 'IPC sections validated' }
+      ]
+    }),
+
+    // === Crime Genome Intelligence: Theory Board ===
+    'GET /server/zia/theories/:firId': ({ params }) => ({
+      firId: params.firId || 'KSP-2026-0142',
+      theories: [
+        {
+          id: 'T1',
+          title: 'Premeditated Gang Robbery',
+          description: 'Accused conducted surveillance of victim\'s route for at least 3 days before incident. Gang operation with assigned roles.',
+          confidence: 0.85,
+          status: 'working',
+          confirmedBy: null,
+          supporting: [
+            { id: 'E1', text: 'CCTV shows same 2-wheeler circling area on 3 consecutive days', type: 'digital' },
+            { id: 'E2', text: 'Accused known to gang with specialised role (scout)', type: 'intelligence' },
+            { id: 'E3', text: 'MO identical to 3 prior incidents attributed to same gang', type: 'pattern' }
+          ],
+          contradicting: [
+            { id: 'C1', text: 'No direct communication intercept placing accused at scene', type: 'absence' }
+          ]
+        },
+        {
+          id: 'T2',
+          title: 'Opportunistic Solo Act',
+          description: 'Single accused acted alone on impulse, no prior planning.',
+          confidence: 0.22,
+          status: 'weak',
+          confirmedBy: null,
+          supporting: [
+            { id: 'E4', text: 'No gang communication intercepts recovered', type: 'absence' }
+          ],
+          contradicting: [
+            { id: 'C2', text: 'CCTV shows 2 distinct individuals involved', type: 'digital' },
+            { id: 'C3', text: 'Getaway route pre-planned (narrow lane, no cameras)', type: 'spatial' },
+            { id: 'C4', text: 'Gang MO match is statistically significant (p<0.05)', type: 'pattern' }
+          ]
+        }
+      ]
+    }),
+    'POST /server/zia/theories/:firId/confirm': ({ params, body }) => ({
+      success: true,
+      theoryId: body?.theoryId || 'T1',
+      firId: params.firId,
+      confirmedBy: 'PI Dharmendra',
+      confirmedAt: new Date().toISOString(),
+      newConfidence: Math.min(0.99, (body?.currentConfidence || 0.85) + 0.07)
+    }),
+    'POST /server/zia/theories/:firId/add': ({ params, body }) => ({
+      success: true,
+      theory: {
+        id: `T${Date.now()}`,
+        title: body?.title || 'New Theory',
+        description: body?.description || '',
+        confidence: 0.5,
+        status: 'working',
+        confirmedBy: null,
+        supporting: [],
+        contradicting: []
+      }
+    }),
+
+    // === Crime Genome Intelligence: Case Strength Meter ===
+    'GET /server/zia/case_strength/:firId': ({ params }) => ({
+      firId: params.firId || 'KSP-2026-0142',
+      overallScore: 68,
+      grade: 'B',
+      chargeableSections: ['379 IPC', '395 IPC', '34 IPC'],
+      factors: [
+        { factor: 'Witness Statements', score: 75, weight: 0.25, explanation: '2 eyewitness statements recorded; victim statement corroborated by bystander.' },
+        { factor: 'Physical Evidence', score: 55, weight: 0.20, explanation: 'Stolen item not recovered. Partial fingerprint on getaway vehicle obtained.' },
+        { factor: 'Digital Evidence', score: 80, weight: 0.20, explanation: 'CCTV footage confirms suspect vehicle. Mobile tower CDR links accused to area.' },
+        { factor: 'MO Consistency', score: 90, weight: 0.15, explanation: 'Pattern match to 4 prior incidents — strong basis for linking charges.' },
+        { factor: 'Accused Identification', score: 65, weight: 0.15, explanation: 'TIP parade conducted. One accused identified; one still at large.' },
+        { factor: 'Legal Completeness', score: 40, weight: 0.05, explanation: 'Section 161 statements pending for 2 witnesses. Chargesheet due in 18 days.' }
+      ],
+      trend: [
+        { date: '2026-07-01', score: 42 },
+        { date: '2026-07-04', score: 55 },
+        { date: '2026-07-07', score: 62 },
+        { date: '2026-07-10', score: 68 }
+      ],
+      gaps: [
+        'Recover stolen chain or trace sale through fence network',
+        'Complete 161 statements for Witnesses 3 and 4',
+        'Arrest second accused Arun Nair'
+      ]
+    }),
+
+    // === Crime Genome Intelligence: Ambient Memory (contextual suggestions) ===
+    'GET /server/zia/memory': ({ query }) => {
+      const context = query.context || 'general';
+      const suggestions = {
+        general: [
+          { type: 'related_case', firNo: 'KSP-2026-0089', summary: 'Same MO — Rajajinagar chain snatch, 2 weeks ago. Shared accused Arun Nair.', relevance: 0.91 },
+          { type: 'wanted', name: 'Arun Nair', reason: 'Accused at large in current case and KSP-2026-0089', relevance: 0.88 },
+          { type: 'deadline', event: 'Chargesheet due — KSP-2026-0142', daysRemaining: 18, relevance: 0.95 },
+          { type: 'alert', text: 'New snatch incident reported in same grid 6 hours ago — KSP-2026-0522', relevance: 0.85 }
+        ],
+        investigation: [
+          { type: 'evidence_gap', text: 'No section 65B certificate filed for CCTV evidence. Required for admissibility.', relevance: 0.97 },
+          { type: 'related_case', firNo: 'KSP-2026-0255', summary: 'Same gang linked. Accused Imran Khan arrested — potential approver.', relevance: 0.89 }
+        ]
+      };
+      return {
+        context,
+        suggestions: suggestions[context] || suggestions.general,
+        generatedAt: new Date().toISOString()
+      };
+    },
+
+    // === Case Management (expiring cases — unique route not defined above) ===
+    'GET /server/case_management/cases/expiring': () => ({
+      cases: [
+        { id: 2, firNo: 'KSP-2026-0089', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Maruti', dateRegistered: '2026-02-28', nextHearing: '2026-07-12', expiringSoon: true, daysRemaining: 6 },
+        { id: 5, firNo: 'KSP-2026-0234', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Dharmendra', dateRegistered: '2026-03-20', nextHearing: '2026-07-18', expiringSoon: true, daysRemaining: 12 },
+      ],
+      total: 2,
+    }),
+
+    // === ZIA Synthesis Brief ===
+    'POST /server/zia_brief/zia_brief': ({ body }) => {
+      const caseId = body?.caseId || 142;
+      return {
+        caseId,
+        narrative: `FIR KSP-2026-${caseId} involves a robbery near MG Road metro station reported on 2026-03-15. Solvability analysis indicates strong witness and CCTV evidence. Veracity score is 84% (GENUINE). Network analysis links primary accused to the M G Road Snatchers gang with 2 co-offenders. The case is currently under investigation at Brigade Road PS with golden period expired but chargesheet deadline in 18 days.`,
+        solvability: {
+          firNo: `KSP-2026-${caseId}`,
+          score: 0.67,
+          label: 'SOLVABLE',
+          factors: [
+            { name: 'Witness availability', weight: 0.85, value: '2 witnesses identified' },
+            { name: 'Physical evidence', weight: 0.72, value: 'CCTV footage within 48hr window' },
+            { name: 'Suspect identification', weight: 0.60, value: 'Partial — scar description, no name' },
+            { name: 'Time to report', weight: 0.92, value: 'Reported within 4 hours' },
+            { name: 'Location specificity', weight: 0.88, value: 'Exact location identified' },
+          ],
+          recommendation: 'Prioritize for investigation. Strong witness and evidence indicators.',
+        },
+        veracity: {
+          score: 0.84,
+          label: 'GENUINE',
+          flags: [
+            { type: 'specificity', weight: 0.8, description: 'Narrative contains specific temporal and spatial details' },
+            { type: 'coherence', weight: 0.7, description: 'Event sequence is logically ordered and internally consistent' },
+            { type: 'complainant_detail', weight: 0.9, description: 'Complainant identified by name' },
+            { type: 'delay_indicator', weight: 0.9, description: 'No delay in reporting' },
+            { type: 'property_claim', weight: 0.7, description: 'Property value within expected range' },
+          ],
+          ziaAssessment: 'Linguistic analysis completed. Veracity score: 84%. High specificity markers detected. VeriPol-style behavioral pattern matching active.',
+          methodology: 'VeriPol-inspired logistic regression + TF-IDF features + behavioral markers',
+        },
+        similarCases: [
+          { caseId: 89, similarity: 0.78, reason: 'Same MO — chain snatching with 2-wheeler getaway in nearby area' },
+          { caseId: 301, similarity: 0.65, reason: 'Linked accused, same gang affiliation (M G Road Snatchers)' },
+          { caseId: 255, similarity: 0.52, reason: 'Geographic proximity, similar time-of-day pattern' },
+        ],
+        entityLinks: [
+          { source: 'N1', target: 'N2', weight: 5, relation: 'co-offender' },
+          { source: 'N1', target: 'N3', weight: 3, relation: 'known-associate' },
+          { source: 'N2', target: 'N6', weight: 4, relation: 'family' },
+          { source: 'N1', target: 'N4', weight: 1, relation: 'perpetrator-victim' },
+        ],
+        recommendations: [
+          { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
+          { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
+          { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
+          { priority: 'LOW', action: 'File supplementary chargesheet sections 395/397 IPC', deadline: '2026-07-25T18:00:00Z' },
+        ],
+        confidence: 0.82,
+        provenance: [
+          { function: 'solvability_index', methodology: 'Random Forest classifier on case features', validationStatus: 'received' },
+          { function: 'veracity_index', methodology: 'VeriPol-inspired logistic regression + TF-IDF', validationStatus: 'received' },
+          { function: 'network_analysis', methodology: 'Graph-based co-offender linkage', validationStatus: 'received' },
+          { function: 'daily_brief', methodology: 'Aggregate district crime statistics', validationStatus: 'received' },
+          { function: 'agentic_police', methodology: 'Multi-agent orchestration log', validationStatus: 'received' },
+        ],
+      };
+    },
   };
 }
+
+

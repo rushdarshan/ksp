@@ -7,8 +7,9 @@ import Loader from "../../ui/Dropdown/Loader";
 import SolvabilityBadge from '../SolvabilityBadge';
 import VeracityPanel from '../VeracityPanel';
 import CoAccusedNetworkPanel from '../CoAccusedNetworkPanel';
+import CrimeGenomePanel from './CrimeGenomePanel';
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 function QualityBadge({ firData }) {
     const [result, setResult] = useState(null);
@@ -239,6 +240,7 @@ export default function DetailedFir() {
           { id: 'people', label: 'People', icon: '👥' },
           { id: 'veracity', label: 'Veracity', icon: '🛡️' },
           { id: 'network', label: 'Crime Links', icon: '🕸️' },
+          { id: 'genome', label: 'Crime Genome', icon: '🧬' },
           { id: 'aibrief', label: 'AI Brief', icon: '🤖' },
           { id: 'chargesheet', label: 'Chargesheet Clock', icon: '⚖️' },
           { id: 'audit', label: 'Audit Trail', icon: '📑' }
@@ -764,6 +766,11 @@ export default function DetailedFir() {
               </tbody>
             </table>
           </div>
+        )}
+
+        {/* TAB: CRIME GENOME INTELLIGENCE */}
+        {activeTab === 'genome' && (
+          <CrimeGenomePanel firId={firData.FIRNo || 'KSP-2026-0142'} />
         )}
 
       </div>

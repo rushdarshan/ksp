@@ -12,7 +12,7 @@ import {  AiOutlineSwapRight } from "react-icons/ai";
 import { MdMarkEmailRead } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import toast from 'react-hot-toast'
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 const Register = () => {
 //usestate for input

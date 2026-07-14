@@ -1,4 +1,4 @@
-/* Shell Sidebar — Apple Light Theme */
+/* Shell Sidebar — Investigation OS */
 
 .sideBar {
   background: var(--surface);
@@ -7,7 +7,7 @@
   height: 100%;
   overflow: auto;
   scrollbar-width: none;
-  transition: transform var(--duration-base) var(--easing);
+  transition: width 0.2s var(--easing), min-width 0.2s var(--easing), transform var(--duration-base) var(--easing);
   z-index: 100;
 }
 
@@ -189,32 +189,46 @@
   }
 }
 
-/* Sidebar Card */
-.sideBarCard {
-  margin: var(--space-lg) var(--space-md);
-  padding: var(--space-lg);
-  background: var(--bg);
-  border-radius: var(--radius-md);
-  text-align: center;
+/* Collapsible sidebar sections via <details>/<summary> */
+.sidebar-section {
+  border: none;
+  padding: 0;
+}
 
-  .icon {
-    font-size: 24px;
-    color: var(--muted);
-    margin-bottom: var(--space-sm);
+.sidebar-section[open] > .sidebar-section-header .divTitle::after {
+  content: '▼';
+  font-size: 10px;
+  margin-left: 6px;
+  color: var(--text-secondary);
+}
+
+.sidebar-section > .sidebar-section-header .divTitle::after {
+  content: '►';
+  font-size: 10px;
+  margin-left: 6px;
+  color: var(--text-secondary);
+}
+
+.sidebar-section-header {
+  list-style: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s var(--easing);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &::-webkit-details-marker {
+    display: none;
   }
 
-  h3 {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: var(--space-xs);
+  &::marker {
+    content: '';
   }
 
-  p {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.4;
-    margin: 0;
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
   }
 }
 
@@ -232,5 +246,9 @@
 
   .sideBar .logoDiv .menu_close_wrapper {
     display: block;
+  }
+
+  .mainRight {
+    display: none;
   }
 }

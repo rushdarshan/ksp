@@ -5,7 +5,7 @@ import { Link, useNavigation } from "react-router-dom";
 import Loader from "../../ui/Dropdown/Loader";
 import { useFilter } from "../../FilterContext";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 export async function loader() {
   try {

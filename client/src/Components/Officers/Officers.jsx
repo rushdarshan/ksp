@@ -4,7 +4,7 @@ import { useFetchData } from '../FirDetails/Firdetails';
 import Loader from '../../ui/Dropdown/Loader';
 import inspector from "../Details/Inspector.png";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 export async function loader() {
   try {

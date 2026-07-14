@@ -1,24 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
 import logo from '../assets/logo.png';
 
 const Navigation = () => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <div>
-      <nav className="container">
-        <div className="logo">
-          <img src={logo} alt="KSP" />
-          <h2>KSP Crime Genome</h2>
+    <nav className={`landing-nav ${scrolled ? 'landing-nav--scrolled' : ''}`}>
+      <div className="nav-inner">
+        <Link to="/" className="nav-brand">
+          <img src={logo} alt="KSP" className="nav-logo" />
+          <span className="nav-title">Crime Genome</span>
+        </Link>
+        <div className="nav-links">
+          <a href="#workflow" onClick={e => { e.preventDefault(); document.querySelector('.capabilities-section')?.scrollIntoView({ behavior: 'smooth' }); }}>Platform</a>
+          <a href="/public/deterrence">Public Data</a>
         </div>
-        <ul>
-             <li><a href="#location" onClick={e => { e.preventDefault(); document.getElementById('location')?.scrollIntoView({ behavior: 'smooth' }); }}>Location</a></li>
-             <li><a href="#about" onClick={e => { e.preventDefault(); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }}>About</a></li>
-             <li><a href="#contact" onClick={e => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>Contact</a></li>
-        </ul>
-        <Link to="/login"><button>Log In</button></Link>
-      </nav>
-    </div>
+        <Link to="/login" className="nav-login">Dashboard</Link>
+      </div>
+    </nav>
   );
 }
 

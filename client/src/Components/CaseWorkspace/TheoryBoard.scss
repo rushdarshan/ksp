@@ -1,0 +1,514 @@
+/* TheoryBoard — FIR 142/2026 */
+
+.tb-section {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.tb-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--surface-alt);
+
+  &-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &-icon {
+    font-size: 18px;
+  }
+
+  &-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  &-badge {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+}
+
+.tb-body {
+  padding: 20px;
+}
+
+/* Theory tabs */
+.tb-theory-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tb-theory-tab {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--border-light);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &--active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+.tb-theory-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.tb-add-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px dashed var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Add form */
+.tb-add-form {
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  margin-bottom: 20px;
+}
+
+.tb-add-form h4 {
+  margin: 0 0 12px 0;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.tb-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.tb-textarea {
+  @extend .tb-input;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.tb-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tb-btn-primary {
+  padding: 8px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tb-btn-secondary {
+  padding: 8px 20px;
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Theory detail */
+.tb-theory-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tb-theory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tb-theory-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tb-theory-desc {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 600px;
+}
+
+.tb-theory-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.tb-conf-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tb-conf-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.tb-confirm-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #4ade8020;
+  color: #4ade80;
+  border: 1px solid #4ade8060;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tb-confirmed-label {
+  font-size: 12px;
+  color: #4ade80;
+  font-weight: 600;
+}
+
+/* Confidence badge */
+.tb-conf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tb-conf-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Evidence grid */
+.tb-ev-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.tb-ev-col-title {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tb-ev-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tb-ev-empty {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Evidence card */
+.tb-ev-card {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  border-left: 3px solid;
+  transition: opacity 0.2s;
+}
+
+.tb-ev-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.tb-ev-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tb-ev-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.tb-ev-class {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.tb-ev-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tb-ev-conf {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tb-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+
+  &--auto {
+    background: #4ade8020;
+    color: #4ade80;
+  }
+
+  &--review {
+    background: #facc1520;
+    color: #facc15;
+  }
+}
+
+.tb-ev-explanation {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.tb-ev-excerpts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.tb-ev-excerpt {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding-left: 10px;
+  border-left: 2px solid var(--border-light);
+}
+
+.tb-ev-entities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tb-ev-entity {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+}
+
+/* Officer action buttons */
+.tb-ev-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.tb-ev-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &--accept {
+    background: #4ade8030;
+    color: #4ade80;
+  }
+
+  &--change {
+    background: #facc1530;
+    color: #facc15;
+  }
+
+  &--reject {
+    background: #f8717130;
+    color: #f87171;
+  }
+}
+
+.tb-ev-officer-label {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Officer notes */
+.tb-notes {
+  padding: 16px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 10px;
+
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+}
+
+.tb-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tb-note-item {
+  font-size: 13px;
+}
+
+.tb-note-author {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tb-note-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+.tb-note-text {
+  margin: 4px 0 0 0;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.tb-notes-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tb-notes-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.tb-notes-post-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tb-ev-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tb-theory-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tb-theory-actions {
+    align-items: flex-start;
+  }
+}

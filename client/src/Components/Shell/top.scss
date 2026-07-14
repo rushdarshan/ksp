@@ -1,134 +1,79 @@
-/* Shell Top Bar — Apple Light Theme */
+/* TopBar — Investigation OS */
 
-.topSection {
+.topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md) var(--space-xl);
-  background: var(--surface);
+  height: 48px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  background: var(--surface);
+  flex-shrink: 0;
+}
 
-  .topContent {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
+.topBar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topBar-menu {
+  display: none;
+  font-size: 18px;
+  padding: 4px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--text);
   }
+}
 
-  .menu_wrapper {
-    display: none;
+.topBar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.topBar-crumb-root {
+  color: var(--muted);
+}
+
+.topBar-crumb-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--text);
+    text-decoration: underline;
   }
+}
 
-  .ham_menu_btn {
-    font-size: 18px;
-    padding: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: var(--radius-sm);
-    color: var(--muted);
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    cursor: pointer;
-    transition: all 0.2s var(--easing);
+.topBar-crumb-sep {
+  color: var(--border-strong);
+  font-size: 12px;
+}
 
-    &:hover {
-      background-color: var(--bg);
-      color: var(--text);
-    }
-  }
+.topBar-crumb-current {
+  color: var(--text);
+  font-weight: 500;
+}
 
-  .title {
-    h1 {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      font-family: var(--font-body);
-      letter-spacing: -0.01em;
-      line-height: 1;
-    }
-
-    p {
-      font-size: 11px;
-      color: var(--muted);
-      font-family: var(--font-body);
-      line-height: 1;
-      margin-top: 2px;
-    }
-  }
-
-  .adminDiv {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-left: auto;
-
-    .chat_btn {
-      color: var(--muted);
-      padding: 0;
-      display: flex;
-      background-color: var(--surface);
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-light);
-      cursor: pointer;
-      transition: all 0.2s var(--easing);
-
-      &:hover {
-        background-color: var(--bg);
-      }
-    }
-
-    .icon {
-      font-size: 18px;
-      background: var(--surface);
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-light);
-      padding: 5px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s var(--easing);
-
-      &:hover {
-        background: var(--bg);
-        color: var(--text);
-      }
-    }
-
-    .adminImage {
-      border: 2px solid var(--surface);
-      border-radius: var(--radius-sm);
-      width: 32px;
-      height: 32px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-  }
+.topBar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 @media screen and (max-width: 1050px) {
-  .topSection {
-    .title {
-      margin-left: auto;
-    }
-
-    .menu_wrapper {
-      display: flex;
-    }
-  }
-}
-
-@media screen and (max-width: 760px) {
-  .topSection {
-    .title {
-      display: none;
-    }
+  .topBar-menu {
+    display: flex;
   }
 }

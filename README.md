@@ -1,87 +1,142 @@
+# KSP Crime Analytics Dashboard
 
-# Police Performance and Resource Management 🚔📊
-<br/>
+AI-driven crime analytics and visualization platform for the Karnataka State Police. Transforms siloed crime records into an integrated intelligence hub with network analysis, predictive risk scoring, and conversational AI querying.
 
-## Karnataka State Police Hackathon - 2024
-<br/>
-## Problem Statememt ❓
+## Quick Start
 
-**Problem**: Lack of comprehensive data-driven insights hampers effective police performance assessments and resource allocation optimization.  
+### Prerequisites
 
-**Challenge**: Create an analytical dashboard that tracks key performance indicators (response times, crime clearance rates) across different units and locations, providing actionable insights for strategic decision-making and resource optimization.
+- Node.js 18+
+- npm or yarn
 
-## Overview  ℹ️
+### Setup
 
-The Police Performance Analytical Dashboard is a comprehensive tool designed to address the challenges faced by law enforcement agencies in performance assessment and resource allocation. It provides actionable insights for strategic decision-making and resource optimization across different supervisory levels within the police department.
+```bash
+# Clone the repository
+git clone <repo-url>
+cd ksp
 
-Our objective is to develop an analytical dashboard that empowers supervisory officers at every level, from ACP/DSP to Sub Inspector, with actionable insights for strategic decision-making and resource optimization. Our solution offers comprehensive data visualization tools, providing easy interpretation of key performance indicators like response times and crime clearance rates. What sets us apart is our ability to aggregate data at various supervisory levels, offering a holistic view of departmental performance. Real-time updates from multiple sources and automated alerts for non-completion of work items ensure officers always have the latest information and prompt notifications for overdue tasks. Our user-friendly interface streamlines duty allocation and roster management, allowing for better resource allocation based on unique demands. Role-based access control guarantees data security and confidentiality, tailoring access permissions to each supervisory level.
+# Install client dependencies
+cd client
+npm install
 
+# Start the dev server
+npm run dev
+```
 
-## Key Features 🛠️
+The app runs at `http://localhost:5173`. Use the demo credentials on the login page:
 
-1. Comprehensive Data Visualization: Utilizes tables, bars, and charts to present key performance indicators.
+| Role | Username | Password |
+|------|----------|----------|
+| ACP/DySP | `anjumala` | `123` |
+| Inspector | `dharmendra` | `123` |
+| Sub-Inspector | `marutig` | `123` |
 
-2. Aggregated Data: Provides a holistic view of performance metrics across units and locations.
+### Build
 
-3. Real-time Updates: Fetches real-time data from multiple sources, ensuring accuracy and timeliness.
+```bash
+cd client
+npm run build    # production build
+npm run preview  # preview the production build
+```
 
-4. User-friendly Interface: Streamlines duty allocation and roster management for efficient resource utilization.
+## Architecture
 
-5. Role-Specific Dashboards: Customized dashboards for ASP, DySP, Inspector, and Sub Inspector, each tailored with specific visualizations and insights relevant to their roles.
+```
+ksp/
+├── client/          React 18 + Vite frontend
+│   └── src/
+│       ├── Components/
+│       │   ├── CaseWorkspace/    Crime Genome case management shell
+│       │   ├── MyDay/            Daily briefing dashboard
+│       │   ├── Supervisor/       Supervising officer flows
+│       │   ├── Person360/        Entity risk profiling
+│       │   └── CommandPalette/   Global search (Cmd+K)
+│       └── utils/                API fetch, PII masking
+├── functions/       Zoho Catalyst serverless functions (Node.js)
+│   ├── case_management/    Case CRUD + Data Store tables
+│   ├── zia_brief/          AI-powered case synthesis
+│   └── shared/             PII masking, audit logging
+├── synthetic_data/  CCTNS synthetic dataset (27 tables)
+└── docs/            Design system, product docs, plans
+```
 
-6. FIR Details: ASPs can now view FIR details on a year-wise basis for comprehensive analysis.
+**Stack**: React 18, Vite 5, react-router-dom, react-leaflet, react-force-graph-2d, ApexCharts, Radix UI, Sass. Backend: Zoho Catalyst serverless functions with Data Store.
 
-## Prototype Demonstration 🎥
+## Features
 
-![WhatsApp Image 2024-05-21 at 22 01 30_b447e131](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/429ccd9d-76e2-49ce-b5e1-ee9ad19ad701)
+### Crime Genome Operating Model
 
-![WhatsApp Image 2024-05-21 at 22 01 31_d2d82d71](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/92c8cac5-a74d-4772-b486-4797968692ed)
+The core investigative workflow — an 8-tab Case Workspace where officers move from raw data to chargesheet:
 
+| Tab | Purpose |
+|-----|---------|
+| **Overview** | 30-second case card — key facts at a glance |
+| **AI Brief** | ZIA-synthesized intelligence brief with solvability scoring |
+| **Theory Board** | Classify and track investigative theories with confidence thresholds |
+| **Evidence** | Evidence locker with AI analysis, gap detection, and status tracking |
+| **Network** | Interactive entity graph + cross-case similarity surfacing |
+| **Timeline** | Case event timeline with chronological evidence mapping |
+| **Notes** | Case notes with linked evidence and audit trail |
+| **Chargesheet** | AI-assisted chargesheet generation with BNS section mapping |
 
-### Generalized Dashboard
+### Analytics Panels
 
-![WhatsApp Image 2024-04-14 at 22 25 03_23f71127](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/8fcbc997-856b-484d-bb3f-071fbd78d55b)
+- **Chargesheet Clock** — case urgency tracker with deadline countdown
+- **Accused-at-Large Ledger** — named suspects with zero arrests
+- **Retraction Rate** — chargesheet quality by station and IO
+- **Arrest Vector Map** — geographic arrest patterns with sink station detection
+- **Co-Accused Network** — force-directed graph of criminal networks
+- **Predictive Hotspots** — ML-powered crime hotspot forecasting
+- **Dark Figure** — unreported crime estimation
+- **Deterrence Dashboard** — public-facing crime statistics
 
-![WhatsApp Image 2024-04-14 at 22 48 44_e97b9cf6](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/af45a313-5298-43f7-9093-e66b3e877024)
+### Role-Based Dashboards
 
-### ASP Dashboard 
+- **ACP/DySP** (`/dashboard`) — full analytics suite, FIR management, officer oversight
+- **Inspector** (`/inspector`) — station-level intelligence, case management
+- **Sub-Inspector** (`/subinspector`) — FIR entry, evidence tracking
+- **Supervisor** (`/supervisor`) — station overview, chargesheet review workflow
 
-![WhatsApp Image 2024-05-21 at 22 01 31_438539d3](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/f787d740-d888-40e1-af4b-23a6540a6d89)
+### Additional Features
 
-### Inspector Dashboard 
+- **My Day** — daily briefing with priority cases, alerts, and pending actions
+- **Person 360** — entity risk profiling with cross-case timeline and risk scores
+- **Command Palette** — global search with FIR shorthand (type "142" to open case #142)
+- **Voice Query** — MediaRecorder-based audio capture for voice-driven queries
+- **PII Masking** — Aadhaar and phone number redaction with reveal toggle
+- **Case Notes** — timestamped notes with evidence linking and audit logging
 
-![WhatsApp Image 2024-05-21 at 22 01 31_a0a54916](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/0182a607-e6d4-4554-8d54-53bb9a252fec)
+## Design System
 
-### Sub-Inspector Dashboard 
+"Apple Premium Utilitarian Minimalism" — warm monochrome palette, Fraunces serif for headings, Inter for data, redacted-document motif for loading states. See [`DESIGN.md`](DESIGN.md) for the full specification.
 
-![WhatsApp Image 2024-05-21 at 22 01 31_1eba775d](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/3143e508-f552-4d8e-aaf1-a8de634d10b7)
+## API Endpoints
 
+Serverless functions under `functions/`:
 
-### FIR Details Page
+| Endpoint | Purpose |
+|----------|---------|
+| `/server/zia_brief/zia_brief` | AI case synthesis (POST) |
+| `/server/case_management/*` | Case CRUD, notes, evidence |
+| `/server/login` | Authentication |
+| `/server/verify` | JWT verification |
+| `/server/chargesheet-clock/*` | Chargesheet deadline tracking |
+| `/server/accused-at-large/*` | Accused-at-large ledger |
+| `/server/retraction_rate/*` | Retraction rate analytics |
+| `/server/arrest_vector/*` | Arrest geography |
+| `/server/network_analysis/*` | Co-accused network graph |
 
-![WhatsApp Image 2024-05-21 at 22 01 30_d376d96e](https://github.com/Tarun-032/KSP-Dashboard-Datathon/assets/113460779/9a45bd0d-c1c5-4463-a9bf-0b90824f52f2)
+## Data
 
+27 CCTNS (Crime & Criminal Tracking Network & System) synthetic tables covering case registration, accused persons, arrests, chargesheets, employees, units, and crime classifications. All data is synthetic — generated for hackathon demonstration purposes.
 
-## View the detailed PowerBI reports [Here](https://drive.google.com/file/d/1h7WT9DnLtkC8vacasPHBdJe9bHvlkCHi/view?usp=drivesdk).
+See `generate_ksp_data.py` for the data generation pipeline and `synthetic_data/` for the raw CSVs.
 
+## Project History
 
-## Under Progress 🔮
+Originally built for the Karnataka State Police Hackathon 2024 as a performance analytics dashboard. Evolved into a crime intelligence platform with the "Crime Genome" operating model — transforming from a collection of dashboards into an integrated investigative workspace.
 
-1. Predictive Analytics: Implement predictive modeling to forecast trends and anticipate potential areas of concern proactively.
+## License
 
-2. Automated Alerts: Notifies supervisory personnel of non-completion of work items for enhanced accountability.
-
-3. Communication Integration: Facilitate seamless communication between different levels of the police department to improve coordination and response times.
-
-4. Predictive Analytics: Implement predictive modeling to forecast trends and anticipate potential areas of concern proactively.
-
-
-## Team Members 🤝
-
-1. Tarun Behra (Leader)
-
-2. Atish Suslade
-
-3. Varad Page
-
-4. Sunny Chavan
+Internal — Karnataka State Police Hackathon submission.

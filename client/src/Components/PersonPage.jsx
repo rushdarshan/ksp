@@ -1,25 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CoAccusedNetworkPanel from './CoAccusedNetworkPanel';
+import RiskScores from './Person360/RiskScores';
+import CrossCaseTimeline from './Person360/CrossCaseTimeline';
+import { maskAadhaar, maskPhone, revealPii } from '../utils/piiMask';
+import apiFetch from '../utils/apiFetch';
 
 export default function PersonPage() {
   const { personId } = useParams();
   const [personData, setPersonData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Determine current active basepath (support role-based layouts)
-  const basePath = useMemo(() => {
-    const hash = window.location.hash;
-    if (hash.startsWith('#/inspector')) return '/inspector';
-    if (hash.startsWith('#/subinspector')) return '/subinspector';
-    return '/dashboard';
-  }, []);
+  const [revealPiiState, setRevealPiiState] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/server/fir_api/person/${encodeURIComponent(personId)}`)
+    apiFetch(`/fir_api/person/${encodeURIComponent(personId)}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to load profile');
         return res.json();
@@ -34,19 +31,24 @@ export default function PersonPage() {
       });
   }, [personId]);
 
-  const getCaseLink = (firNo) => {
-    if (!firNo) return '';
-    // e.g. "KSP-2026-0142"
-    const parts = firNo.split('-');
-    if (parts.length >= 3) {
-      const year = parts[1];
-      const num = parseInt(parts[2]) || parts[2];
-      return `${basePath}/firdetails/${num}/${year}`;
-    }
-    return `${basePath}/firdetails/${firNo}`;
+  const getMaskedAadhaar = (val) => {
+    if (!val) return 'XXXXXX0000';
+    return revealPiiState ? revealPii(val, 'aadhaar') : maskAadhaar(val);
   };
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>⏳ Loading Profile 360...</div>;
+  const getMaskedPhone = (val) => {
+    if (!val) return '98XXXXXX00';
+    return revealPiiState ? revealPii(val, 'phone') : maskPhone(val);
+  };
+
+  const handleReveal = () => {
+    setRevealPiiState(!revealPiiState);
+    if (!revealPiiState) {
+      console.log(`[AUDIT LOG] PII Access - User requested full details for person ${personId} at ${new Date().toISOString()}`);
+    }
+  };
+
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading Profile 360...</div>;
   if (error) return <div style={{ padding: '40px', color: 'var(--pastel-red-text)' }}>Error: {error}</div>;
   if (!personData) return <div style={{ padding: '40px', textAlign: 'center' }}>No record found for this individual.</div>;
 
@@ -55,7 +57,7 @@ export default function PersonPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '20px' }}>
-      
+
       {/* Header Info */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-light)', paddingBottom: '20px' }}>
         <div>
@@ -76,14 +78,9 @@ export default function PersonPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
           <span style={{
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-full)',
-            background: statusBg,
-            color: statusColor,
-            fontWeight: 700,
-            fontSize: '11px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em'
+            padding: '6px 12px', borderRadius: 'var(--radius-full)',
+            background: statusBg, color: statusColor,
+            fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em'
           }}>
             {personData.legalStatus.replace('_', ' ')}
           </span>
@@ -95,19 +92,32 @@ export default function PersonPage() {
 
       {/* Profile Details & Personal Record */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-        
+
         {/* Bio Card */}
         <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 600 }}>Biographic & Contact Information</h3>
-          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Biographic & Contact Information</h3>
+            <button
+              onClick={handleReveal}
+              style={{
+                padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+                background: revealPiiState ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)',
+                color: revealPiiState ? '#ef4444' : '#6366f1',
+                border: 'none', borderRadius: '4px', cursor: 'pointer',
+              }}
+            >
+              {revealPiiState ? '🔒 Mask PII' : '🔓 Reveal PII'}
+            </button>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>PRIMARY PHONE</div>
-              <div style={{ fontSize: '14px', color: 'var(--text)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>{personData.primaryPhone}</div>
+              <div style={{ fontSize: '14px', color: 'var(--text)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>{getMaskedPhone(personData.primaryPhone)}</div>
             </div>
             <div>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>AADHAAR CARD ID</div>
-              <div style={{ fontSize: '14px', color: 'var(--text)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>{personData.aadhaarId}</div>
+              <div style={{ fontSize: '14px', color: 'var(--text)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>{getMaskedAadhaar(personData.aadhaarId)}</div>
             </div>
             <div style={{ gridColumn: 'span 2' }}>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>LAST KNOWN RESIDENCE</div>
@@ -126,18 +136,14 @@ export default function PersonPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {personData.FIRs.map((fir, idx) => (
               <div key={idx} style={{
-                padding: '12px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-light)',
-                background: 'var(--surface-alt)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                padding: '12px 14px', borderRadius: '8px',
+                border: '1px solid var(--border-light)', background: 'var(--surface-alt)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '13px' }}>
-                    <Link to={getCaseLink(fir.firNo)} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                      📁 {fir.firNo}
+                    <Link to={`/dashboard/case/${fir.firNo}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                      {fir.firNo}
                     </Link>
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', textTransform: 'capitalize' }}>
@@ -154,7 +160,12 @@ export default function PersonPage() {
             ))}
           </div>
         </div>
+      </div>
 
+      {/* Timeline + Risk Scores */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px' }}>
+        <CrossCaseTimeline firList={personData.FIRs} />
+        <RiskScores />
       </div>
 
       {/* Network section */}
@@ -165,7 +176,6 @@ export default function PersonPage() {
         </p>
         <CoAccusedNetworkPanel focusPersonName={personData.name} hideHeader={true} />
       </div>
-
     </div>
   );
 }

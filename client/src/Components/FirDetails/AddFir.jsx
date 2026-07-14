@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useFetchData } from "./Firdetails";
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 import toast from "react-hot-toast";
 import styles from "./firdetails.module.css";
 import { formatString, smapleFirValues } from "../../utils/utility";
