@@ -127,6 +127,10 @@ img, video {
   max-width: 100%;
 }
 
+img {
+  outline: 1px solid oklch(0 0 0 / 0.1);
+}
+
 ::selection {
   background: var(--accent);
   color: var(--text-inverse);
@@ -190,7 +194,7 @@ img, video {
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
 .btn:disabled {
@@ -603,13 +607,19 @@ img, video {
 .stagger > *:nth-child(4) { animation-delay: 120ms; }
 .stagger > *:nth-child(5) { animation-delay: 160ms; }
 .stagger > *:nth-child(6) { animation-delay: 200ms; }
+.stagger > *:nth-child(7) { animation-delay: 240ms; }
+.stagger > *:nth-child(8) { animation-delay: 280ms; }
+.stagger > *:nth-child(9) { animation-delay: 320ms; }
+.stagger > *:nth-child(10) { animation-delay: 360ms; }
+.stagger > *:nth-child(11) { animation-delay: 400ms; }
+.stagger > *:nth-child(12) { animation-delay: 440ms; }
 
 /* Interactive feedback */
 .pressable {
   transition: transform 0.1s ease;
 }
 .pressable:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 /* Hover lift */
@@ -722,5 +732,26 @@ img, video {
     .container {
       width: 85%;
     }
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .stagger > * {
+    animation-delay: 0ms !important;
+  }
+
+  .pressable:active {
+    transform: none !important;
+  }
+
+  .page-enter {
+    animation: none !important;
   }
 }
