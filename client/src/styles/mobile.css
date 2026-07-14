@@ -1,4 +1,4 @@
-@media screen and (max-width: 1050px) {
+@media screen and (max-width: 767px) {
   .dashboard .dashboardContainer {
     width: 100% !important;
     height: 100vh !important;
@@ -60,11 +60,14 @@
     min-width: unset !important;
   }
 
-  button, a, select, input {
+  .filter-bar > * {
     min-height: 44px !important;
   }
+}
 
-  .filter-bar > * {
+/* Tablet touch targets (768-1050px) */
+@media screen and (min-width: 768px) and (max-width: 1050px) {
+  button, a, select, input {
     min-height: 44px !important;
   }
 }
