@@ -1,0 +1,371 @@
+[
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.jsx",
+    "line": 214,
+    "snippet": "border-left: 3px solid #b8860b"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.jsx",
+    "line": 218,
+    "snippet": "border-left: 3px solid"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.jsx",
+    "line": 222,
+    "snippet": "border-left: 3px solid"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.jsx",
+    "line": 226,
+    "snippet": "border-left: 3px solid #b8860b"
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.jsx",
+    "line": 209,
+    "snippet": "font-family: Inter"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 109,
+    "snippet": "border-left: 3px solid $amber",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 172,
+    "snippet": "border-left: 3px solid $amber",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 189,
+    "snippet": "border-left: 3px solid",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 315,
+    "snippet": "border-left: 3px solid",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 13,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 249,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 292,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 433,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 157,
+    "snippet": "transition: width",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\EvidenceReview.jsx",
+    "line": 38,
+    "snippet": "borderLeft: `3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\TheoryBoard.scss",
+    "line": 287,
+    "snippet": "border-left: 3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "EvidenceClassification.jsx",
+      "TheoryBoard.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\ChatPanel\\ChatPanel.scss",
+    "line": 20,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "ChatPanel.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\ChatPanel\\ChatPanel.scss",
+    "line": 57,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "ChatPanel.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\ChatPanel\\ChatPanel.scss",
+    "line": 309,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "ChatPanel.jsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Open Sans, Lato, Montserrat, and Arial are used on millions of sites. Choose a distinctive font that gives your interface personality.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\ChatPanel\\ChatPanel.scss",
+    "line": 346,
+    "snippet": "font-family: 'Inter",
+    "importedBy": [
+      "ChatPanel.jsx"
+    ]
+  },
+  {
+    "antipattern": "bounce-easing",
+    "name": "Bounce or elastic easing",
+    "description": "Bounce and elastic easing feel dated and tacky. Real objects decelerate smoothly ΓÇö use exponential easing (ease-out-quart/quint/expo) instead.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\ChatPanel\\ChatPanel.scss",
+    "line": 280,
+    "snippet": "animation: cp-bounce",
+    "importedBy": [
+      "ChatPanel.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 117,
+    "snippet": "borderLeft: '3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 150,
+    "snippet": "borderLeft: `3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 443,
+    "snippet": "borderLeft: '3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 486,
+    "snippet": "borderLeft: '3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 733,
+    "snippet": "borderLeft: `3px solid",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 663,
+    "snippet": "transition: width",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\DetailedFir.jsx",
+    "line": 632,
+    "snippet": "borderLeft: '4px solid"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\DetailedFir.jsx",
+    "line": 641,
+    "snippet": "borderLeft: '4px solid"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\RetractionRatePanel.jsx",
+    "line": 54,
+    "snippet": "transition: height"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\Shell\\Sidebar.jsx",
+    "line": 125,
+    "snippet": "transition: width, min-width",
+    "importedBy": [
+      "Shell.jsx"
+    ]
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\Shell\\sidebar.scss",
+    "line": 10,
+    "snippet": "transition: width, min-width"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\TheoryBoard\\theoryboard.scss",
+    "line": 117,
+    "snippet": "transition: width",
+    "importedBy": [
+      "TheoryBoard.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\VoiceQuery.jsx",
+    "line": 351,
+    "snippet": "borderLeft: '3px solid"
+  },
+  {
+    "antipattern": "bounce-easing",
+    "name": "Bounce or elastic easing",
+    "description": "Bounce and elastic easing feel dated and tacky. Real objects decelerate smoothly ΓÇö use exponential easing (ease-out-quart/quint/expo) instead.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\VoiceQuery.jsx",
+    "line": 236,
+    "snippet": "animation: 'bounce"
+  }
+]

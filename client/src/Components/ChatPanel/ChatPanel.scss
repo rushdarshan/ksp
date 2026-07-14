@@ -29,7 +29,7 @@ $amber: #b8860b;
   }
 
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
   }
 }
 
@@ -61,6 +61,15 @@ $amber: #b8860b;
 @keyframes cp-slide-in {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cp-slide-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(16px) scale(0.97); }
+}
+
+.cp.closing {
+  animation: cp-slide-out 0.25s ease-out forwards;
 }
 
 // ── Header ──
@@ -99,7 +108,7 @@ $amber: #b8860b;
 
 .cp__header-sub {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-gray-400);
   margin-top: 1px;
 }
 
@@ -109,12 +118,13 @@ $amber: #b8860b;
 }
 
 .cp__header-btn {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: var(--color-gray-400);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -128,7 +138,7 @@ $amber: #b8860b;
 
   &--close:hover {
     background: rgba(248, 113, 113, 0.2);
-    color: #f87171;
+    color: var(--color-red-soft);
   }
 }
 
@@ -178,7 +188,7 @@ $amber: #b8860b;
     }
 
     .cp__msg-time {
-      color: #94a3b8;
+      color: var(--color-gray-400);
     }
   }
 
@@ -358,9 +368,9 @@ $amber: #b8860b;
 }
 
 .cp__send {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
   border-radius: 10px;
   border: none;
   background: $navy;
@@ -376,7 +386,7 @@ $amber: #b8860b;
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.94);
+    transform: scale(0.96);
   }
 
   &:disabled {

@@ -1,9 +1,9 @@
 import React from 'react';
 
 const RISK_METRICS = [
-  { label: 'Recidivism Risk', value: 84, level: 'High', color: '#f87171' },
-  { label: 'Flight Risk', value: 62, level: 'Medium', color: '#facc15' },
-  { label: 'Victim Retaliation', value: 28, level: 'Low', color: '#4ade80' },
+  { label: 'Recidivism Risk', value: 84, level: 'High', color: 'var(--color-red-soft)' },
+  { label: 'Flight Risk', value: 62, level: 'Medium', color: 'var(--color-amber-alt)' },
+  { label: 'Victim Retaliation', value: 28, level: 'Low', color: 'var(--color-green-alt)' },
 ];
 
 export default function RiskScores() {

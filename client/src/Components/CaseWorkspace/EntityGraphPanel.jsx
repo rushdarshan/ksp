@@ -6,7 +6,7 @@ const ENTITY_COLORS = {
   person: '#60a5fa',
   phone: '#a78bfa',
   vehicle: '#f59e0b',
-  location: '#4ade80',
+  location: 'var(--color-green-alt)',
 };
 
 const ENTITY_LABELS = {
@@ -79,7 +79,7 @@ export default function EntityGraphPanel({ firId = 'KSP-2026-0142' }) {
             </span>
           ))}
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-secondary)' }}>
-            <span style={{ width: 16, height: 0, borderTop: '2px dashed #f87171' }} />
+            <span style={{ width: 16, height: 0, borderTop: '2px dashed var(--color-red-soft)' }} />
             Cross-case
           </span>
         </div>
@@ -90,7 +90,7 @@ export default function EntityGraphPanel({ firId = 'KSP-2026-0142' }) {
             graphData={graphData}
             nodeCanvasObject={(node, ctx) => {
               const r = NODE_R[node.type] || 6;
-              const color = ENTITY_COLORS[node.type] || '#6b7280';
+              const color = ENTITY_COLORS[node.type] || 'var(--color-gray-500)';
               const isSelected = selected?.id === node.id;
               ctx.beginPath();
               ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
@@ -112,7 +112,7 @@ export default function EntityGraphPanel({ firId = 'KSP-2026-0142' }) {
               ctx.setLineDash(link.crossCase ? [4, 3] : []);
               ctx.moveTo(sx, sy);
               ctx.lineTo(tx, ty);
-              ctx.strokeStyle = link.crossCase ? '#f87171' : '#d2d2d7';
+              ctx.strokeStyle = link.crossCase ? 'var(--color-red-soft)' : '#d2d2d7';
               ctx.lineWidth = link.crossCase ? 1.5 : 1;
               ctx.stroke();
               ctx.setLineDash([]);

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 function getScoreColor(score) {
     if (score >= 70) return '#16a34a';
     if (score >= 40) return '#ca8a04';
-    return '#dc2626';
+    return 'var(--color-red)';
 }
 
 function getScoreLabel(score) {
@@ -61,8 +61,8 @@ export default function SolvabilityBadge({ firData }) {
     if (error) {
         return (
             <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #fca5a5', borderRadius: '8px', background: '#fef2f2' }}>
-                <p style={{ color: '#dc2626', margin: '0 0 8px 0', fontSize: '14px' }}>Analysis unavailable</p>
-                <button onClick={fetchScore} style={{ padding: '4px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
+                <p style={{ color: 'var(--color-red)', margin: '0 0 8px 0', fontSize: '14px' }}>Analysis unavailable</p>
+                <button onClick={fetchScore} style={{ padding: '4px 12px', background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
             </div>
         );
     }
@@ -98,7 +98,7 @@ export default function SolvabilityBadge({ firData }) {
                 </span>
                 <span style={{ fontSize: '13px', color: color, fontWeight: 500 }}>{label}</span>
             </div>
-            <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#6b7280' }}>Heuristic score — not validated against local data</p>
+            <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--color-gray-500)' }}>Heuristic score — not validated against local data</p>
             <details>
                 <summary style={{ cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#374151' }}>Factor breakdown</summary>
                 <ul style={{ margin: '8px 0 0 0', padding: '0 0 0 16px', fontSize: '13px', color: '#4b5563' }}>

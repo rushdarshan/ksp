@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
 const CONFIDENCE_TIERS = [
-    { min: 0.7, label: 'High', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
-    { min: 0.4, label: 'Medium', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+    { min: 0.7, label: 'High', color: 'var(--color-red)', bg: '#fef2f2', border: '#fecaca' },
+    { min: 0.4, label: 'Medium', color: 'var(--color-amber)', bg: '#fffbeb', border: '#fde68a' },
     { min: 0, label: 'Low', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
 ];
 
@@ -58,8 +58,8 @@ export default function PredictivePanel() {
         return (
             <div className="panel" style={{ padding: '1rem' }}>
                 <div style={{ padding: '12px', border: '1px solid #fca5a5', borderRadius: '8px', background: '#fef2f2', marginBottom: '12px' }}>
-                    <p style={{ color: '#dc2626', margin: '0 0 8px 0', fontSize: '14px' }}>{error}</p>
-                    <button onClick={() => fetchData(districtId)} style={{ padding: '4px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
+                    <p style={{ color: 'var(--color-red)', margin: '0 0 8px 0', fontSize: '14px' }}>{error}</p>
+                    <button onClick={() => fetchData(districtId)} style={{ padding: '4px 12px', background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
                 </div>
             </div>
         );
@@ -70,7 +70,7 @@ export default function PredictivePanel() {
     return (
         <div className="panel" style={{ padding: '1rem' }}>
             <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700 }}>Predictive Intelligence</h2>
-            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#6b7280' }}>
+            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--color-gray-500)' }}>
                 AI-driven crime predictions based on 30-day FIR patterns · {data?.method === 'heuristic' ? 'Heuristic model' : 'QuickML Qwen 2.5-14B'}
             </p>
 
@@ -82,7 +82,7 @@ export default function PredictivePanel() {
                         <option key={i + 1} value={i + 1}>District {i + 1}</option>
                     ))}
                 </select>
-                <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>
                     {data?.firCount || 0} FIRs analyzed · {data?.topCrimes?.length || 0} crime types detected
                 </span>
             </div>
@@ -123,7 +123,7 @@ export default function PredictivePanel() {
                                 <div>📍 {p.location || 'Unknown location'}</div>
                                 <div>🕐 {p.time_window || 'Unknown time'}</div>
                             </div>
-                            <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, fontStyle: 'italic' }}>
+                            <p style={{ fontSize: '12px', color: 'var(--color-gray-500)', margin: 0, fontStyle: 'italic' }}>
                                 {p.reasoning || 'No reasoning provided'}
                             </p>
                         </div>

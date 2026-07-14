@@ -145,6 +145,7 @@
   align-items: center;
   gap: var(--space-sm);
   padding: 7px 10px;
+  min-height: 40px;
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 400;
@@ -156,6 +157,7 @@
   .icon {
     font-size: 15px;
     opacity: 0.7;
+    transition: opacity 0.2s var(--easing);
   }
 
   .smallText {
@@ -213,6 +215,7 @@
   list-style: none;
   cursor: pointer;
   padding: 4px 8px;
+  min-height: 40px;
   border-radius: 6px;
   transition: background 0.2s var(--easing);
   display: flex;

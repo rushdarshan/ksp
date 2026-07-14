@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
 
-const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: '#dc2626' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: '#d97706' }, recent: { label: 'RECENT', color: '#22c55e' } }
+const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: 'var(--color-red)' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: 'var(--color-amber)' }, recent: { label: 'RECENT', color: 'var(--color-green)' } }
 
 export default function AccusedAtLargePanel() {
   const [data, setData] = useState(null)
@@ -32,8 +32,8 @@ export default function AccusedAtLargePanel() {
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <StatBox label="Total Tracked" value={data.total} />
-          <StatBox label="Absconding" value={data.abscondingCount} color="#dc2626" />
-          <StatBox label="Bailable Warrant" value={data.bailableWarrantCount} color="#d97706" />
+          <StatBox label="Absconding" value={data.abscondingCount} color="var(--color-red)" />
+          <StatBox label="Bailable Warrant" value={data.bailableWarrantCount} color="var(--color-amber)" />
           <StatBox label="Avg Days at Large" value={`${data.averageDaysAtLarge}d`} />
         </div>
 
@@ -60,7 +60,7 @@ export default function AccusedAtLargePanel() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', minWidth: 100 }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: a.daysAtLarge > 90 ? '#dc2626' : a.daysAtLarge > 30 ? '#d97706' : '#22c55e' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: a.daysAtLarge > 90 ? '#dc2626' : a.daysAtLarge > 30 ? 'var(--color-amber)' : 'var(--color-green)' }}>
                     {a.daysAtLarge}d
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>at large</div>

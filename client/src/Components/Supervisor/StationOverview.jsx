@@ -11,9 +11,9 @@ const MOCK_CASES = [
 ].sort((a, b) => b.csmScore - a.csmScore)
 
 function csmColor(score) {
-  if (score >= 80) return '#f87171'
-  if (score >= 60) return '#facc15'
-  return '#4ade80'
+  if (score >= 80) return 'var(--color-red-soft)'
+  if (score >= 60) return 'var(--color-amber-alt)'
+  return 'var(--color-green-alt)'
 }
 
 const StationOverview = () => {

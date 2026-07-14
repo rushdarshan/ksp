@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ForceGraph2D from 'react-force-graph-2d'
 
-const PERSON_COLORS = { A1: '#dc2626', A2: '#d97706', A3: '#6b7280' }
-const LINK_COLORS = { 'A1-A1': '#dc2626', 'A1-A2': '#d97706', 'A1-A3': '#9ca3af' }
+const PERSON_COLORS = { A1: 'var(--color-red)', A2: '#d97706', A3: '#6b7280' }
+const LINK_COLORS = { 'A1-A1': 'var(--color-red)', 'A1-A2': '#d97706', 'A1-A3': '#9ca3af' }
 const PERSON_LABELS = { A1: 'Primary Accused', A2: 'Co-Accused', A3: 'Mentioned' }
 
 export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToFirNo = null, hideHeader = false }) {
@@ -85,9 +85,9 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
                 <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ACCUSED</div>
                 <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.totalAccused}</div>
               </div>
-              <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: '#dc262608', minWidth: 100 }}>
+              <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: 'var(--color-red)08', minWidth: 100 }}>
                 <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>A1 (PRIMARY)</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{data.summary.A1Count}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-red)', fontFamily: 'var(--font-mono)' }}>{data.summary.A1Count}</div>
               </div>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
                 <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>GANGS</div>
@@ -120,7 +120,7 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
               graphData={filtered}
               nodeCanvasObject={(node, ctx) => {
                 const r = node.personId === 'A1' ? 8 : node.personId === 'A2' ? 5 : 3
-                const color = PERSON_COLORS[node.personId] || '#6b7280'
+                const color = PERSON_COLORS[node.personId] || 'var(--color-gray-500)'
                 ctx.beginPath()
                 ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
                 ctx.fillStyle = selected?.id === node.id ? '#fff' : color

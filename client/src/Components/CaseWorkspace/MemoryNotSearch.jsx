@@ -103,7 +103,7 @@ export default function MemoryNotSearch({ firId = 'KSP-2026-0142' }) {
 
             {sc.crossStation && (
               accessRequested[sc.caseId] ? (
-                <div style={{ fontSize: 11, color: '#4ade80', fontWeight: 600, marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: 'var(--color-green-alt)', fontWeight: 600, marginTop: 4 }}>
                   ✓ Access requested — pending approval
                 </div>
               ) : (
@@ -111,8 +111,8 @@ export default function MemoryNotSearch({ firId = 'KSP-2026-0142' }) {
                   onClick={() => handleRequestAccess(sc.caseId)}
                   style={{
                     marginTop: 4, padding: '4px 10px', fontSize: 11, fontWeight: 600,
-                    background: 'transparent', color: '#f87171',
-                    border: '1px solid #f87171', borderRadius: 6, cursor: 'pointer',
+                    background: 'transparent', color: 'var(--color-red-soft)',
+                    border: '1px solid var(--color-red-soft)', borderRadius: 6, cursor: 'pointer',
                   }}
                 >Request Access</button>
               )

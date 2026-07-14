@@ -1,9 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaPaperPlane, FaRobot, FaUser, FaTimes, FaComments, FaDownload } from 'react-icons/fa';
 import apiFetch from '../../utils/apiFetch';
 import './ChatPanel.scss';
 
 var BOLD_RE = /\*\*(.*?)\*\*/g;
+
+var SLASH_COMMANDS = {
+  '/help': { desc: 'Show available commands', usage: '/help' },
+  '/case': { desc: 'Jump to a case by FIR number', usage: '/case <FIR number> (e.g. /case 142)' },
+  '/person': { desc: 'Jump to a person profile', usage: '/person <name>' },
+  '/officer': { desc: 'Open officer roster', usage: '/officer' },
+  '/hotspots': { desc: 'Open crime hotspot map', usage: '/hotspots' },
+  '/clear': { desc: 'Clear conversation', usage: '/clear' },
+  '/export': { desc: 'Export conversation as text', usage: '/export' },
+};
 
 var SUGGESTED_QUERIES = [
   'Show me unsolved robbery cases in Bengaluru',
@@ -197,8 +208,11 @@ function MessageBubble(props) {
 }
 
 export default function ChatPanel() {
+  var navigate = useNavigate();
   var _o = useState(false);
   var isOpen = _o[0], setIsOpen = _o[1];
+  var _cl = useState(false);
+  var closing = _cl[0], setClosing = _cl[1];
 
   var _m = useState([{
     role: 'bot',
@@ -229,16 +243,79 @@ export default function ChatPanel() {
 
   var sendMessage = useCallback(function (text) {
     if (!text.trim()) return;
-    var userMsg = { role: 'user', text: text.trim(), ts: Date.now() };
+    var trimmed = text.trim();
+    var userMsg = { role: 'user', text: trimmed, ts: Date.now() };
     setMessages(function (prev) { return prev.concat([userMsg]); });
     setInput('');
-    setIsTyping(true);
 
-    getResponse(text).then(function (resp) {
+    // Slash commands
+    if (trimmed.startsWith('/')) {
+      var parts = trimmed.split(/\s+/);
+      var cmd = parts[0].toLowerCase();
+      var arg = parts.slice(1).join(' ');
+
+      var cmdResponse;
+      if (cmd === '/help') {
+        var helpLines = Object.entries(SLASH_COMMANDS).map(function (e) {
+          return '**' + e[0] + '** — ' + e[1].desc + '\n  Usage: `' + e[1].usage + '`';
+        });
+        cmdResponse = { text: '**ZIA Slash Commands**\n\n' + helpLines.join('\n\n'), sources: ['Slash Commands'] };
+      } else if (cmd === '/clear') {
+        setMessages([userMsg]);
+        cmdResponse = { text: 'Conversation cleared.', sources: ['System'] };
+      } else if (cmd === '/export') {
+        var lines = messages.map(function (m) {
+          var role = m.role === 'user' ? 'You' : 'ZIA';
+          var time = new Date(m.ts).toLocaleString('en-IN');
+          return '[' + time + '] ' + role + ':\n' + m.text + '\n';
+        }).join('\n---\n\n');
+        var blob = new Blob([lines], { type: 'text/plain' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'zia-chat-' + new Date().toISOString().slice(0, 10) + '.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+        cmdResponse = { text: 'Conversation exported.', sources: ['System'] };
+      } else if (cmd === '/case') {
+        if (arg) {
+          var caseId = arg.match(/(\d{3,4})/);
+          var firId = caseId ? caseId[1].padStart(4, '0') : arg;
+          navigate('/dashboard/case/KSP-2026-' + firId);
+          cmdResponse = { text: 'Navigating to case **KSP-2026-' + firId + '**...', sources: ['Navigation'] };
+        } else {
+          cmdResponse = { text: 'Usage: `/case <FIR number>`\nExample: `/case 142` opens FIR KSP-2026-0142.', sources: ['Slash Commands'] };
+        }
+      } else if (cmd === '/person') {
+        if (arg) {
+          navigate('/dashboard/person/' + arg.replace(/\s+/g, '_'));
+          cmdResponse = { text: 'Searching for person **' + arg + '**...', sources: ['Navigation'] };
+        } else {
+          cmdResponse = { text: 'Usage: `/person <name>`\nExample: `/person Mohan Kumar` opens their profile.', sources: ['Slash Commands'] };
+        }
+      } else if (cmd === '/officer') {
+        navigate('/dashboard/officers');
+        cmdResponse = { text: 'Opening **Officer Roster**...', sources: ['Navigation'] };
+      } else if (cmd === '/hotspots') {
+        navigate('/dashboard/location');
+        cmdResponse = { text: 'Opening **Crime Hotspot Map**...', sources: ['Navigation'] };
+      } else {
+        cmdResponse = {
+          text: 'Unknown command `' + cmd + '`.\n\nType `/help` to see available commands.',
+          sources: ['Slash Commands'],
+        };
+      }
+
+      setMessages(function (prev) { return prev.concat([{ role: 'bot', text: cmdResponse.text, sources: cmdResponse.sources, ts: Date.now(), demo: false }]); });
+      return;
+    }
+
+    setIsTyping(true);
+    getResponse(trimmed).then(function (resp) {
       setMessages(function (prev) { return prev.concat([{ role: 'bot', text: resp.text, sources: resp.sources, ts: Date.now(), demo: resp.demo }]); });
       setIsTyping(false);
     });
-  }, []);
+  }, [messages, navigate]);
 
   var handleKeyDown = function (e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -271,7 +348,7 @@ export default function ChatPanel() {
       React.createElement(FaComments, { size: 22 }),
       React.createElement('span', { className: 'cp__fab-label' }, 'Ask ZIA')
     ),
-    isOpen && React.createElement('div', { className: 'cp' },
+    (isOpen || closing) && React.createElement('div', { className: 'cp' + (closing ? ' closing' : '') },
       React.createElement('div', { className: 'cp__header' },
         React.createElement('div', { className: 'cp__header-left' },
           React.createElement('div', { className: 'cp__header-icon' }, React.createElement(FaRobot, { size: 18 })),
@@ -282,7 +359,7 @@ export default function ChatPanel() {
         ),
         React.createElement('div', { className: 'cp__header-actions' },
           React.createElement('button', { className: 'cp__header-btn', onClick: exportChat, title: 'Export conversation' }, React.createElement(FaDownload, { size: 14 })),
-          React.createElement('button', { className: 'cp__header-btn cp__header-btn--close', onClick: function () { setIsOpen(false); }, title: 'Close' }, React.createElement(FaTimes, { size: 16 }))
+          React.createElement('button', { className: 'cp__header-btn cp__header-btn--close', onClick: function () { setClosing(true); setTimeout(function () { setIsOpen(false); setClosing(false); }, 250); }, title: 'Close' }, React.createElement(FaTimes, { size: 16 }))
         )
       ),
       React.createElement('div', { className: 'cp__body', ref: scrollRef },

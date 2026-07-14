@@ -1,0 +1,696 @@
+#!/usr/bin/env python3
+"""filetree.py — deterministic operations for FILETREE.md maintenance."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+from filetree_config import (
+    DEFAULT_MANIFEST_PATH,
+    Config,
+    filter_indexable,
+    hash_path_for,
+    load_config,
+)
+
+# Section-grouped markdown format. A `## dir/` heading names a directory; the file
+# lines beneath it carry `- `name`: summary`. Root-level files live under `## (root)/`.
+# A heading states the FULL directory path, so an agent reads a file's location
+# directly off the nearest section — no indentation-depth reconstruction needed.
+#
+# The hash lives in the sidecar FILETREE.hash.json, joined by full path. The trailing
+# ` <!--hash:xxxxxxxx-->` group is OPTIONAL: current manifests carry no inline hash, but
+# a pre-sidecar manifest still does. Matching both lets parse_manifest auto-migrate — it
+# reads the legacy inline hash, and the next write_manifest drops it.
+ENTRY_RE = re.compile(
+    r'^- `(?P<name>[^`]+)`: (?P<summary>.+?)'
+    r'(?: <!--hash:(?P<hash>[a-f0-9]+)-->)?\s*$'
+)
+SECTION_RE = re.compile(r'^## (?P<dir>.+?)/?\s*$')
+
+
+def require_git():
+    """Require a git repository AND chdir to its root; all paths depend on both.
+
+    Claude Code often runs from a subdirectory. Left alone, `git ls-files` would
+    scope to that subdir and emit subdir-relative paths, while the relative
+    manifest_path / .filetree.json would resolve against the subdir too — silently
+    producing a second, range-truncated FILETREE.md instead of the repo-root one.
+    Normalizing to `--show-toplevel` here, the single universal entry guard, makes
+    every downstream git call and relative path resolve from the root regardless of
+    where the agent invoked the command.
+    """
+    try:
+        top = subprocess.run(
+            ['git', 'rev-parse', '--show-toplevel'],
+            check=True, capture_output=True, encoding='utf-8',
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        sys.exit(
+            "Error: This skill requires the project to be a git repository.\n"
+            "       Run `git init && git add . && git commit -m \"initial\"` first."
+        )
+    # Empty only in edge cases (bare repo / inside .git); nothing to chdir into then.
+    if top:
+        os.chdir(top)
+
+
+def list_current_files(config: Config = None) -> list[str]:
+    """Tracked + untracked-unignored files, deduped, sorted, config-filtered."""
+    # `config` is optional only so unit tests can call this helper bare; production goes
+    # through cmd_todo / cmd_apply, the single load_config() entry points, which always
+    # pass config down. A bare call deliberately defaults to empty Config() (no disk read).
+    config = config or Config()
+    # -z: NUL-delimited records, no quoting ambiguity for paths with spaces/newlines/non-ASCII.
+    # core.quotePath=false: redundant under -z but kept as belt-and-braces and to match peer calls.
+    # encoding='utf-8': pin decoding so a C/POSIX locale doesn't crash on multi-byte paths.
+    tracked = subprocess.check_output(
+        ['git', '-c', 'core.quotePath=false', 'ls-files', '-z'],
+        encoding='utf-8',
+    ).split('\0')
+    # Submodule gitlinks (mode 160000) appear in `ls-files` but `git hash-object`
+    # cannot hash them — exits 128 and crashes the whole pipeline. Filter them out.
+    stage = subprocess.check_output(
+        ['git', '-c', 'core.quotePath=false', 'ls-files', '--stage', '-z'],
+        encoding='utf-8',
+    ).split('\0')
+    gitlinks = {
+        rec.split('\t', 1)[1]
+        for rec in stage
+        if rec.startswith('160000 ') and '\t' in rec
+    }
+    untracked = subprocess.check_output(
+        ['git', '-c', 'core.quotePath=false', 'ls-files', '--others', '--exclude-standard', '-z'],
+        encoding='utf-8',
+    ).split('\0')
+    # Tracked files deleted from the worktree but not yet staged still appear in
+    # `ls-files`, yet `git hash-object` can't open them — exits 128 and crashes the
+    # whole batch. Drop them: the file is gone from disk, so it correctly flows into
+    # the manifest's `removed` bucket instead of needing the user to `git rm` first.
+    deleted = set(subprocess.check_output(
+        ['git', '-c', 'core.quotePath=false', 'ls-files', '--deleted', '-z'],
+        encoding='utf-8',
+    ).split('\0'))
+    all_files = (set(tracked) | set(untracked)) - deleted
+    candidates = sorted(f for f in all_files if f and f not in gitlinks)
+    # filter_indexable preserves order, so the sorted input stays sorted.
+    return filter_indexable(candidates, config)
+
+
+def _read_symlink_bytes(path: str) -> bytes:
+    """Raw on-disk link target as bytes — what git hashes a symlink blob from.
+
+    Bytes, not str: os.readlink decodes with surrogateescape, and a non-UTF-8
+    target would then crash on re-encode (hashing) or json.dumps (todo output).
+    """
+    return os.readlink(os.fsencode(path))
+
+
+def hash_files(paths: list[str]) -> dict[str, str]:
+    """Batch `git hash-object`; returns {path: 8-char hash}.
+
+    Regular files go through --stdin-paths to sidestep ARG_MAX on large repos.
+    Symlinks are hashed separately from their link-target STRING: --stdin-paths
+    *follows* a link (hashing the target's CONTENT, not the link) and exits 128
+    on a broken link, which would crash the whole batch. Git stores a symlink as
+    a blob of its target path, so hashing that string is both git-consistent
+    (matches `ls-files --stage`) and crash-proof on broken links.
+    """
+    if not paths:
+        return {}
+    link_set = {p for p in paths if Path(p).is_symlink()}
+    regular = [p for p in paths if p not in link_set]
+    result: dict[str, str] = {}
+    if regular:
+        proc = subprocess.run(
+            ['git', 'hash-object', '--stdin-paths'],
+            input='\n'.join(regular),
+            capture_output=True, encoding='utf-8', check=True,
+        )
+        out = proc.stdout.strip().splitlines()
+        if len(out) != len(regular):
+            raise RuntimeError(
+                f'git hash-object: expected {len(regular)} hashes, got {len(out)}'
+            )
+        result.update({p: h[:8] for p, h in zip(regular, out)})
+    for p in link_set:
+        # Hash the raw link-target BYTES as a blob (no trailing newline), exactly how
+        # git stores the symlink, so the hash matches ls-files --stage. Bytes (not str
+        # + encoding='utf-8') so a non-UTF-8 target can't raise UnicodeEncodeError.
+        proc = subprocess.run(
+            ['git', 'hash-object', '--stdin'],
+            input=_read_symlink_bytes(p),
+            capture_output=True, check=True,
+        )
+        result[p] = proc.stdout.decode('ascii').strip()[:8]
+    return result
+
+
+def detect_renames() -> list[tuple[str, str]]:
+    """Parse staged rename pairs from `git status -z`. Trust git's default 50% similarity.
+
+    Limitation: a worktree-only `mv old new` (no `git add`) appears as delete + untracked.
+    Git cannot detect those as renames without staging, so neither can we.
+    """
+    out = subprocess.check_output(
+        ['git', '-c', 'core.quotePath=false', 'status', '--porcelain=v1', '-z'],
+        encoding='utf-8',
+    )
+    # porcelain v1 with -z: 'XY NEW\0OLD\0' for renames; 'XY PATH\0' otherwise.
+    fields = out.split('\0')
+    renames = []
+    i = 0
+    while i < len(fields):
+        entry = fields[i]
+        if len(entry) < 4:
+            i += 1
+            continue
+        xy = entry[:2]
+        new_path = entry[3:]
+        if xy[0] in ('R', 'C') and i + 1 < len(fields):
+            renames.append((fields[i + 1], new_path))
+            i += 2
+            continue
+        i += 1
+    return renames
+
+
+def compute_renames(manifest_by_path: dict, config: Config = None) -> list[dict]:
+    """Rename pairs git detected, kept to manifest-known sources and indexable targets.
+
+    Deterministic from repo state, so both `cmd_todo` and `cmd_apply` derive renames
+    here rather than trusting an LLM-relayed payload — the agent never hand-carries them.
+    The target is run through the same config filter so a rename INTO an excluded path
+    correctly degrades to a removal.
+    """
+    config = config or Config()
+    # No early-return for empty pairs: filter_indexable([]) short-circuits (match_gitignore
+    # returns on empty paths) and the comprehension over empty pairs yields [] anyway.
+    pairs = detect_renames()
+    indexable_new = set(filter_indexable([n for _o, n in pairs], config))
+    return [
+        {'old_path': o, 'new_path': n}
+        for o, n in pairs
+        if o in manifest_by_path and n in indexable_new
+    ]
+
+
+def _unquote_git_path(s: str) -> str:
+    """Decode git's legacy C-style quoted-octal path. Idempotent on raw paths.
+
+    Migration hook: manifests produced before `core.quotePath=false` stored non-ASCII
+    paths as e.g. `"templates/\\345\\205\\211.txt"`. We decode them transparently so
+    upgrades don't see phantom remove+add churn.
+    """
+    if len(s) < 2 or s[0] != '"' or s[-1] != '"':
+        return s
+    inner = s[1:-1]
+    raw = bytearray()
+    i = 0
+    while i < len(inner):
+        c = inner[i]
+        if c == '\\' and i + 1 < len(inner):
+            nxt = inner[i + 1]
+            if nxt in '01234567' and i + 4 <= len(inner):
+                raw.append(int(inner[i + 1:i + 4], 8))
+                i += 4
+                continue
+            simple = {'n': 0x0A, 't': 0x09, 'r': 0x0D, '\\': 0x5C, '"': 0x22}
+            raw.append(simple.get(nxt, ord(nxt)))
+            i += 2
+        else:
+            raw.append(ord(c))
+            i += 1
+    return raw.decode('utf-8', errors='replace')
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Write text via tmp + replace, so a crash mid-write can't truncate the target.
+
+    Also creates the parent dir — a relocated manifest (e.g. docs/FILETREE.md) and its
+    sidecar both need it. Shared by write_manifest and write_hashes.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + '.tmp')
+    tmp.write_text(text, encoding='utf-8')
+    tmp.replace(path)
+
+
+def read_hashes(manifest_path: str = DEFAULT_MANIFEST_PATH) -> dict[str, str]:
+    """Load the {path: hash} sidecar for a manifest. Absent or corrupt -> empty.
+
+    A corrupt/unreadable sidecar degrades to "no stored hashes", which makes every
+    common file read as changed and re-enter the LLM work plan. That is wasteful but
+    safe (the UNCHANGED bias refreshes the hash and keeps the summary) — far better
+    than crashing the whole run on a malformed JSON byte.
+    """
+    sidecar = Path(hash_path_for(manifest_path))
+    if not sidecar.exists():
+        return {}
+    try:
+        data = json.loads(sidecar.read_text(encoding='utf-8'))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    # Defend against a hand-edited sidecar that isn't a flat str->str map.
+    if not isinstance(data, dict):
+        return {}
+    # JSON object keys are always strings, so only the values need guarding against a
+    # hand-edited sidecar (e.g. a nested object or number in place of a hash).
+    return {k: v for k, v in data.items() if isinstance(v, str)}
+
+
+def write_hashes(entries: list[dict], manifest_path: str = DEFAULT_MANIFEST_PATH) -> None:
+    """Persist {path: hash} to the sidecar, atomically (tmp + replace)."""
+    sidecar = Path(hash_path_for(manifest_path))
+    payload = {e['path']: e['hash'] for e in entries}
+    # sort_keys + trailing newline: stable, line-oriented diffs in git.
+    text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + '\n'
+    _atomic_write_text(sidecar, text)
+
+
+def parse_manifest(manifest_path: str = DEFAULT_MANIFEST_PATH) -> list[dict]:
+    """Read the section-grouped manifest into [{path, summary, hash}].
+
+    Each `## dir/` heading sets the current directory; the file lines under it join
+    that directory with their own name to form the full path. Root files sit under
+    `## (root)/` (empty directory). A legacy entry whose name already holds a `/` is
+    treated as a full path verbatim.
+
+    The hash comes from the sidecar (read_hashes), joined by path. A legacy inline
+    `<!--hash:-->` is used only as a fallback when the sidecar lacks that path — this
+    is the auto-migration seam: old manifests parse correctly, and the next write
+    splits the hash out. Missing on both sides -> '' (the file re-enters the work plan).
+    """
+    mpath = Path(manifest_path)
+    if not mpath.exists():
+        return []
+    sidecar_hashes = read_hashes(manifest_path)
+    entries = []
+    section = ''  # current directory; '' = repo root
+    for line in mpath.read_text(encoding='utf-8').splitlines():
+        m = SECTION_RE.match(line)
+        if m:
+            section = m.group('dir').strip().rstrip('/')
+            if section == '(root)':
+                section = ''
+            continue
+        m = ENTRY_RE.match(line)
+        if m:
+            name = _unquote_git_path(m.group('name'))
+            # A name with '/' is a legacy entry that already holds its full path;
+            # otherwise join the section directory (if any) onto the bare name.
+            if section and '/' not in name:
+                full_path = f'{section}/{name}'
+            else:
+                full_path = name
+            entries.append({
+                'path': full_path,
+                'summary': m.group('summary').strip(),
+                'hash': sidecar_hashes.get(full_path, m.group('hash') or ''),
+            })
+    return entries
+
+
+def write_manifest(entries: list[dict], manifest_path: str = DEFAULT_MANIFEST_PATH) -> None:
+    """Group entries by directory, sort stably, write `## dir/` sections."""
+    # Split each path once into (directory, filename); both halves are reused below.
+    by_dir: dict[str, list[tuple[str, dict]]] = {}
+    for e in entries:
+        d, _, filename = e['path'].rpartition('/')  # 'a/b.py' -> ('a','b.py'); 'r.py' -> ('','r.py')
+        by_dir.setdefault(d, []).append((filename, e))
+
+    sidecar_name = hash_path_for(manifest_path)
+    lines = [
+        '# Project Filetree',
+        '',
+        f'_Auto-maintained by `/filetree:update`. Content hashes live in the sidecar '
+        f'`{sidecar_name}`; do not edit it by hand._',
+        '',
+    ]
+
+    # '' (root) sorts before any named directory, so root files head the manifest.
+    for d in sorted(by_dir):
+        heading = f'{d}/' if d else '(root)/'
+        lines.append(f'## {heading}')
+        lines.append('')
+        for filename, e in sorted(by_dir[d], key=lambda x: x[1]['path']):
+            lines.append(f"- `{filename}`: {e['summary']}")
+        lines.append('')
+
+    _atomic_write_text(Path(manifest_path), '\n'.join(lines))
+
+
+DEFAULT_BATCH_SIZE = 25
+
+
+def cmd_todo(batch_size: int = 0, split_dir: str = None, config: Config = None) -> dict:
+    """Diff current files vs manifest; emit the LLM todo list.
+
+    With `split_dir` set, the LLM work (added + changed) is chunked into
+    `<split_dir>/batch_<NN>.json` files of `batch_size` items each, and the result
+    carries `split_dir` + `batches` as `[{file, count}]`. The caller drops the full
+    added/changed lists from stdout (they live in the files now), so a large repo
+    can't blow past a read limit and force re-parsing. Without `split_dir` the result
+    is the plain diff — the agent never improvises chunking or temp files.
+    """
+    require_git()
+    config = config or load_config()
+    current_paths = set(list_current_files(config))
+    manifest = parse_manifest(config.manifest_path)
+    manifest_by_path = {e['path']: e for e in manifest}
+
+    renames = compute_renames(manifest_by_path, config)
+    renamed_olds = {r['old_path'] for r in renames}
+    renamed_news = {r['new_path'] for r in renames}
+
+    added_paths = sorted(current_paths - set(manifest_by_path) - renamed_news)
+    removed = sorted(set(manifest_by_path) - current_paths - renamed_olds)
+    common = sorted(current_paths & set(manifest_by_path))
+
+    to_hash = common + added_paths
+    hashes = hash_files(to_hash)
+
+    changed = []
+    for p in common:
+        if hashes[p] != manifest_by_path[p]['hash']:
+            changed.append({
+                'path': p,
+                'old_summary': manifest_by_path[p]['summary'],
+                'old_hash': manifest_by_path[p]['hash'],
+                'new_hash': hashes[p],
+            })
+
+    added = [{'path': p, 'hash': hashes[p]} for p in added_paths]
+
+    # Annotate symlinks so the LLM writes "symlink → target" without Read-ing them
+    # (a Read follows the link to the target's content — wasteful, and fails on a
+    # broken link). Deterministic, so the script supplies the target directly.
+    for item in added + changed:
+        if Path(item['path']).is_symlink():
+            # Decode for JSON display; 'replace' keeps a non-UTF-8 target from
+            # crashing json.dumps (the hash still comes from the raw bytes).
+            item['symlink_target'] = _read_symlink_bytes(item['path']).decode('utf-8', 'replace')
+
+    result = {
+        'added': added,
+        'changed': changed,
+        'removed': removed,
+        'renamed': renames,
+        # Whether the manifest file exists on disk. Lets /filetree:update tell
+        # "no manifest yet → run /filetree:init" apart from a present-but-empty
+        # manifest (both have total_in_manifest == 0), without guessing.
+        'manifest_exists': Path(config.manifest_path).exists(),
+        'stats': {
+            'total_in_repo': len(current_paths),
+            'total_in_manifest': len(manifest_by_path),
+            'need_llm': len(added) + len(changed),
+        },
+        # Surfaced so the command reads manifest_path / language from here (DRY):
+        # the script is the single config parser, the command never re-reads it.
+        'config': {
+            'manifest_path': config.manifest_path,
+            'language': config.language,
+        },
+    }
+
+    if split_dir is not None:
+        size = batch_size or DEFAULT_BATCH_SIZE
+        items = added + changed
+        out_dir = Path(split_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        batch_refs = []
+        for i in range(0, len(items), size):
+            chunk = items[i:i + size]
+            f = out_dir / f'batch_{i // size:02d}.json'
+            f.write_text(json.dumps(chunk, ensure_ascii=False, indent=2), encoding='utf-8')
+            batch_refs.append({'file': str(f), 'count': len(chunk)})
+        result['split_dir'] = str(out_dir)
+        result['batches'] = batch_refs
+    return result
+
+
+def merge_payloads(payloads: list[dict]) -> dict:
+    """Merge `updates` across part files; dedup per path, last writer wins.
+
+    Each parallel sub-agent writes its own part file with only `{path, summary}`
+    entries — removals/renames are not a part-file concern (apply recomputes them
+    from repo state). Dedup matters because a retry part or overlapping batches can
+    re-list a path (the apply glob re-matches old + new parts); two entries for one
+    path would inflate received/applied and raise a false `skipped_unchanged_new`.
+    """
+    updates_by_path = {}  # path -> entry, preserving last occurrence
+    for p in payloads:
+        for u in p.get('updates', []):
+            updates_by_path[u['path']] = u
+    return {'updates': list(updates_by_path.values())}
+
+
+def cmd_apply(updates_json: str, config: Config = None) -> dict:
+    """Apply LLM summaries to the manifest. UNCHANGED refreshes hash only.
+
+    The payload carries only `{updates: [{path, summary}]}`:
+    - Hashes are computed from disk, never taken from the payload (the old manual
+      hash-join was the dominant source of dropped files).
+    - Removals and renames are recomputed from repo state here, not relayed by the
+      agent — they're deterministic, so carrying them through the LLM was pure churn.
+    """
+    require_git()
+    config = config or load_config()
+    updates = json.loads(updates_json).get('updates', [])
+    current_paths = set(list_current_files(config))
+    manifest = parse_manifest(config.manifest_path)
+    by_path = {e['path']: e for e in manifest}
+
+    # Recompute the deterministic edits from repo state.
+    renames = compute_renames(by_path, config)
+    renamed_olds = {r['old_path'] for r in renames}
+    removed = sorted(set(by_path) - current_paths - renamed_olds)
+    # Old paths retired in this call. A stale `updates` entry for one of these is
+    # expected (LLM re-listed a renamed/removed file) — not a missing-path anomaly.
+    retired_paths = renamed_olds | set(removed)
+
+    # Single batched hash pass over every path we will touch that still exists on disk.
+    to_hash = {u['path'] for u in updates}
+    to_hash.update(r['new_path'] for r in renames)
+    disk_hashes = hash_files(sorted(p for p in to_hash if p in current_paths))
+
+    # Rehash the new path: renames often carry small content edits.
+    for r in renames:
+        old, new = r['old_path'], r['new_path']
+        if old in by_path and new in current_paths:
+            entry = by_path.pop(old)
+            entry['path'] = new
+            entry['hash'] = disk_hashes.get(new, entry['hash'])
+            by_path[new] = entry
+
+    for p in removed:
+        by_path.pop(p, None)
+
+    received = len(updates)
+    # Three-way breakdown so the caller reports straight from script output instead of
+    # re-tallying its own part files (LLM arithmetic = the churn we converge away):
+    #   added            — first summary for a path absent from the prior manifest
+    #   summaries_updated — replaced summary for a path that already had an entry
+    #   hashes_refreshed  — UNCHANGED: kept old summary, refreshed hash only
+    added = 0
+    summaries_updated = 0
+    hashes_refreshed = 0
+    skipped_missing_path = []      # path absent from disk and not retired here (hallucinated)
+    skipped_excluded = []          # real file on disk, dropped by config.exclude / built-in skip
+    skipped_unchanged_new = []     # UNCHANGED sentinel for a tracked file with no prior entry
+
+    for u in updates:
+        p = u['path']
+        s = u['summary']
+        # Path not in the indexable set. Three cases, distinguished so the caller gets an
+        # accurate diagnostic instead of crying "hallucination" at a real file:
+        #   retired here (renamed/removed) → benign stale entry, drop quietly
+        #   still on disk → real file dropped by config.exclude / built-in skip, not a bug
+        #   absent from disk → genuinely hallucinated; surface it
+        if p not in current_paths:
+            if p in retired_paths:
+                pass
+            elif Path(p).exists():
+                skipped_excluded.append(p)
+            else:
+                skipped_missing_path.append(p)
+            continue
+        h = disk_hashes[p]
+        if s == 'UNCHANGED':
+            # UNCHANGED contract: refresh hash, keep old summary — linchpin of the cacheless design.
+            if p in by_path:
+                by_path[p]['hash'] = h
+                hashes_refreshed += 1
+            else:
+                # Tracked file with no prior entry: UNCHANGED has nothing to refresh (init mode,
+                # or a brand-new file the LLM wrongly marked UNCHANGED). Surface it instead of
+                # dropping silently — otherwise received != applied with no clue why.
+                skipped_unchanged_new.append(p)
+        else:
+            # Real summary lands the same way either way; the branch only picks the counter.
+            if p in by_path:
+                summaries_updated += 1
+            else:
+                added += 1
+            by_path[p] = {'path': p, 'hash': h, 'summary': s}
+
+    # The manifest carries human/agent-facing prose; the sidecar carries the hashes.
+    # Both are written from the same in-memory entries, in the same call, so they can
+    # never drift. write_hashes second: a crash between them leaves a stale sidecar,
+    # which only over-reports `changed` next run (safe) — never drops a summary.
+    final_entries = list(by_path.values())
+    write_manifest(final_entries, config.manifest_path)
+    write_hashes(final_entries, config.manifest_path)
+
+    # Coverage gap: any indexable file still missing from the manifest after apply.
+    # A dropped sub-agent output or a forgotten summary lands here, so the caller can
+    # fill it instead of hand-diffing todo against the payload. Empty on a healthy run.
+    missing_from_manifest = sorted(current_paths - set(by_path))
+
+    # `applied` stays the sum (received-minus-skipped) for callers that just check
+    # payload-vs-persisted; the three-way split feeds the update/init report directly.
+    applied = added + summaries_updated + hashes_refreshed
+    result = {
+        'total_entries': len(by_path), 'received': received, 'applied': applied,
+        'added': added, 'summaries_updated': summaries_updated,
+        'hashes_refreshed': hashes_refreshed,
+        'removed': len(removed), 'renamed': len(renames),
+    }
+    if skipped_unchanged_new:
+        result['skipped_unchanged_new'] = skipped_unchanged_new
+    if skipped_excluded:
+        result['skipped_excluded'] = skipped_excluded
+    if skipped_missing_path:
+        result['skipped_missing_path'] = skipped_missing_path
+    if missing_from_manifest:
+        result['missing_from_manifest'] = missing_from_manifest
+    return result
+
+
+WIRE_FILES = ('CLAUDE.md', 'AGENTS.md')
+
+
+def cmd_wire_target() -> dict:
+    """Resolve where to wire the manifest reference for CLAUDE.md / AGENTS.md.
+
+    These are commonly symlinks (e.g. → .ai/rules.md); editing the link path fails
+    with 'refusing to write through symlink'. The script resolves the real target and
+    surfaces any existing manifest mention, so the agent edits the right file once
+    instead of reading, hitting the symlink wall, then probing with readlink itself.
+
+    `manifest_path` + `manifest_exists` are surfaced too so the agent wires the configured
+    path (not a hardcoded FILETREE.md) and knows whether the manifest already exists without
+    a separate stat. Per file, `wired` is the deterministic already-wired signal; `matches`
+    lists every line mentioning the configured manifest path (for the edit preview).
+    """
+    require_git()
+    config = load_config()
+    # Match the FULL configured path, not just the basename: a bare-basename regex yields
+    # false "already wired" hits when manifest_path has a common name (e.g. docs/index.md
+    # would match an unrelated `index.md` mention). 'FILETREE.md' (default) is unchanged.
+    ref_re = re.compile(re.escape(config.manifest_path), re.IGNORECASE)
+    # `wired` is the deterministic idempotency check: the wire writes a `## <manifest>`
+    # section, so a markdown heading referencing the manifest means already-wired. Done
+    # in code (not left to the agent scanning `matches`) so re-running /filetree:init is
+    # reliably idempotent — a bare path / link / prose / "do not edit" mention is not a
+    # heading and so never counts. Heading level is lenient (#..######) in case the body
+    # gets reworded; the manifest reference is what's load-bearing.
+    heading_re = re.compile(r'^\s{0,3}#{1,6}\s')
+    out = {
+        'manifest_path': config.manifest_path,
+        'manifest_exists': Path(config.manifest_path).exists(),
+    }
+    for name in WIRE_FILES:
+        p = Path(name)
+        if not p.exists():  # follows the link; a dangling symlink counts as absent here
+            out[name] = {'exists': False}
+            continue
+        # read_text follows the symlink to the real content.
+        text = p.read_text(encoding='utf-8', errors='replace')
+        lines = text.splitlines()
+        out[name] = {
+            'exists': True,
+            'is_symlink': p.is_symlink(),
+            # Absolute real path — the agent must Edit THIS, never the link name.
+            'real_path': os.path.realpath(name),
+            # True iff a heading line references the manifest (the wire section). This is
+            # the skip/wire signal; `matches` below is kept only for the agent's diff preview.
+            'wired': any(heading_re.match(ln) and ref_re.search(ln) for ln in lines),
+            # All lines mentioning the manifest, for the agent's old → new edit preview.
+            'matches': [ln for ln in lines if ref_re.search(ln)],
+        }
+    return out
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('command', choices=['todo', 'lint', 'apply', 'wire-target'])
+    parser.add_argument(
+        'inputs', nargs='*',
+        help='apply: one or more decision JSON files (shell glob ok); omit or pass `-` to read stdin',
+    )
+    parser.add_argument(
+        '--batch-size', type=int, default=0, metavar='N',
+        help='todo: items per --split batch (default 25); requires --split',
+    )
+    parser.add_argument(
+        '--split', action='store_true',
+        help='todo: write each batch to a temp dir as batch_NN.json; stdout returns '
+             'only a summary + batch file refs (no full file list to truncate / re-parse)',
+    )
+    args = parser.parse_args()
+
+    if args.command == 'wire-target':
+        if args.inputs:
+            parser.error('wire-target takes no file arguments')
+        print(json.dumps(cmd_wire_target(), ensure_ascii=False, indent=2))
+        return
+
+    if args.command in ('todo', 'lint'):
+        # `inputs` is only meaningful for apply; reject stray args instead of ignoring them.
+        if args.inputs:
+            parser.error(f'{args.command} takes no file arguments')
+        # --batch-size / --split are todo-only; lint is pure drift detection.
+        if args.command == 'lint' and (args.batch_size or args.split):
+            parser.error('lint takes no --batch-size / --split')
+        # --batch-size only sizes split batches; alone it would be a silent no-op.
+        if args.batch_size and not args.split:
+            parser.error('--batch-size requires --split')
+        split_dir = tempfile.mkdtemp(prefix='filetree_') if args.split else None
+        result = cmd_todo(batch_size=args.batch_size, split_dir=split_dir)
+        if split_dir:
+            # Full lists now live in the batch files; keep stdout small so the agent
+            # never truncates and re-parses (the exact churn this flag removes).
+            result.pop('added', None)
+            result.pop('changed', None)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        if args.command == 'lint':
+            # CI-friendly: exit 1 on drift.
+            drift = (
+                len(result['added']) + len(result['changed'])
+                + len(result['removed']) + len(result['renamed'])
+            )
+            sys.exit(0 if drift == 0 else 1)
+    elif args.command == 'apply':
+        # `-` is the conventional stdin sentinel; treat it the same as no args so a
+        # piped payload works whether the caller omits inputs or writes `apply -`.
+        if args.inputs and args.inputs != ['-']:
+            # Parallel sub-agents each drop a part file; merge them in-script so the
+            # main agent never hand-joins. Shell expands the glob into argv.
+            payloads = [json.loads(Path(f).read_text(encoding='utf-8')) for f in args.inputs]
+            updates_json = json.dumps(merge_payloads(payloads))
+        else:
+            updates_json = sys.stdin.read()
+        result = cmd_apply(updates_json)
+        print(json.dumps(result, ensure_ascii=False))
+
+
+if __name__ == '__main__':  # pragma: no cover - CLI entry; tests call main() directly.
+    main()

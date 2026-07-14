@@ -150,13 +150,13 @@
 
 .daily-brief-tag--red {
   background: rgba(248, 113, 113, 0.15);
-  color: #f87171;
+  color: var(--color-red-soft);
   border: 1px solid rgba(248, 113, 113, 0.25);
 }
 
 .daily-brief-tag--amber {
   background: rgba(250, 204, 21, 0.15);
-  color: #facc15;
+  color: var(--color-amber-alt);
   border: 1px solid rgba(250, 204, 21, 0.25);
 }
 

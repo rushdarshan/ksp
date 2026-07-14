@@ -18,7 +18,7 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
 
   if (!score) return null;
 
-  const color = score.overallScore >= 70 ? '#4ade80' : score.overallScore >= 40 ? '#facc15' : '#f87171';
+  const color = score.overallScore >= 70 ? 'var(--color-green-alt)' : score.overallScore >= 40 ? '#facc15' : 'var(--color-red-soft)';
   const factors = score.factors || score.weightedFactors || [];
 
   return (
@@ -68,7 +68,7 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
           {factors.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {factors.map((f, i) => {
-                const fColor = f.score >= 70 ? '#4ade80' : f.score >= 40 ? '#facc15' : '#f87171';
+                const fColor = f.score >= 70 ? 'var(--color-green-alt)' : f.score >= 40 ? '#facc15' : 'var(--color-red-soft)';
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ flex: 1, fontSize: '12px', color: 'var(--text-secondary)' }}>{f.name || f.label}</div>

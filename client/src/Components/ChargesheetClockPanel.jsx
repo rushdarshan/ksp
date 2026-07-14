@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
 
-const STATUS_COLORS = { overdue: '#dc2626', at_risk: '#d97706', safe: '#22c55e' }
+const STATUS_COLORS = { overdue: 'var(--color-red)', at_risk: '#d97706', safe: '#22c55e' }
 const STATUS_LABELS = { overdue: 'OVERDUE', at_risk: 'AT RISK', safe: 'ON TRACK' }
 
 export default function ChargesheetClockPanel() {
@@ -35,10 +35,10 @@ export default function ChargesheetClockPanel() {
         </p>
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          <StatBox label="Overdue" value={data.overdueCount} color="#dc2626" />
-          <StatBox label="At Risk" value={data.atRiskCount} color="#d97706" />
-          <StatBox label="On Track" value={data.safeCount} color="#22c55e" />
-          <StatBox label="Avg Overdue" value={`${data.averageOverdueDays}d`} color="#dc2626" />
+          <StatBox label="Overdue" value={data.overdueCount} color="var(--color-red)" />
+          <StatBox label="At Risk" value={data.atRiskCount} color="var(--color-amber)" />
+          <StatBox label="On Track" value={data.safeCount} color="var(--color-green)" />
+          <StatBox label="Avg Overdue" value={`${data.averageOverdueDays}d`} color="var(--color-red)" />
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>

@@ -79,7 +79,7 @@
 
   &__feedback-display {
     padding: 10px 12px;
-    background: #f8717110;
+    background: var(--color-red-soft)10;
     border: 1px solid #f8717130;
     border-radius: var(--radius-sm);
     margin-bottom: 12px;
@@ -139,30 +139,30 @@
     &--approve {
       background: #4ade8018;
       color: #16a34a;
-      border-color: #4ade8040;
+      border-color: var(--color-green-alt)40;
 
       &:hover {
-        background: #4ade8030;
+        background: var(--color-green-alt)30;
       }
     }
 
     &--return-init {
       background: #f8717110;
-      color: #f87171;
+      color: var(--color-red-soft);
       border-color: #f8717130;
 
       &:hover {
-        background: #f8717120;
+        background: var(--color-red-soft)20;
       }
     }
 
     &--return {
       background: #f87171;
       color: #fff;
-      border-color: #f87171;
+      border-color: var(--color-red-soft);
 
       &:hover {
-        background: #dc2626;
+        background: var(--color-red);
       }
     }
 

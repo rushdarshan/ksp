@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import './TheoryBoard.scss';
 
 const CLASS_COLORS = {
-  Supports: { bg: '#4ade8010', border: '#4ade80', text: '#4ade80', label: '✅ Supports' },
-  Contradicts: { bg: '#f8717110', border: '#f87171', text: '#f87171', label: '❌ Contradicts' },
+  Supports: { bg: 'var(--color-green-alt)10', border: '#4ade80', text: '#4ade80', label: '✅ Supports' },
+  Contradicts: { bg: 'var(--color-red-soft)10', border: '#f87171', text: '#f87171', label: '❌ Contradicts' },
   Neutral: { bg: '#9ca3af10', border: '#9ca3af', text: '#9ca3af', label: '➖ Neutral' },
-  Insufficient: { bg: '#6b728010', border: '#6b7280', text: '#6b7280', label: '⚠️ Insufficient' },
+  Insufficient: { bg: 'var(--color-gray-500)10', border: '#6b7280', text: '#6b7280', label: '⚠️ Insufficient' },
 };
 
 function ThresholdBadge({ confidence }) {

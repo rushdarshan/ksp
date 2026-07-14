@@ -62,7 +62,7 @@ export default function AlertsFeed({ alerts, loading }) {
   if (loading) return <AlertsFeedSkeleton />;
   if (!alerts?.length) return <AlertsFeedEmpty />;
 
-  const statusColor = { match: '#60a5fa', breach: '#e0b23a', new: '#4ade80' };
+  const statusColor = { match: '#60a5fa', breach: '#e0b23a', new: 'var(--color-green-alt)' };
 
   return (
     <div style={{

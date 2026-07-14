@@ -9,9 +9,9 @@ const MOCK_CHARGESHEETS = [
 
 function statusConfig(status) {
   switch (status) {
-    case 'approved': return { label: 'Approved', color: '#4ade80', bg: '#4ade8018' }
-    case 'returned': return { label: 'Returned', color: '#f87171', bg: '#f8717118' }
-    default: return { label: 'Pending', color: '#facc15', bg: '#facc1518' }
+    case 'approved': return { label: 'Approved', color: 'var(--color-green-alt)', bg: '#4ade8018' }
+    case 'returned': return { label: 'Returned', color: 'var(--color-red-soft)', bg: '#f8717118' }
+    default: return { label: 'Pending', color: 'var(--color-amber-alt)', bg: '#facc1518' }
   }
 }
 

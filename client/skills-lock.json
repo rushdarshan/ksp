@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "skills": {
+    "better-colors": {
+      "source": "jakubkrehel/skills",
+      "sourceType": "github",
+      "skillPath": "skills/better-colors/SKILL.md",
+      "computedHash": "88298882c861708eca7840ebe229b1f1bc13112ba96deff6aa5eba0719ea3b96"
+    },
+    "better-typography": {
+      "source": "jakubkrehel/skills",
+      "sourceType": "github",
+      "skillPath": "skills/better-typography/SKILL.md",
+      "computedHash": "eecdfa1424261622278db6344c9c0d5ddac20920f89c930fb5d622b998103ab2"
+    },
+    "better-ui": {
+      "source": "jakubkrehel/skills",
+      "sourceType": "github",
+      "skillPath": "skills/better-ui/SKILL.md",
+      "computedHash": "67bebeb8222cd41757e2498e26f4c6e37d93e00fd9927be940f9998ad5faaeff"
+    },
+    "bootstrap-prelude": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "bootstrap-prelude/SKILL.md",
+      "computedHash": "362f98c3bf5ecc1bfca6e93eb65564d46dc6a4a11b7fd6db75adcb9c6ef4b82a"
+    },
+    "bro": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "bro/SKILL.md",
+      "computedHash": "33f023f92c4e4ec96049908962310c48826afc871b346a2751f493213249a013"
+    },
+    "cloudflare-composition-root": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "cloudflare-composition-root/SKILL.md",
+      "computedHash": "d0f6900d14e1282776c3a035ea4251b79bab3749aa9c9318a9291e810b89ad2d"
+    },
+    "codex-delegate": {
+      "source": "amElnagdy/delegate-skills",
+      "sourceType": "github",
+      "skillPath": "skills/codex-delegate/SKILL.md",
+      "computedHash": "d04c475556ca8ce74d6b987068a52df57acc7707909935eee0132f2fff33e987"
+    },
+    "coding-standards": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "coding-standards/SKILL.md",
+      "computedHash": "b986cf661bbe95295137854dd1a6aedac73635e8c73082fe69baf1fd08d2550d"
+    },
+    "crabbox-setup": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/crabbox-setup/SKILL.md",
+      "computedHash": "a1cd368cb8c197e888b69955d38ab4caef32099d1f7825a71d8c7c91122391b4"
+    },
+    "dev-local-setup": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/dev-local-setup/SKILL.md",
+      "computedHash": "ff7cc0cf9bd63c5830a618d723cc425ee68ed4bafbf790aab18eecb74f5cc1eb"
+    },
+    "domain-modeling": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "domain-modeling/SKILL.md",
+      "computedHash": "65da9ce611a203fc6b9ecf95254cf845857243d958cb0d64df556cad87c76312"
+    },
+    "e2e-setup": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/e2e-setup/SKILL.md",
+      "computedHash": "cbef0bcfb16d099bead8afd65ae3fbff91b2122a651da21f29ee7f3fdbe4a780"
+    },
+    "filetree": {
+      "source": "nekocode/filetree-skill",
+      "sourceType": "github",
+      "skillPath": "skills/filetree/SKILL.md",
+      "computedHash": "ca2203fa9a12e5d66353d56c8f618bb3a069d49506919d04f8839a722160b47f"
+    },
+    "grill-me": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "grill-me/SKILL.md",
+      "computedHash": "67e31b63e6e9e454cc2f51cd85b9cf1396ee46379a87c07a1450f33c47c1276a"
+    },
+    "grill-with-docs": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "grill-with-docs/SKILL.md",
+      "computedHash": "559d4de044394b86af53a5cedd2d3a689770088c3c5361646c91f5d7ea59f78a"
+    },
+    "grilling": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "grilling/SKILL.md",
+      "computedHash": "32f747941943e607b2dfc86a46b2284dd3e101332eafafd7569389efbe848f81"
+    },
+    "herdr": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "herdr/SKILL.md",
+      "computedHash": "72c862fe1458bc43aeb2d0ef2104f9739341dc9e2a03647b2fcfa0662c6599d7"
+    },
+    "new-loop": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/new-loop/SKILL.md",
+      "computedHash": "547e06211c3ca4e2d9792562c0ba4e8da7a6d0aec0ae82b866cc5fc3941eb089"
+    },
+    "opencode-delegate": {
+      "source": "amElnagdy/delegate-skills",
+      "sourceType": "github",
+      "skillPath": "skills/opencode-delegate/SKILL.md",
+      "computedHash": "012ea2680f1f231550e63bed2063d9e00c1999dec5ba5aee5b538343b794a989"
+    },
+    "self-learning": {
+      "source": "kulaxyz/self-learning-skills",
+      "sourceType": "github",
+      "skillPath": "skills/self-learning/SKILL.md",
+      "computedHash": "bdeb31d23d5ded423e04b10c47aecf982bf133b9f1047f087ccfb4723c88d65f"
+    },
+    "setup-codebase-harness": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/setup-codebase-harness/SKILL.md",
+      "computedHash": "654ff3d0733cc2f75bf8778c2ca9d49320bb92f70c5ff23a16e90e53f6271067"
+    },
+    "tdd": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "tdd/SKILL.md",
+      "computedHash": "b092a06172e400a46082bf31a43f89d2242eca069f664b888b24a21b345acfc6"
+    },
+    "tech-spec": {
+      "source": "dmmulroy/skills",
+      "sourceType": "github",
+      "skillPath": "tech-spec/SKILL.md",
+      "computedHash": "224f77302ff642df59862898ee414102031ca33537a25352342b39d03343e76d"
+    },
+    "verifier-setup": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/verifier-setup/SKILL.md",
+      "computedHash": "db0f07e3e0a87f5d7b36e64caef3c0555cb3d3daf47f33b7455c8f6f6e6c91b2"
+    },
+    "visual-flow-gif": {
+      "source": "AI-Builder-Club/skills",
+      "sourceType": "github",
+      "skillPath": "skills/visual-flow-gif/SKILL.md",
+      "computedHash": "3acadc55d11af92d3d56a2ebbd877af0ab754f604bae5e0d78bb273db7786649"
+    }
+  }
+}

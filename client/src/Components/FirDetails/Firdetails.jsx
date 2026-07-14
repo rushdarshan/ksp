@@ -633,7 +633,7 @@ const FirTable = () => {
             style={{
               background: 'none',
               border: 'none',
-              color: '#94a3b8',
+              color: 'var(--color-gray-400)',
               fontSize: '16px',
               cursor: 'pointer',
               marginLeft: '4px'

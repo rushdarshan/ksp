@@ -81,7 +81,7 @@ function ProvenanceBadge({ fn, label }) {
 // ── Score gauge (SVG arc) ──────────────────────────────────
 function ScoreGauge({ score, label, size = 80 }) {
   const pct = Math.round(score * 100);
-  const color = pct >= 75 ? '#4ade80' : pct >= 50 ? '#facc15' : '#f87171';
+  const color = pct >= 75 ? 'var(--color-green-alt)' : pct >= 50 ? '#facc15' : '#f87171';
   const r = (size - 10) / 2;
   const circ = 2 * Math.PI * r;
   const arc = circ * 0.75;
@@ -107,7 +107,7 @@ function ScoreGauge({ score, label, size = 80 }) {
 
 // ── Veracity badge ─────────────────────────────────────────
 function VeracityBadge({ score, label }) {
-  const color = label === 'GENUINE' ? '#4ade80' : label === 'NEEDS REVIEW' ? '#facc15' : '#f87171';
+  const color = label === 'GENUINE' ? 'var(--color-green-alt)' : label === 'NEEDS REVIEW' ? '#facc15' : 'var(--color-red-soft)';
   return (
     <span className="aib-veracity" style={{ background: `${color}20`, color, borderColor: `${color}60` }}>
       <span className="aib-veracity__dot" style={{ background: color }} />
@@ -118,7 +118,7 @@ function VeracityBadge({ score, label }) {
 
 // ── Solvability factor row ─────────────────────────────────
 function FactorRow({ f }) {
-  const color = f.weight >= 0.75 ? '#4ade80' : f.weight >= 0.5 ? '#facc15' : '#f87171';
+  const color = f.weight >= 0.75 ? 'var(--color-green-alt)' : f.weight >= 0.5 ? '#facc15' : 'var(--color-red-soft)';
   return (
     <div className="aib-factor">
       <div className="aib-factor__header">
@@ -209,13 +209,13 @@ export default function AIIntelligenceBrief() {
     printWindow.document.write('body { font-family: system-ui, sans-serif; color: #0a0a0a; padding: 32px; max-width: 800px; margin: 0 auto; }');
     printWindow.document.write('h2 { font-family: Fraunces, serif; font-size: 22px; margin-bottom: 4px; }');
     printWindow.document.write('.aib__card { border: 1px solid #e8e6e3; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }');
-    printWindow.document.write('.aib__card-head { padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e8e6e3; font-weight: 600; font-size: 14px; }');
+    printWindow.document.write('.aib__card-head { padding: 10px 16px; background: var(--color-surface-50); border-bottom: 1px solid #e8e6e3; font-weight: 600; font-size: 14px; }');
     printWindow.document.write('.aib__card-body { padding: 16px; font-size: 13px; line-height: 1.6; }');
-    printWindow.document.write('.aib__para { margin: 0 0 8px; padding: 8px 12px; background: #f8fafc; border: 1px solid #ddd; font-size: 13px; }');
+    printWindow.document.write('.aib__para { margin: 0 0 8px; padding: 8px 12px; background: var(--color-surface-50); border: 1px solid #ddd; font-size: 13px; }');
     printWindow.document.write('.aib__factor { margin-bottom: 8px; }');
     printWindow.document.write('.aib__factor-name { font-weight: 600; font-size: 13px; }');
     printWindow.document.write('.aib__factor-detail { font-size: 11px; color: #6b6b6b; }');
-    printWindow.document.write('.aib__reco { padding: 8px 12px; background: #f8fafc; border: 1px solid #ddd; margin-bottom: 6px; font-size: 13px; }');
+    printWindow.document.write('.aib__reco { padding: 8px 12px; background: var(--color-surface-50); border: 1px solid #ddd; margin-bottom: 6px; font-size: 13px; }');
     printWindow.document.write('.aib__reco-pri { font-weight: 700; font-size: 10px; margin-right: 8px; }');
     printWindow.document.write('.aib__sub { color: #6b6b6b; font-size: 13px; margin: 0 0 16px; }');
     printWindow.document.write('.aib__conf { font-size: 11px; color: #6b6b6b; }');
@@ -300,7 +300,7 @@ export default function AIIntelligenceBrief() {
         <div className="aib__card-body">
           <div className="aib__veracity-flags">
             {(data.veracity?.flags || []).map((f, i) => {
-              const c = f.weight >= 0.7 ? '#4ade80' : f.weight >= 0.4 ? '#facc15' : '#f87171';
+              const c = f.weight >= 0.7 ? 'var(--color-green-alt)' : f.weight >= 0.4 ? '#facc15' : 'var(--color-red-soft)';
               return (
                 <div key={i} className="aib__vflag" style={{ borderLeftColor: c }}>
                   <span className="aib__vflag-type">{f.type.replace(/_/g, ' ')}</span>
@@ -326,7 +326,7 @@ export default function AIIntelligenceBrief() {
           <div className="aib__similar-list">
             {(data.similarCases || []).map((c, i) => {
               const pct = Math.round(c.similarity * 100);
-              const color = pct >= 70 ? '#4ade80' : pct >= 50 ? '#facc15' : '#60a5fa';
+              const color = pct >= 70 ? 'var(--color-green-alt)' : pct >= 50 ? '#facc15' : '#60a5fa';
               return (
                 <button key={i} className="aib__similar" onClick={() => switchTab('network')}>
                   <span className="aib__similar-fir">KSP-2026-{String(c.caseId).padStart(3, '0')}</span>
@@ -367,7 +367,7 @@ export default function AIIntelligenceBrief() {
         </div>
         <div className="aib__card-body">
           {(data.recommendations || []).map((r, i) => {
-            const pc = r.priority === 'HIGH' ? '#f87171' : r.priority === 'MEDIUM' ? '#facc15' : '#4ade80';
+            const pc = r.priority === 'HIGH' ? 'var(--color-red-soft)' : r.priority === 'MEDIUM' ? 'var(--color-amber-alt)' : 'var(--color-green-alt)';
             return (
               <div key={i} className="aib__reco" style={{ borderLeftColor: pc }}>
                 <span className="aib__reco-pri" style={{ background: `${pc}20`, color: pc }}>{r.priority}</span>

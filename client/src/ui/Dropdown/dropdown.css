@@ -109,7 +109,8 @@
   font-family: inherit;
   border-radius: 9999px;
   padding: 5px 12px;
-  height: 30px;
+  height: 40px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

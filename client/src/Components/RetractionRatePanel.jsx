@@ -36,10 +36,10 @@ export default function RetractionRatePanel() {
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <KpiBox label="Total Chargesheets" value={summary.totalChargesheets} />
-          <KpiBox label="Retraction Rate" value={`${retractionRate}%`} color={retractionRate > 25 ? '#dc2626' : retractionRate > 15 ? '#d97706' : '#22c55e'} />
-          <KpiBox label="Type B (Mistake)" value={summary.typeB} color="#d97706" />
-          <KpiBox label="Type C (False)" value={summary.typeC} color="#dc2626" />
-          <KpiBox label="Normal (Type A)" value={summary.typeA} color="#22c55e" />
+          <KpiBox label="Retraction Rate" value={`${retractionRate}%`} color={retractionRate > 25 ? 'var(--color-red)' : retractionRate > 15 ? '#d97706' : 'var(--color-green)'} />
+          <KpiBox label="Type B (Mistake)" value={summary.typeB} color="var(--color-amber)" />
+          <KpiBox label="Type C (False)" value={summary.typeC} color="var(--color-red)" />
+          <KpiBox label="Normal (Type A)" value={summary.typeA} color="var(--color-green)" />
         </div>
 
         <div style={{ marginBottom: 20, height: 80, display: 'flex', alignItems: 'end', gap: 8 }}>
@@ -47,10 +47,10 @@ export default function RetractionRatePanel() {
             const pct = m.retracted / m.total
             return (
               <div key={m.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div style={{ fontSize: 10, color: pct > 0.2 ? '#dc2626' : 'var(--text-secondary)', fontWeight: 600 }}>{Math.round(pct * 100)}%</div>
+                <div style={{ fontSize: 10, color: pct > 0.2 ? 'var(--color-red)' : 'var(--text-secondary)', fontWeight: 600 }}>{Math.round(pct * 100)}%</div>
                 <div style={{
                   width: '100%', maxWidth: 40, height: `${pct * 100}%`, minHeight: 4,
-                  borderRadius: 'var(--radius-sm)', background: pct > 0.2 ? '#dc2626' : '#d97706',
+                  borderRadius: 'var(--radius-sm)', background: pct > 0.2 ? '#dc2626' : 'var(--color-amber)',
                   transition: 'height 0.3s',
                 }} />
                 <div style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{m.month.slice(5)}</div>
@@ -83,7 +83,7 @@ export default function RetractionRatePanel() {
             const name = item.station || item.officer
             const subtitle = item.district || item.station
             const pct = item.retractionPct
-            const barColor = pct > 30 ? '#dc2626' : pct > 20 ? '#d97706' : '#22c55e'
+            const barColor = pct > 30 ? 'var(--color-red)' : pct > 20 ? '#d97706' : '#22c55e'
             return (
               <div key={name} style={{
                 padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)',

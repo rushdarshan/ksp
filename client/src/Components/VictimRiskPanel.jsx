@@ -42,9 +42,9 @@ const VictimRiskPanel = () => {
 
     const riskColor = (level) => {
         switch (level) {
-            case 'High': return '#dc2626';
+            case 'High': return 'var(--color-red)';
             case 'Medium': return '#f59e0b';
-            default: return '#22c55e';
+            default: return 'var(--color-green)';
         }
     };
 
@@ -72,20 +72,20 @@ const VictimRiskPanel = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                     <button onClick={loadHighRisk}
-                        style={{ padding: '10px 20px', background: '#f8fafc', border: '1px solid #d1d5db', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                        style={{ padding: '10px 20px', background: 'var(--color-surface-50)', border: '1px solid #d1d5db', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
                         👥 Show High-Risk Victims
                     </button>
                 </div>
             </div>
 
-            {error && <div style={{ color: '#dc2626', marginBottom: '16px' }}>Error: {error}</div>}
+            {error && <div style={{ color: 'var(--color-red)', marginBottom: '16px' }}>Error: {error}</div>}
 
             {result && (
-                <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', border: '1px solid var(--color-border-200)', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
                         <div style={{
                             width: '80px', height: '80px', borderRadius: '50%',
-                            background: `conic-gradient(${riskColor(result.riskLevel)} ${(result.riskScore / 100) * 360}deg, #e2e8f0 0deg)`,
+                            background: `conic-gradient(${riskColor(result.riskLevel)} ${(result.riskScore / 100) * 360}deg, var(--color-border-200) 0deg)`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '20px',
                             color: riskColor(result.riskLevel)
                         }}>
@@ -104,16 +104,16 @@ const VictimRiskPanel = () => {
                     {result.timeSpanDays > 0 && (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '16px' }}>
                             <div style={{ padding: '10px', background: 'white', borderRadius: '8px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '11px', color: '#94a3b8' }}>Time Span</div>
+                                <div style={{ fontSize: '11px', color: 'var(--color-gray-400)' }}>Time Span</div>
                                 <div style={{ fontWeight: 600 }}>{result.timeSpanDays} days</div>
                             </div>
                             <div style={{ padding: '10px', background: 'white', borderRadius: '8px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '11px', color: '#94a3b8' }}>Escalation Rate</div>
+                                <div style={{ fontSize: '11px', color: 'var(--color-gray-400)' }}>Escalation Rate</div>
                                 <div style={{ fontWeight: 600 }}>{result.escalationRate}/month</div>
                             </div>
                             {result.recentMONdays && (
                                 <div style={{ padding: '10px', background: 'white', borderRadius: '8px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Last Interval</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--color-gray-400)' }}>Last Interval</div>
                                     <div style={{ fontWeight: 600 }}>{result.recentMONdays} days</div>
                                 </div>
                             )}
@@ -129,7 +129,7 @@ const VictimRiskPanel = () => {
                         ))}
                     </div>
 
-                    <div style={{ padding: '12px', background: riskColor(result.riskLevel) === '#dc2626' ? '#fef2f2' : riskColor(result.riskLevel) === '#f59e0b' ? '#fffbeb' : '#f0fdf4', borderRadius: '8px', fontSize: '13px' }}>
+                    <div style={{ padding: '12px', background: riskColor(result.riskLevel) === 'var(--color-red)' ? '#fef2f2' : riskColor(result.riskLevel) === '#f59e0b' ? '#fffbeb' : '#f0fdf4', borderRadius: '8px', fontSize: '13px' }}>
                         <strong>Recommendation:</strong> {result.recommendation}
                     </div>
 
@@ -138,7 +138,7 @@ const VictimRiskPanel = () => {
                             <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>Victimization History ({result.history.length} events)</summary>
                             <table style={{ width: '100%', marginTop: '8px', fontSize: '12px', borderCollapse: 'collapse' }}>
                                 <thead>
-                                    <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                                    <tr style={{ borderBottom: '2px solid var(--color-border-200)' }}>
                                         <th style={{ textAlign: 'left', padding: '6px' }}>FIR</th>
                                         <th style={{ textAlign: 'left', padding: '6px' }}>Date</th>
                                         <th style={{ textAlign: 'left', padding: '6px' }}>District</th>
@@ -146,7 +146,7 @@ const VictimRiskPanel = () => {
                                 </thead>
                                 <tbody>
                                     {result.history.map((h, i) => (
-                                        <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                        <tr key={i} style={{ borderBottom: '1px solid var(--color-border-200)' }}>
                                             <td style={{ padding: '6px' }}>{h.firNo}/{h.year}</td>
                                             <td style={{ padding: '6px' }}>{new Date(h.date).toLocaleDateString()}</td>
                                             <td style={{ padding: '6px' }}>{h.districtId}</td>
@@ -177,7 +177,7 @@ const VictimRiskPanel = () => {
                                     <td style={{ padding: '6px' }}><strong>{v.count}</strong></td>
                                     <td style={{ padding: '6px' }}>
                                         <button onClick={() => { setVictimId(v.victimId); setHighRiskVictims(null); search(); }}
-                                            style={{ padding: '4px 12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                                            style={{ padding: '4px 12px', background: 'var(--color-red)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
                                             Score
                                         </button>
                                     </td>

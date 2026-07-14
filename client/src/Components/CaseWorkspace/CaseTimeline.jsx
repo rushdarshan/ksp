@@ -11,10 +11,10 @@ const MOCK_EVENTS = [
 ];
 
 const typeColors = {
-  report: '#f87171',
+  report: 'var(--color-red-soft)',
   evidence: '#60a5fa',
   analysis: '#a78bfa',
-  action: '#4ade80',
+  action: 'var(--color-green-alt)',
 };
 
 export default function CaseTimeline() {

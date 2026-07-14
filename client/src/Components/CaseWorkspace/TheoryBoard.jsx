@@ -199,7 +199,7 @@ export default function TheoryBoard({ firId }) {
   };
 
   const confPct = (v) => Math.round(v * 100);
-  const confColor = (v) => v >= 0.75 ? '#4ade80' : v >= 0.5 ? '#facc15' : '#f87171';
+  const confColor = (v) => v >= 0.75 ? 'var(--color-green-alt)' : v >= 0.5 ? '#facc15' : '#f87171';
 
   return (
     <div className="tb-section">
@@ -293,7 +293,7 @@ export default function TheoryBoard({ firId }) {
             {/* Evidence classification grid */}
             <div className="tb-ev-grid">
               <div>
-                <p className="tb-ev-col-title" style={{ color: '#4ade80' }}>
+                <p className="tb-ev-col-title" style={{ color: 'var(--color-green-alt)' }}>
                   ✅ Supporting Evidence ({current.evidence.filter(e => e.classification === 'Supports').length})
                 </p>
                 <div className="tb-ev-col">
@@ -307,7 +307,7 @@ export default function TheoryBoard({ firId }) {
                 </div>
               </div>
               <div>
-                <p className="tb-ev-col-title" style={{ color: '#f87171' }}>
+                <p className="tb-ev-col-title" style={{ color: 'var(--color-red-soft)' }}>
                   ❌ Contradicting Evidence ({current.evidence.filter(e => e.classification === 'Contradicts').length})
                 </p>
                 <div className="tb-ev-col">
@@ -339,7 +339,7 @@ export default function TheoryBoard({ firId }) {
                 )}
                 {current.evidence.some(e => e.classification === 'Insufficient') && (
                   <div style={{ flex: 1 }}>
-                    <p className="tb-ev-col-title" style={{ color: '#6b7280' }}>
+                    <p className="tb-ev-col-title" style={{ color: 'var(--color-gray-500)' }}>
                       ⚠️ Insufficient ({current.evidence.filter(e => e.classification === 'Insufficient').length})
                     </p>
                     <div className="tb-ev-col">

@@ -77,8 +77,8 @@ export default function DarkFigurePanel() {
         return (
             <div style={{ padding: '1rem' }}>
                 <div style={{ padding: '12px', border: '1px solid #fca5a5', borderRadius: '8px', background: '#fef2f2', marginBottom: '12px' }}>
-                    <p style={{ color: '#dc2626', margin: '0 0 8px 0', fontSize: '14px' }}>{error}</p>
-                    <button onClick={() => fetchData(districtId)} style={{ padding: '4px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
+                    <p style={{ color: 'var(--color-red)', margin: '0 0 8px 0', fontSize: '14px' }}>{error}</p>
+                    <button onClick={() => fetchData(districtId)} style={{ padding: '4px 12px', background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
                 </div>
                 <select value={districtId} onChange={e => setDistrictId(e.target.value)}
                     style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '14px', cursor: 'pointer' }}>
@@ -93,7 +93,7 @@ export default function DarkFigurePanel() {
     return (
         <div className="panel" style={{ padding: '1rem' }}>
             <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700 }}>Dark Figure Layer</h2>
-            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#6b7280' }}>
+            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--color-gray-500)' }}>
                 Estimated unreported crime based on Karnataka Crime Victimisation Survey 2019
             </p>
 
@@ -134,7 +134,7 @@ export default function DarkFigurePanel() {
             <div style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Crime Type Breakdown</h3>
-                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Actual (blue) vs Estimated range (red dashed)</span>
+                    <span style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>Actual (blue) vs Estimated range (red dashed)</span>
                 </div>
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     {crimeTypes.slice(0, 5).map(ct => (

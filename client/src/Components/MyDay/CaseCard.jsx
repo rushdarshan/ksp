@@ -54,7 +54,7 @@ export function CaseCardSkeletonRow() {
 
 export default function CaseCard({ c }) {
   const navigate = useNavigate();
-  const color = c.csmScore >= 70 ? '#4ade80' : c.csmScore >= 40 ? '#facc15' : '#f87171';
+  const color = c.csmScore >= 70 ? 'var(--color-green-alt)' : c.csmScore >= 40 ? '#facc15' : 'var(--color-red-soft)';
 
   return (
     <div
@@ -89,8 +89,8 @@ export default function CaseCard({ c }) {
             {c.hasNewMatch && (
               <span style={{
                 padding: '2px 8px', fontSize: '9px', fontWeight: 800,
-                background: '#f8717120', color: '#f87171', borderRadius: '4px',
-                border: '1px solid #f8717140', textTransform: 'uppercase',
+                background: 'var(--color-red-soft)20', color: '#f87171', borderRadius: '4px',
+                border: '1px solid var(--color-red-soft)40', textTransform: 'uppercase',
               }}>New Match</span>
             )}
           </div>

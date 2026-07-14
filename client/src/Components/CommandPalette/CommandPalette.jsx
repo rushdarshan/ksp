@@ -36,9 +36,9 @@ const STATIC_ITEMS = [
 
 const TYPE_COLOR = {
   panel: '#60a5fa',
-  case: '#f87171',
+  case: 'var(--color-red-soft)',
   person: '#a78bfa',
-  officer: '#4ade80',
+  officer: 'var(--color-green-alt)',
   action: '#facc15',
 };
 

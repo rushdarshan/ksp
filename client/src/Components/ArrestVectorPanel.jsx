@@ -8,7 +8,7 @@ L.Icon.Default.mergeOptions({ iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/di
 
 const stationIcon = new L.Icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', iconSize: [20, 28], iconAnchor: [10, 28] })
 
-const TIER_COLORS = { on_scene: '#22c55e', short: '#d97706', cross_district: '#dc2626' }
+const TIER_COLORS = { on_scene: 'var(--color-green)', short: '#d97706', cross_district: 'var(--color-red)' }
 const GRAVITY_OPACITY = { felony: 0.9, misdemeanour: 0.6, petty: 0.4 }
 
 function MapBounds({ vectors, stations }) {
@@ -58,13 +58,13 @@ export default function ArrestVectorPanel() {
             <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>TOTAL ARRESTS</div>
             <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{summary.total}</div>
           </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #22c55e40', background: '#22c55e08', minWidth: 100 }}>
+          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #22c55e40', background: 'var(--color-green)08', minWidth: 100 }}>
             <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ON SCENE</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>{summary.onScenePct}%</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-green)', fontFamily: 'var(--font-mono)' }}>{summary.onScenePct}%</div>
           </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: '#dc262608', minWidth: 100 }}>
+          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: 'var(--color-red)08', minWidth: 100 }}>
             <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>CROSS-DISTRICT</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{summary.crossDistrict}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-red)', fontFamily: 'var(--font-mono)' }}>{summary.crossDistrict}</div>
           </div>
           <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
             <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>AVG VECTOR</div>

@@ -37,7 +37,7 @@
   background: #ffffff;
   border: 1px solid #eaeaea;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .notif_btn:hover {
