@@ -24,7 +24,7 @@ export default function Popup() {
       setNotifying(false);
       setDropdownOpen(!dropdownOpen);
     }}>
-      <button className={styles.notif_btn}>
+      <button className={styles.notif_btn} aria-label="Notifications">
         <IoIosNotificationsOutline/>
         <span className={styles.unread_wrapper}>
         <span className={styles.unread_background}></span>

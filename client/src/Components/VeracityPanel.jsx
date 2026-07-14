@@ -130,14 +130,14 @@ const VeracityPanel = ({
           required
         />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <input value={complainantName} onChange={e => setComplainantName(e.target.value)} placeholder="Complainant name" style={inputStyle} />
-          <input value={accusedCount} onChange={e => setAccusedCount(e.target.value)} placeholder="Accused count" type="number" style={inputStyle} />
+          <input aria-label="Complainant name" value={complainantName} onChange={e => setComplainantName(e.target.value)} placeholder="Complainant name" style={inputStyle} />
+          <input aria-label="Accused count" value={accusedCount} onChange={e => setAccusedCount(e.target.value)} placeholder="Accused count" type="number" style={inputStyle} />
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}>
             <input type="checkbox" checked={hasWitnesses} onChange={e => setHasWitnesses(e.target.checked)} /> Witnesses
           </label>
-          <input value={propertyValue} onChange={e => setPropertyValue(e.target.value)} placeholder="Property value (Rs.)" type="number" style={inputStyle} />
+          <input aria-label="Property value" value={propertyValue} onChange={e => setPropertyValue(e.target.value)} placeholder="Property value (Rs.)" type="number" style={inputStyle} />
         </div>
-        <input value={delayReason} onChange={e => setDelayReason(e.target.value)} placeholder="Delay reason (if any)" style={inputStyle} />
+        <input aria-label="Delay reason" value={delayReason} onChange={e => setDelayReason(e.target.value)} placeholder="Delay reason (if any)" style={inputStyle} />
         <button type="submit" disabled={loading} style={{ ...btnStyle, color: 'var(--accent)', fontWeight: 600 }}>
           {loading ? 'Analyzing...' : 'Analyze veracity'}
         </button>

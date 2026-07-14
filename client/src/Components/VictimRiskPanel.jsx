@@ -60,7 +60,7 @@ const VictimRiskPanel = () => {
                 <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Search Victim</div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <input value={victimId} onChange={e => setVictimId(e.target.value)}
+                        <input aria-label="Search Victim ID" value={victimId} onChange={e => setVictimId(e.target.value)}
                             placeholder="Enter Victim ID (e.g., V100, V101, or a name)"
                             style={{ flex: 1, padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px' }}
                             onKeyDown={e => e.key === 'Enter' && search()} />

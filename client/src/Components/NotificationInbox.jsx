@@ -33,7 +33,7 @@ const NotificationInbox = () => {
             {!loading && !selectedCase && (
                 <div style={{ display: 'grid', gap: '12px' }}>
                     {notifications.map(n => (
-                        <div key={n.caseId} onClick={() => viewCase(n.caseId)}
+                        <div key={n.caseId} onClick={() => viewCase(n.caseId)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); viewCase(n.caseId); } }} role="button" tabIndex={0}
                             style={{ padding: '16px', background: n.unread ? '#f0f7ff' : '#f8fafc', borderRadius: '10px', border: `1px solid ${n.unread ? '#93c5fd' : '#e2e8f0'}`, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <div style={{ fontWeight: 600, fontSize: '14px' }}>{n.firNo}</div>
