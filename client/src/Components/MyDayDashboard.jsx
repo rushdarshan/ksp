@@ -21,17 +21,17 @@ const PRIORITY_BADGE = { critical: 'critical', high: 'high', medium: 'medium', l
 
 function WelcomeWidget({ user, formattedDate }) {
   return (
-    <div className="panel-shell" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+    <div className="panel-shell myday-welcome">
       <div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px', fontWeight: 500 }}>
+        <h1 className="myday-welcome__title">
           Investigator Workspace — {user?.name || 'SI Ramesh'}
         </h1>
         <p className="panel-subtitle">
           Crime Genome Platform · {formattedDate}
         </p>
       </div>
-      <div className="badge badge--clear">
-        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--pastel-green-text)', display: 'inline-block' }} />
+      <div className="badge badge--clear myday-welcome__status">
+        <span className="myday-welcome__dot" />
         Session Active · {user?.role || 'Sub-Inspector'}
       </div>
     </div>
@@ -40,16 +40,16 @@ function WelcomeWidget({ user, formattedDate }) {
 
 function ShortcutsWidget() {
   return (
-    <div className="panel-shell panel-shell--compact" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-      <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-sm)' }}>Keyboard Shortcuts</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div className="panel-shell panel-shell--compact myday-shortcuts">
+      <div className="myday-shortcuts__title">Keyboard Shortcuts</div>
+      <div className="myday-shortcuts__list">
+        <div className="myday-shortcuts__row">
           <span>Open Command Palette</span>
-          <kbd style={{ padding: '1px 5px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>Ctrl+K</kbd>
+          <kbd className="myday-shortcuts__kbd">Ctrl+K</kbd>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className="myday-shortcuts__row">
           <span>Close active overlays</span>
-          <kbd style={{ padding: '1px 5px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>Esc</kbd>
+          <kbd className="myday-shortcuts__kbd">Esc</kbd>
         </div>
       </div>
     </div>
@@ -148,7 +148,7 @@ export default function MyDayDashboard() {
       </div>
 
       <div className="myday-grid">
-        <div className="myday-sidebar" style={{ gridColumn: '1 / -1' }}>
+        <div className="myday-sidebar myday-sidebar--full">
           <AlertsFeed alerts={alertsState.data} loading={alertsState.loading} />
           <ShortcutsWidget />
         </div>
