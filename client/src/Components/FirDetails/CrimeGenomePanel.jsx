@@ -184,7 +184,7 @@ function ZIABrief({ firId }) {
 // ──────────────────────────────────────────────────────
 
 const evidenceTypeIcon = { digital: '📹', intelligence: '🔍', pattern: '📊', spatial: '📍', absence: '❌' };
-const evidenceTypeColor = { digital: '#60a5fa', intelligence: '#a78bfa', pattern: '#34d399', spatial: '#f97316', absence: 'var(--color-gray-400)' };
+const evidenceTypeColor = { digital: 'var(--color-blue-400)', intelligence: '#a78bfa', pattern: '#34d399', spatial: '#f97316', absence: 'var(--color-gray-400)' };
 
 function TheoryBoard({ firId }) {
   const [theories, setTheories] = useState(null);
@@ -304,9 +304,9 @@ function TheoryBoard({ firId }) {
 
   const current = theories?.find(t => t.id === activeTheory);
   const statusStyle = {
-    working: { bg: '#60a5fa20', color: '#60a5fa', label: 'Working Theory' },
-    weak: { bg: 'var(--color-red-soft)20', color: '#f87171', label: 'Weak' },
-    confirmed: { bg: 'var(--color-green-alt)20', color: '#4ade80', label: 'Confirmed' },
+    working: { bg: 'var(--color-blue-400)20', color: '#60a5fa', label: 'Working Theory' },
+    weak: { bg: '#f8717120', color: '#f87171', label: 'Weak' },
+    confirmed: { bg: '#4ade8020', color: '#4ade80', label: 'Confirmed' },
   };
 
   return (
@@ -413,7 +413,7 @@ function TheoryBoard({ firId }) {
                   disabled={confirming === current.id}
                   style={{
                     padding: '6px 14px', fontSize: '12px', fontWeight: 700,
-                    background: 'var(--color-green-alt)20', color: '#4ade80', border: '1px solid var(--color-green-alt)60',
+                    background: '#4ade8020', color: '#4ade80', border: '1px solid #4ade8060',
                     borderRadius: '8px', cursor: 'pointer',
                   }}
                 >{confirming === current.id ? 'Confirming…' : '✓ Confirm Theory'}</button>
@@ -438,9 +438,8 @@ function TheoryBoard({ firId }) {
                     const status = overrides[e.id] || 'suggested';
                     return (
                       <div key={e.id} style={{
-                        padding: '10px 14px', background: 'var(--color-green-alt)08',
-                        border: '1px solid var(--color-green-alt)30', borderRadius: '8px',
-                        border: '1px solid var(--border-light)',
+                        padding: '10px 14px', background: '#4ade8008',
+                        border: '1px solid #4ade8030', borderRadius: '8px',
                         opacity: status === 'reject' ? 0.4 : 1,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -449,8 +448,8 @@ function TheoryBoard({ firId }) {
                             <span style={{ fontSize: '11px', fontWeight: 600, color: evidenceTypeColor[e.type] || '#888', textTransform: 'capitalize' }}>{e.type}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'accept' ? 'var(--color-green-alt)30' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
-                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'reject' ? 'var(--color-red-soft)30' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'accept' ? '#4ade8030' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'reject' ? '#f8717130' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
                             <button onClick={() => setEvidenceOverride(e.id, 'neutral')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'neutral' ? 'var(--color-gray-400)30' : 'var(--surface-alt)', color: status === 'neutral' ? '#94a3b8' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Neutral</button>
                           </div>
                         </div>
@@ -481,9 +480,8 @@ function TheoryBoard({ firId }) {
                     const status = overrides[e.id] || 'suggested';
                     return (
                       <div key={e.id} style={{
-                        padding: '10px 14px', background: 'var(--color-red-soft)08',
-                        border: '1px solid var(--color-red-soft)30', borderRadius: '8px',
-                        border: '1px solid var(--border-light)',
+                        padding: '10px 14px', background: '#f8717108',
+                        border: '1px solid #f8717130', borderRadius: '8px',
                         opacity: status === 'reject' ? 0.4 : 1,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -492,8 +490,8 @@ function TheoryBoard({ firId }) {
                             <span style={{ fontSize: '11px', fontWeight: 600, color: evidenceTypeColor[e.type] || '#888', textTransform: 'capitalize' }}>{e.type}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'accept' ? 'var(--color-green-alt)30' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
-                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'reject' ? 'var(--color-red-soft)30' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'accept' ? '#4ade8030' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'reject' ? '#f8717130' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
                             <button onClick={() => setEvidenceOverride(e.id, 'neutral')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'neutral' ? 'var(--color-gray-400)30' : 'var(--surface-alt)', color: status === 'neutral' ? '#94a3b8' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Neutral</button>
                           </div>
                         </div>
@@ -605,9 +603,9 @@ function CaseStrengthMeter({ firId }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
               {data.chargeableSections.map((s, i) => (
                 <span key={i} style={{
-                  padding: '2px 8px', background: '#60a5fa20', color: '#60a5fa',
+                  padding: '2px 8px', background: 'var(--color-blue-400)20', color: '#60a5fa',
                   borderRadius: '6px', fontSize: '11px', fontWeight: 700,
-                  border: '1px solid #60a5fa40',
+                  border: '1px solid var(--color-blue-400)40',
                 }}>{s}</span>
               ))}
             </div>
@@ -685,7 +683,7 @@ function CaseStrengthMeter({ firId }) {
 // ──────────────────────────────────────────────────────
 
 const suggestionIcon = { related_case: '🔗', wanted: '🚨', deadline: '⏰', alert: '🔔', evidence_gap: '⚠️' };
-const suggestionColor = { related_case: '#60a5fa', wanted: 'var(--color-red-soft)', deadline: 'var(--color-amber-alt)', alert: '#f97316', evidence_gap: '#a78bfa' };
+const suggestionColor = { related_case: 'var(--color-blue-400)', wanted: 'var(--color-red-soft)', deadline: 'var(--color-amber-alt)', alert: '#f97316', evidence_gap: '#a78bfa' };
 
 function AmbientMemory({ firId }) {
   const [data, setData] = useState(null);

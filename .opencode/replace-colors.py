@@ -11,6 +11,16 @@ REPLACEMENTS = [
     ('#94a3b8', 'var(--color-gray-400)'),
     ('#f8fafc', 'var(--color-surface-50)'),
     ('#e2e8f0', 'var(--color-border-200)'),
+    # Second batch
+    ('#be185d', 'var(--color-pink-brand)'),
+    ('#fef2f2', 'var(--color-surface-red)'),
+    ('#f0fdf4', 'var(--color-surface-green)'),
+    ('#60a5fa', 'var(--color-blue-400)'),
+    ('#0d6efd', 'var(--color-blue-500)'),
+    ('#e5e7eb', 'var(--color-gray-200)'),
+    ('#e0e7ff', 'var(--color-indigo-100)'),
+    ('#fecaca', 'var(--color-red-200)'),
+    ('#1a3a5c', 'var(--accent)'),
 ]
 
 total_changed = 0

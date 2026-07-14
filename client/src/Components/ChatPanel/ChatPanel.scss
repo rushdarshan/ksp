@@ -78,7 +78,7 @@ $amber: #b8860b;
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: linear-gradient(135deg, #1a2a3f 0%, #1a3a5c 100%);
+  background: linear-gradient(135deg, #1a2a3f 0%, var(--accent) 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -96,14 +96,14 @@ $amber: #b8860b;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e0e7ff;
+  color: var(--color-indigo-100);
 }
 
 .cp__header-title {
   font-family: 'Fraunces', serif;
   font-size: 15px;
   font-weight: 600;
-  color: #e0e7ff;
+  color: var(--color-indigo-100);
 }
 
 .cp__header-sub {
@@ -133,7 +133,7 @@ $amber: #b8860b;
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #e0e7ff;
+    color: var(--color-indigo-100);
   }
 
   &--close:hover {
@@ -178,13 +178,13 @@ $amber: #b8860b;
 
     .cp__msg-content {
       background: $navy;
-      color: #e0e7ff;
+      color: var(--color-indigo-100);
       border-radius: 14px 14px 4px 14px;
     }
 
     .cp__msg-icon {
       background: $navy;
-      color: #e0e7ff;
+      color: var(--color-indigo-100);
     }
 
     .cp__msg-time {
