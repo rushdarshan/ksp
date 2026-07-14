@@ -122,7 +122,7 @@ const Sidebar = ({ basePath, sidebarOpen, setSidebarOpen, userRole, isCollapsed,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        transition: 'width 0.2s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'width 0.2s var(--easing), min-width 0.2s var(--easing)',
         overflowX: 'hidden'
       }}
     >
