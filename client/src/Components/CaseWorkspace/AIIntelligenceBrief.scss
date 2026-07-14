@@ -10,7 +10,7 @@ $text2: var(--text-secondary);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 
   // ── Refresh / latency bar ──
   &__refresh-bar {
@@ -106,7 +106,7 @@ $text2: var(--text-secondary);
     line-height: 1.65;
     color: $text;
     background: var(--bg, #f8fafc);
-    border-left: 3px solid $amber;
+    border: 1px solid var(--border-light);
     border-radius: 0 8px 8px 0;
 
     &:last-child { margin-bottom: 0; }
@@ -169,7 +169,7 @@ $text2: var(--text-secondary);
     color: $text2;
     background: var(--surface-alt);
     border-radius: 8px;
-    border-left: 3px solid $amber;
+    border: 1px solid var(--border-light);
   }
 
   // ── Veracity flags ──
@@ -186,7 +186,7 @@ $text2: var(--text-secondary);
     padding: 10px 14px;
     background: var(--bg, #f8fafc);
     border-radius: 8px;
-    border-left: 3px solid;
+    border: 1px solid var(--border-light);
   }
 
   &__vflag-type {
@@ -246,7 +246,7 @@ $text2: var(--text-secondary);
     font-size: 13px;
     font-weight: 700;
     color: $text;
-    font-family: 'Inter', monospace;
+    font-family: var(--font-mono);
   }
 
   &__similar-pct {
@@ -289,7 +289,7 @@ $text2: var(--text-secondary);
     font-size: 13px;
     font-weight: 700;
     color: $text;
-    font-family: 'Inter', monospace;
+    font-family: var(--font-mono);
   }
 
   &__entity-rel {
@@ -312,7 +312,7 @@ $text2: var(--text-secondary);
     padding: 12px 14px;
     background: var(--bg, #f8fafc);
     border-radius: 8px;
-    border-left: 3px solid;
+    border: 1px solid var(--border-light);
     margin-bottom: 8px;
 
     &:last-child { margin-bottom: 0; }
@@ -430,7 +430,7 @@ $text2: var(--text-secondary);
   padding: 6px 14px;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   color: #e0e7ff;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.15);

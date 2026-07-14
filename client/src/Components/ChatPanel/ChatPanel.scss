@@ -17,7 +17,7 @@ $amber: #b8860b;
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 4px 24px rgba(26, 58, 92, 0.35);
@@ -54,7 +54,7 @@ $amber: #b8860b;
   border: 1px solid var(--border-light, #e8e6e3);
   box-shadow: 0 12px 48px rgba(26, 58, 92, 0.18), 0 0 0 1px rgba(26, 58, 92, 0.06);
   overflow: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   animation: cp-slide-in 0.25s ease-out;
 }
 
@@ -277,15 +277,15 @@ $amber: #b8860b;
   height: 6px;
   border-radius: 50%;
   background: var(--text-secondary, #6b6b6b);
-  animation: cp-bounce 1.2s ease-in-out infinite;
+  animation: cp-pulse 1.2s ease-in-out infinite;
 
   &:nth-child(2) { animation-delay: 0.15s; }
   &:nth-child(3) { animation-delay: 0.3s; }
 }
 
-@keyframes cp-bounce {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30% { transform: translateY(-6px); opacity: 1; }
+@keyframes cp-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 // ── Suggested Queries ──
@@ -306,7 +306,7 @@ $amber: #b8860b;
   border: 1px solid rgba(26, 58, 92, 0.12);
   border-radius: 20px;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   transition: background 0.15s, border-color 0.15s;
 
   &:hover {
@@ -343,7 +343,7 @@ $amber: #b8860b;
   border: none;
   outline: none;
   font-size: 13px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   color: var(--text, #0a0a0a);
   background: transparent;
   padding: 8px 0;

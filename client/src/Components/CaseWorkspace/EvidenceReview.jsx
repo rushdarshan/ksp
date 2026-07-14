@@ -35,7 +35,7 @@ export default function EvidenceReview() {
             <div
               onClick={() => setExpanded(expanded === e.id ? null : e.id)}
               className="panel-shell panel-shell--compact"
-              style={{ borderLeft: `3px solid ${statusBorder[e.status]}`, display: 'flex', alignItems: 'center', gap: 'var(--space-md)', cursor: 'pointer' }}
+              style={{ border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: 'var(--space-md)', cursor: 'pointer' }}
             >
               <span style={{ fontSize: 'var(--size-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', minWidth: 28 }}>{e.id}</span>
               <div style={{ flex: 1 }}>

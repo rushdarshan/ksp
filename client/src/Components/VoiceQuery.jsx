@@ -233,7 +233,7 @@ const VoiceQuery = () => {
                                         height: '24px',
                                         background: 'var(--pastel-red-text)',
                                         borderRadius: '2px',
-                                        animation: 'bounce 0.8s ease-in-out infinite alternate',
+                                        animation: 'pulse 0.8s ease-in-out infinite alternate',
                                         animationDelay: `${i * 0.15}s`
                                     }} />
                                 ))}
@@ -348,7 +348,7 @@ const VoiceQuery = () => {
                 marginBottom: '16px', 
                 padding: '12px 16px', 
                 background: 'var(--surface-alt)', 
-                borderLeft: '3px solid var(--border-strong)', 
+                borderLeft: '1px solid var(--border-light)', 
                 borderRadius: 'var(--radius-sm)',
                 color: 'var(--text)' 
               }}>

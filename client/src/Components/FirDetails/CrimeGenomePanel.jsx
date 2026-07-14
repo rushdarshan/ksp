@@ -114,7 +114,7 @@ function ZIABrief({ firId }) {
       {/* Summary */}
       <div style={{
         background: 'var(--bg)', borderRadius: '10px', padding: '16px', marginBottom: '20px',
-        borderLeft: '3px solid var(--accent)', fontSize: '14px', lineHeight: '1.6', color: 'var(--text)',
+        border: '1px solid var(--border-light)', fontSize: '14px', lineHeight: '1.6', color: 'var(--text)',
       }}>
         {data.summary}
       </div>
@@ -147,7 +147,7 @@ function ZIABrief({ firId }) {
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: '12px',
               padding: '12px 16px', background: 'var(--bg)', borderRadius: '8px',
-              borderLeft: `3px solid ${priorityColor[r.priority] || '#888'}`,
+              border: '1px solid var(--border-light)',
             }}>
               <span style={{
                 fontSize: '10px', fontWeight: 700, padding: '2px 8px',
@@ -440,7 +440,7 @@ function TheoryBoard({ firId }) {
                       <div key={e.id} style={{
                         padding: '10px 14px', background: '#4ade8008',
                         border: '1px solid #4ade8030', borderRadius: '8px',
-                        borderLeft: '3px solid #4ade80',
+                        border: '1px solid var(--border-light)',
                         opacity: status === 'reject' ? 0.4 : 1,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -483,7 +483,7 @@ function TheoryBoard({ firId }) {
                       <div key={e.id} style={{
                         padding: '10px 14px', background: '#f8717108',
                         border: '1px solid #f8717130', borderRadius: '8px',
-                        borderLeft: '3px solid #f87171',
+                        border: '1px solid var(--border-light)',
                         opacity: status === 'reject' ? 0.4 : 1,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -730,7 +730,7 @@ function AmbientMemory({ firId }) {
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: '14px',
                 padding: '14px 16px', background: 'var(--bg)', borderRadius: '10px',
-                border: '1px solid var(--border-light)', borderLeft: `3px solid ${col}`,
+                border: '1px solid var(--border-light)',
               }}>
                 <span style={{ fontSize: '20px', lineHeight: 1 }}>{ic}</span>
                 <div style={{ flex: 1 }}>

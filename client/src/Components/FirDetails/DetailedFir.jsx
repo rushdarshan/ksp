@@ -629,7 +629,7 @@ export default function DetailedFir() {
               </div>
               <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 
-                <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--pastel-yellow-text)', background: 'var(--surface-alt)', borderRadius: '0 8px 8px 0' }}>
+                <div style={{ padding: '12px 16px', borderTop: '2px solid var(--pastel-yellow-text)', background: 'var(--surface-alt)', borderRadius: '8px' }}>
                   <strong style={{ color: 'var(--pastel-yellow-text)' }}>⚠️ CRITICAL GAPS IDENTIFIED</strong>
                   <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
                     <li>Vague suspect description in narrative: lacks height, weight, identifying clothes.</li>
@@ -638,7 +638,7 @@ export default function DetailedFir() {
                   </ul>
                 </div>
 
-                <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--pastel-green-text)', background: 'var(--surface-alt)', borderRadius: '0 8px 8px 0' }}>
+                <div style={{ padding: '12px 16px', borderTop: '2px solid var(--pastel-green-text)', background: 'var(--surface-alt)', borderRadius: '8px' }}>
                   <strong style={{ color: 'var(--pastel-green-text)' }}>⚖️ LEGAL PRECEDENTS & RECOMMENDATIONS</strong>
                   <p style={{ margin: '8px 0 0 0' }}>
                     Based on crime code <strong>{firData.CrimeHead_Name || 'Theft'}</strong>, ZIA retrieved the following legal precedents:
