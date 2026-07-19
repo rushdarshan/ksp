@@ -121,6 +121,19 @@
   transition: background-color 0.15s ease;
 }
 
+.dashboard .IconButton {
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 8px !important;
+  border-color: var(--dashboard-border);
+  background: var(--dashboard-sidebar);
+  color: var(--dashboard-ink);
+}
+
+.dashboard .IconButton svg { width: 17px; height: 17px; }
+
 .IconButton:hover {
   background-color: #f5f5f7;
 }

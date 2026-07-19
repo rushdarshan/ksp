@@ -32,7 +32,7 @@ export default function CaseOverview() {
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>30-Second Case Card</h3>
           <span style={{
             padding: '3px 10px', fontSize: 11, fontWeight: 700,
-            background: 'var(--color-red-soft)20', color: '#f87171', borderRadius: 6,
+            background: '#f8717120', color: '#f87171', borderRadius: 6,
             textTransform: 'uppercase', letterSpacing: '0.05em',
           }}>{stage}</span>
         </div>
@@ -50,7 +50,7 @@ export default function CaseOverview() {
           ))}
         </div>
 
-        <div style={{ padding: '12px 16px', background: 'var(--color-red-soft)08', borderRadius: 8, border: '1px solid var(--color-red-soft)30', fontSize: 13, color: '#f87171' }}>
+        <div style={{ padding: '12px 16px', background: '#f8717108', borderRadius: 8, border: '1px solid #f8717130', fontSize: 13, color: '#f87171' }}>
           <strong>Recommended Next Action:</strong> Complete CDR analysis for suspect phone. Section 65B certificate pending for CCTV evidence.
         </div>
       </div>
@@ -70,8 +70,8 @@ export default function CaseOverview() {
             }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
-                background: e.type === 'Person' ? '#60a5fa20' : e.type === 'Phone' ? '#a78bfa20' : '#f59e0b20',
-                color: e.type === 'Person' ? '#60a5fa' : e.type === 'Phone' ? '#a78bfa' : '#f59e0b',
+                background: e.type === 'Person' ? 'var(--color-blue-400)20' : e.type === 'Phone' ? '#a78bfa20' : '#f59e0b20',
+                color: e.type === 'Person' ? 'var(--color-blue-400)' : e.type === 'Phone' ? '#a78bfa' : '#f59e0b',
               }}>{e.type}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{e.name}</div>

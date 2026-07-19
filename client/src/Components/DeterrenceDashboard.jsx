@@ -74,7 +74,7 @@ const DeterrenceDashboard = () => {
                         </div>
                         <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
                             <div style={{ fontSize: '11px', color: 'var(--color-gray-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Crime</div>
-                            <div style={{ fontSize: '20px', fontWeight: 700, color: '#0d6efd', textTransform: 'capitalize', marginTop: '4px' }}>{data.exceedance.worstOffense.crimeType}</div>
+                            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-blue-500)', textTransform: 'capitalize', marginTop: '4px' }}>{data.exceedance.worstOffense.crimeType}</div>
                             <div style={{ fontSize: '11px', color: 'var(--color-gray-400)', marginTop: '4px' }}>highest risk type</div>
                         </div>
                         <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
@@ -90,7 +90,7 @@ const DeterrenceDashboard = () => {
                             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Risk Outlook</h3>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {data.exceedance.worstOffense.exceedanceCurve.map((ep, i) => (
-                                    <span key={i} style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: ep.returnPeriodYears <= 2 ? '#f0fdf4' : ep.returnPeriodYears <= 5 ? '#fffbeb' : '#fef2f2', color: ep.returnPeriodYears <= 2 ? '#16a34a' : ep.returnPeriodYears <= 5 ? 'var(--color-amber)' : 'var(--color-red)' }}>
+                                    <span key={i} style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: ep.returnPeriodYears <= 2 ? 'var(--color-surface-green)' : ep.returnPeriodYears <= 5 ? '#fffbeb' : 'var(--color-surface-red)', color: ep.returnPeriodYears <= 2 ? '#16a34a' : ep.returnPeriodYears <= 5 ? 'var(--color-amber)' : 'var(--color-red)' }}>
                                         {ep.returnPeriodYears}yr ≥ {ep.thresholdExceedance}
                                     </span>
                                 ))}

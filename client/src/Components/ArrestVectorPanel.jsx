@@ -125,7 +125,7 @@ export default function ArrestVectorPanel() {
               <div key={v.caseId} onClick={() => setSelectedFir(v)}
                 style={{
                   padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: `1px solid ${selectedFir?.caseId === v.caseId ? 'var(--accent)' : 'var(--border-light)'}`,
-                  background: selectedFir?.caseId === v.caseId ? 'var(--accent)08' : 'var(--surface)', cursor: 'pointer',
+                  background: selectedFir?.caseId === v.caseId ? '#1a3a5c08' : 'var(--surface)', cursor: 'pointer',
                 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                   <span style={{ fontSize: 'var(--size-caption)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{v.firNo}</span>

@@ -35,7 +35,7 @@ const GbvPanel = () => {
         }
     };
 
-    const COLORS = ['#be185d', '#e11d48', '#f43f5e', '#fb7185', '#f472b6', '#ec4899', '#db2777', '#9d174d'];
+    const COLORS = ['var(--color-pink-brand)', '#e11d48', '#f43f5e', '#fb7185', '#f472b6', '#ec4899', '#db2777', '#9d174d'];
 
     const getColor = (i) => COLORS[i % COLORS.length];
 
@@ -49,11 +49,11 @@ const GbvPanel = () => {
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                 <button onClick={() => { setActiveTab('overview'); loadAnalytics(); }}
-                    style={{ padding: '8px 16px', background: activeTab === 'overview' ? '#be185d' : 'var(--color-surface-50)', color: activeTab === 'overview' ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+                    style={{ padding: '8px 16px', background: activeTab === 'overview' ? 'var(--color-pink-brand)' : 'var(--color-surface-50)', color: activeTab === 'overview' ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                     Overview
                 </button>
                 <button onClick={() => { setActiveTab('resources'); loadResources(); }}
-                    style={{ padding: '8px 16px', background: activeTab === 'resources' ? '#be185d' : 'var(--color-surface-50)', color: activeTab === 'resources' ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+                    style={{ padding: '8px 16px', background: activeTab === 'resources' ? 'var(--color-pink-brand)' : 'var(--color-surface-50)', color: activeTab === 'resources' ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                     Support Resources
                 </button>
             </div>
@@ -66,18 +66,18 @@ const GbvPanel = () => {
                 <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
                         <div style={{ padding: '16px', background: '#fdf2f8', borderRadius: '10px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: '#be185d', fontWeight: 600 }}>TOTAL GBV CASES</div>
-                            <div style={{ fontSize: '28px', fontWeight: 700, color: '#be185d' }}>{data.summary.totalCases}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--color-pink-brand)', fontWeight: 600 }}>TOTAL GBV CASES</div>
+                            <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-pink-brand)' }}>{data.summary.totalCases}</div>
                         </div>
                         <div style={{ padding: '16px', background: '#fdf2f8', borderRadius: '10px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: '#be185d', fontWeight: 600 }}>TREND</div>
+                            <div style={{ fontSize: '11px', color: 'var(--color-pink-brand)', fontWeight: 600 }}>TREND</div>
                             <div style={{ fontSize: '28px', fontWeight: 700, color: data.summary.changePercent > 0 ? 'var(--color-red)' : '#22c55e' }}>
                                 {data.summary.changePercent > 0 ? '+' : ''}{data.summary.changePercent.toFixed(1)}%
                             </div>
                         </div>
                         <div style={{ padding: '16px', background: '#fdf2f8', borderRadius: '10px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: '#be185d', fontWeight: 600 }}>DISTRICTS AFFECTED</div>
-                            <div style={{ fontSize: '28px', fontWeight: 700, color: '#be185d' }}>{data.summary.districtsAffected}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--color-pink-brand)', fontWeight: 600 }}>DISTRICTS AFFECTED</div>
+                            <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-pink-brand)' }}>{data.summary.districtsAffected}</div>
                         </div>
                     </div>
 
@@ -106,7 +106,7 @@ const GbvPanel = () => {
                                         <span style={{ fontWeight: 600 }}>{d.count} ({(d.gbvShare * 100).toFixed(1)}%)</span>
                                     </div>
                                     <div style={{ height: '6px', background: 'var(--color-border-200)', borderRadius: '3px', overflow: 'hidden' }}>
-                                        <div style={{ height: '100%', width: `${Math.min(100, (d.count / Math.max(...data.byDistrict.map(x => x.count), 1)) * 100)}%`, background: '#be185d', borderRadius: '3px' }} />
+                                        <div style={{ height: '100%', width: `${Math.min(100, (d.count / Math.max(...data.byDistrict.map(x => x.count), 1)) * 100)}%`, background: 'var(--color-pink-brand)', borderRadius: '3px' }} />
                                     </div>
                                 </div>
                             ))}
@@ -115,11 +115,11 @@ const GbvPanel = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                         {data.repeatVictims.length > 0 && (
-                            <div style={{ padding: '16px', background: '#fef2f2', borderRadius: '10px', border: '1px solid #fecaca' }}>
+                            <div style={{ padding: '16px', background: 'var(--color-surface-red)', borderRadius: '10px', border: '1px solid var(--color-red-200)' }}>
                                 <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--color-red)' }}>Repeat GBV Victims by District</div>
                                 <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
                                     <thead>
-                                        <tr style={{ borderBottom: '2px solid #fecaca' }}>
+                                        <tr style={{ borderBottom: '2px solid var(--color-red-200)' }}>
                                             <th style={{ textAlign: 'left', padding: '4px' }}>District</th>
                                             <th style={{ textAlign: 'right', padding: '4px' }}>Cases</th>
                                             <th style={{ textAlign: 'right', padding: '4px' }}>Victims</th>
@@ -127,7 +127,7 @@ const GbvPanel = () => {
                                     </thead>
                                     <tbody>
                                         {data.repeatVictims.slice(0, 8).map((r, i) => (
-                                            <tr key={i} style={{ borderBottom: '1px solid #fecaca' }}>
+                                            <tr key={i} style={{ borderBottom: '1px solid var(--color-red-200)' }}>
                                                 <td style={{ padding: '4px' }}>District {r.districtId}</td>
                                                 <td style={{ padding: '4px', textAlign: 'right', fontWeight: 600 }}>{r.count}</td>
                                                 <td style={{ padding: '4px', textAlign: 'right' }}>{r.victimCount}</td>
@@ -141,7 +141,7 @@ const GbvPanel = () => {
                         {data.convictionRate && (
                             <div style={{ padding: '16px', background: 'var(--color-surface-50)', borderRadius: '10px', border: '1px solid var(--color-border-200)' }}>
                                 <div style={{ fontWeight: 600, marginBottom: '8px' }}>Conviction Rate</div>
-                                <div style={{ fontSize: '32px', fontWeight: 700, color: '#be185d', marginBottom: '8px' }}>
+                                <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-pink-brand)', marginBottom: '8px' }}>
                                     {(data.convictionRate.overall * 100).toFixed(0)}%
                                 </div>
                                 <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px' }}>
@@ -167,7 +167,7 @@ const GbvPanel = () => {
                                     return (
                                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                             <div title={`${m.year}-${m.month}: ${m.cases}`}
-                                                style={{ width: '100%', height: `${h}px`, background: '#be185d', borderRadius: '2px', minHeight: '4px', opacity: 0.6 + (h / 90) * 0.4 }} />
+                                                style={{ width: '100%', height: `${h}px`, background: 'var(--color-pink-brand)', borderRadius: '2px', minHeight: '4px', opacity: 0.6 + (h / 90) * 0.4 }} />
                                         </div>
                                     );
                                 })}
@@ -193,7 +193,7 @@ const GbvPanel = () => {
                                     </div>
                                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                                         {s.services.map((sv, j) => (
-                                            <span key={j} style={{ padding: '2px 8px', background: '#fce7f3', borderRadius: '4px', fontSize: '11px', color: '#be185d' }}>
+                                            <span key={j} style={{ padding: '2px 8px', background: '#fce7f3', borderRadius: '4px', fontSize: '11px', color: 'var(--color-pink-brand)' }}>
                                                 {sv}
                                             </span>
                                         ))}
@@ -209,7 +209,7 @@ const GbvPanel = () => {
                             {resources.laws.map((l, i) => (
                                 <div key={i} style={{ padding: '10px 14px', background: 'var(--color-surface-50)', borderRadius: '8px', border: '1px solid var(--color-border-200)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontSize: '13px' }}>{l.name}</span>
-                                    <span style={{ fontSize: '11px', color: '#be185d', fontWeight: 600 }}>{l.key}</span>
+                                    <span style={{ fontSize: '11px', color: 'var(--color-pink-brand)', fontWeight: 600 }}>{l.key}</span>
                                 </div>
                             ))}
                         </div>

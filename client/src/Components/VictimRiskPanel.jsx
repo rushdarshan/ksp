@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { PiHourglass, PiMagnifyingGlass, PiShieldCheckered, PiUsersThree } from 'react-icons/pi';
 
 const VictimRiskPanel = () => {
     const [searchParams] = useSearchParams();
@@ -50,7 +51,7 @@ const VictimRiskPanel = () => {
 
     return (
         <div className="panel" style={{ padding: '20px', maxWidth: '900px' }}>
-            <h2>🛡️ Victim Risk Shield</h2>
+            <h2 className="panel-icon-title"><PiShieldCheckered weight="duotone" /> Victim Risk Shield</h2>
             <p style={{ color: '#666', marginBottom: '20px' }}>
                 Automated repeat victimization risk scoring. ProVict-style model adapted for Karnataka Police.
                 Every FIR is scored for victim revictimization risk — no existing Indian police platform does this.
@@ -66,14 +67,14 @@ const VictimRiskPanel = () => {
                             onKeyDown={e => e.key === 'Enter' && search()} />
                         <button onClick={search} disabled={loading}
                             style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
-                            {loading ? '⏳' : '🔍 Search'}
+                            {loading ? <PiHourglass /> : <><PiMagnifyingGlass /> Search</>}
                         </button>
                     </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
                     <button onClick={loadHighRisk}
                         style={{ padding: '10px 20px', background: 'var(--color-surface-50)', border: '1px solid #d1d5db', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                        👥 Show High-Risk Victims
+                        <PiUsersThree /> Show High-Risk Victims
                     </button>
                 </div>
             </div>
@@ -123,13 +124,13 @@ const VictimRiskPanel = () => {
                     <div style={{ marginBottom: '12px' }}>
                         <div style={{ fontWeight: 600, marginBottom: '6px' }}>Risk Factors</div>
                         {result.factors.map((f, i) => (
-                            <div key={i} style={{ padding: '6px 12px', background: result.riskLevel === 'High' ? '#fef2f2' : '#fffbeb', borderRadius: '6px', marginBottom: '4px', fontSize: '13px' }}>
+                            <div key={i} style={{ padding: '6px 12px', background: result.riskLevel === 'High' ? 'var(--color-surface-red)' : '#fffbeb', borderRadius: '6px', marginBottom: '4px', fontSize: '13px' }}>
                                 {result.riskLevel === 'High' ? '🚩' : '⚡'} {f}
                             </div>
                         ))}
                     </div>
 
-                    <div style={{ padding: '12px', background: riskColor(result.riskLevel) === 'var(--color-red)' ? '#fef2f2' : riskColor(result.riskLevel) === '#f59e0b' ? '#fffbeb' : '#f0fdf4', borderRadius: '8px', fontSize: '13px' }}>
+                    <div style={{ padding: '12px', background: riskColor(result.riskLevel) === 'var(--color-red)' ? 'var(--color-surface-red)' : riskColor(result.riskLevel) === '#f59e0b' ? '#fffbeb' : 'var(--color-surface-green)', borderRadius: '8px', fontSize: '13px' }}>
                         <strong>Recommendation:</strong> {result.recommendation}
                     </div>
 
@@ -160,11 +161,11 @@ const VictimRiskPanel = () => {
             )}
 
             {highRiskVictims && (
-                <div style={{ padding: '16px', background: '#fef2f2', borderRadius: '12px', border: '1px solid #fecaca' }}>
+                <div style={{ padding: '16px', background: 'var(--color-surface-red)', borderRadius: '12px', border: '1px solid var(--color-red-200)' }}>
                     <div style={{ fontWeight: 600, marginBottom: '12px' }}>🚨 High-Risk Victims (multiple FIRs)</div>
                     <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #fecaca' }}>
+                            <tr style={{ borderBottom: '2px solid var(--color-red-200)' }}>
                                 <th style={{ textAlign: 'left', padding: '6px' }}>Victim ID</th>
                                 <th style={{ textAlign: 'left', padding: '6px' }}>FIR Count</th>
                                 <th style={{ textAlign: 'left', padding: '6px' }}>Action</th>
@@ -172,7 +173,7 @@ const VictimRiskPanel = () => {
                         </thead>
                         <tbody>
                             {highRiskVictims.map((v, i) => (
-                                <tr key={i} style={{ borderBottom: '1px solid #fecaca' }}>
+                                <tr key={i} style={{ borderBottom: '1px solid var(--color-red-200)' }}>
                                     <td style={{ padding: '6px' }}>{v.victimId}</td>
                                     <td style={{ padding: '6px' }}><strong>{v.count}</strong></td>
                                     <td style={{ padding: '6px' }}>

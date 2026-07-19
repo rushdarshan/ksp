@@ -5,8 +5,58 @@
   flex-direction: column;
   gap: var(--space-lg);
   width: 100%;
-  padding: var(--space-sm) 0;
+  padding: 0;
 }
+
+.myday-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.myday-stat {
+  min-height: 126px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(27, 26, 24, .12);
+  border-radius: 10px;
+  color: var(--dashboard-ink);
+}
+
+.myday-stat--plum { background: var(--dashboard-plum); }
+.myday-stat--peach { background: var(--dashboard-peach); }
+.myday-stat--blue { background: var(--dashboard-blue); }
+
+.myday-stat__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.myday-stat__top > span { display: inline-flex; align-items: center; gap: 6px; }
+.myday-stat__top svg { width: 16px; height: 16px; }
+.myday-stat__top button {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50% !important;
+  background: var(--dashboard-ink);
+  color: #fff;
+  cursor: pointer;
+}
+
+.myday-stat__value {
+  margin-top: auto;
+  font: 500 28px/1 var(--font-mono);
+}
+
+.myday-stat p { margin: 6px 0 0; font-size: 9px; color: rgba(27, 26, 24, .7); }
 
 .myday-grid {
   display: grid;
@@ -104,10 +154,10 @@
 /* Daily Brief */
 .daily-brief {
   padding: 24px;
-  background: linear-gradient(135deg, #1a2a3f 0%, #1a3a5c 50%, #1a2a3f 100%);
+  background: var(--surface-alt);
   border-radius: 16px;
-  border: 1px solid rgba(26, 58, 92, 0.3);
-  box-shadow: 0 8px 32px rgba(26, 58, 92, 0.15);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -124,18 +174,18 @@
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 500;
-  color: #e0e7ff;
+  color: var(--text);
 }
 
 .daily-brief-timestamp {
   font-size: 11px;
-  color: #93b4d4;
+  color: var(--accent-text);
   font-family: var(--font-mono);
 }
 
 .daily-brief-message {
   margin: 0;
-  color: #c7d2fe;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -161,16 +211,16 @@
 }
 
 .daily-brief-tag--blue {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: var(--status-info-bg);
+  color: var(--status-info-text);
+  border: 1px solid rgba(89, 67, 116, 0.2);
 }
 
 .daily-brief-retry {
   padding: 6px 16px;
-  background: rgba(26, 58, 92, 0.3);
-  color: #93b4d4;
-  border: 1px solid rgba(26, 58, 92, 0.4);
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: 1px solid var(--accent);
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
@@ -179,8 +229,8 @@
 }
 
 .daily-brief-retry:hover {
-  background: rgba(26, 58, 92, 0.5);
-  color: #c7d2fe;
+  background: var(--accent-hover);
+  color: var(--text-inverse);
 }
 
 @media screen and (max-width: 900px) {
@@ -198,9 +248,15 @@
   gap: var(--space-md);
 }
 
+.dashboard .myday-welcome {
+  padding: 2px 0;
+  border: 0 !important;
+  background: transparent !important;
+}
+
 .myday-welcome__title {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 21px;
   color: var(--text);
   margin-bottom: 4px;
   font-weight: 500;
@@ -218,6 +274,36 @@
   border-radius: 50%;
   background-color: var(--pastel-green-text);
   display: inline-block;
+}
+
+.daily-brief__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--dashboard-ink);
+  color: #fff;
+}
+
+.daily-brief__icon svg { width: 19px; height: 19px; }
+
+.alerts-feed__title {
+  margin: 0;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+@media screen and (max-width: 680px) {
+  .myday-summary { grid-template-columns: 1fr; }
+  .myday-stat { min-height: 112px; }
+  .myday-welcome__title { font-size: 18px; }
 }
 
 // Shortcuts widget

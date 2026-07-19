@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiChevronRight } from 'react-icons/fi';
+import { PiCaretRight } from 'react-icons/pi';
 
 function CaseCardSkeleton() {
   const pulse = {
@@ -89,8 +89,8 @@ export default function CaseCard({ c }) {
             {c.hasNewMatch && (
               <span style={{
                 padding: '2px 8px', fontSize: '9px', fontWeight: 800,
-                background: 'var(--color-red-soft)20', color: '#f87171', borderRadius: '4px',
-                border: '1px solid var(--color-red-soft)40', textTransform: 'uppercase',
+                background: '#f8717120', color: '#f87171', borderRadius: '4px',
+                border: '1px solid #f8717140', textTransform: 'uppercase',
               }}>New Match</span>
             )}
           </div>
@@ -148,7 +148,7 @@ export default function CaseCard({ c }) {
       }}>
         <span style={{ fontSize: '14px' }}>💡</span>
         <span style={{ flex: 1 }}>{c.recommendation}</span>
-        <FiChevronRight />
+        <PiCaretRight />
       </div>
     </div>
   );

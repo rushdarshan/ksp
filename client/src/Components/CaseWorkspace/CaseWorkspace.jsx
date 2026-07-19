@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import {
+  PiArrowLeft, PiCalendar, PiClipboardText, PiFlask, PiGraph,
+  PiNotePencil, PiRobot, PiScales, PiTarget
+} from 'react-icons/pi';
 import CrimeGenomePanel from '../FirDetails/CrimeGenomePanel';
 import CoAccusedNetworkPanel from '../CoAccusedNetworkPanel';
 import EntityGraphPanel from './EntityGraphPanel';
@@ -20,14 +24,14 @@ export const CaseContext = createContext(null);
 export const useCaseContext = () => useContext(CaseContext);
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: '📋' },
-  { id: 'brief', label: 'AI Brief', icon: '🤖' },
-  { id: 'theory', label: 'Theory Board', icon: '🎯' },
-  { id: 'evidence', label: 'Evidence', icon: '🔬' },
-  { id: 'network', label: 'Entity Graph', icon: '🕸️' },
-  { id: 'timeline', label: 'Timeline', icon: '📅' },
-  { id: 'notes', label: 'Notes', icon: '📝' },
-  { id: 'chargesheet', label: 'Chargesheet', icon: '⚖️' },
+  { id: 'overview', label: 'Overview', icon: PiClipboardText },
+  { id: 'brief', label: 'AI Brief', icon: PiRobot },
+  { id: 'theory', label: 'Theory Board', icon: PiTarget },
+  { id: 'evidence', label: 'Evidence', icon: PiFlask },
+  { id: 'network', label: 'Entity Graph', icon: PiGraph },
+  { id: 'timeline', label: 'Timeline', icon: PiCalendar },
+  { id: 'notes', label: 'Notes', icon: PiNotePencil },
+  { id: 'chargesheet', label: 'Chargesheet', icon: PiScales },
 ];
 
 function getHashTab() {
@@ -122,20 +126,23 @@ export default function CaseWorkspace() {
           </div>
 
           <CaseStrengthMeter firId={firId} />
-          <button className="case-back" onClick={() => navigate(-1)}>← Back</button>
+          <button className="case-back" onClick={() => navigate(-1)}><PiArrowLeft /> Back</button>
         </div>
 
         <div className="case-tabs">
-          {TABS.map(tab => (
+          {TABS.map(tab => {
+            const TabIcon = tab.icon;
+            return (
             <button
               key={tab.id}
               onClick={() => switchTab(tab.id)}
               className={`case-tab ${activeTab === tab.id ? 'case-tab--active' : ''}`}
             >
-              <span className="case-tab-icon">{tab.icon}</span>
+              <span className="case-tab-icon"><TabIcon /></span>
               <span>{tab.label}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
 
         <div className="case-content">

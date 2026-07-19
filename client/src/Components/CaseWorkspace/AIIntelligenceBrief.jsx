@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCaseContext } from './CaseWorkspace';
-import { FaDownload } from 'react-icons/fa';
+import { PiDownloadSimple, PiRobot } from 'react-icons/pi';
 import './AIIntelligenceBrief.scss';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
@@ -185,7 +185,7 @@ export default function AIIntelligenceBrief() {
   if (loading) return (
     <div className="aib">
       <div className="aib__header">
-        <span className="aib__icon">🤖</span>
+        <span className="aib__icon"><PiRobot weight="duotone" /></span>
         <div>
           <h2 className="aib__title">ZIA Intelligence Brief</h2>
           <p className="aib__sub">{firId} — Synthesising multi-agent analysis</p>
@@ -206,8 +206,8 @@ export default function AIIntelligenceBrief() {
     const printWindow = window.open('', '_blank');
     printWindow.document.write('<html><head><title>ZIA Brief - ' + firId + '</title>');
     printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: system-ui, sans-serif; color: #0a0a0a; padding: 32px; max-width: 800px; margin: 0 auto; }');
-    printWindow.document.write('h2 { font-family: Fraunces, serif; font-size: 22px; margin-bottom: 4px; }');
+    printWindow.document.write('body { font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif; color: #0b0c0e; padding: 32px; max-width: 800px; margin: 0 auto; }');
+    printWindow.document.write('h2 { font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif; font-size: 22px; margin-bottom: 4px; }');
     printWindow.document.write('.aib__card { border: 1px solid #e8e6e3; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }');
     printWindow.document.write('.aib__card-head { padding: 10px 16px; background: var(--color-surface-50); border-bottom: 1px solid #e8e6e3; font-weight: 600; font-size: 14px; }');
     printWindow.document.write('.aib__card-body { padding: 16px; font-size: 13px; line-height: 1.6; }');
@@ -244,7 +244,7 @@ export default function AIIntelligenceBrief() {
 
       {/* Header */}
       <div className="aib__header">
-        <span className="aib__icon">🤖</span>
+        <span className="aib__icon"><PiRobot weight="duotone" /></span>
         <div>
           <h2 className="aib__title">ZIA Intelligence Brief</h2>
           <p className="aib__sub">{firId} — Multi-agent synthesis</p>
@@ -253,7 +253,7 @@ export default function AIIntelligenceBrief() {
           <ScoreGauge score={data.solvability?.score || 0} label="Solvability" size={72} />
           <ScoreGauge score={data.veracity?.score || 0} label="Veracity" size={72} />
           <button className="aib__export-btn" onClick={exportPDF} title="Export as PDF">
-            <FaDownload size={14} /> Export PDF
+            <PiDownloadSimple size={14} /> Export PDF
           </button>
         </div>
       </div>

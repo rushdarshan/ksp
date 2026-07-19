@@ -51,16 +51,16 @@ export default function SolvabilityBadge({ firData }) {
 
     if (loading) {
         return (
-        <div className="panel" style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#f9fafb' }}>
-                <div style={{ height: '16px', width: '200px', background: '#e5e7eb', borderRadius: '8px', marginBottom: '8px' }} />
-                <div style={{ height: '12px', width: '160px', background: '#e5e7eb', borderRadius: '8px' }} />
+        <div className="panel" style={{ marginTop: '1rem', padding: '1rem', border: '1px solid var(--color-gray-200)', borderRadius: '8px', background: '#f9fafb' }}>
+                <div style={{ height: '16px', width: '200px', background: 'var(--color-gray-200)', borderRadius: '8px', marginBottom: '8px' }} />
+                <div style={{ height: '12px', width: '160px', background: 'var(--color-gray-200)', borderRadius: '8px' }} />
             </div>
         );
     }
 
     if (error) {
         return (
-            <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #fca5a5', borderRadius: '8px', background: '#fef2f2' }}>
+            <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #fca5a5', borderRadius: '8px', background: 'var(--color-surface-red)' }}>
                 <p style={{ color: 'var(--color-red)', margin: '0 0 8px 0', fontSize: '14px' }}>Analysis unavailable</p>
                 <button onClick={fetchScore} style={{ padding: '4px 12px', background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
             </div>
@@ -74,7 +74,7 @@ export default function SolvabilityBadge({ firData }) {
     const label = getScoreLabel(solvabilityScore);
 
     return (
-        <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#f9fafb' }}>
+        <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid var(--color-gray-200)', borderRadius: '8px', background: '#f9fafb' }}>
             <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600 }}>Solvability Index</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <div
@@ -84,7 +84,7 @@ export default function SolvabilityBadge({ firData }) {
                     aria-valuemax={100}
                     aria-label={`Solvability score ${solvabilityScore} out of 100`}
                     style={{
-                        width: '160px', height: '20px', background: '#e5e7eb', borderRadius: '10px',
+                        width: '160px', height: '20px', background: 'var(--color-gray-200)', borderRadius: '10px',
                         overflow: 'hidden', position: 'relative'
                     }}
                 >

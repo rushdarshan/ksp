@@ -1,279 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { PiArrowRight, PiBellRinging, PiShieldWarning } from 'react-icons/pi';
 
-const RightSidebar = () => {
+const LoadingBlock = () => (
+  <div className="railSkeleton" aria-hidden="true">
+    <span /><span /><span />
+  </div>
+);
+
+export default function RightSidebar() {
   const [alerts, setAlerts] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [loadingAlerts, setLoadingAlerts] = useState(true);
-  const [loadingNotifs, setLoadingNotifs] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAlerts = () => {
-      fetch('/server/fir_api/alerts')
-        .then(res => res.ok ? res.json() : [])
-        .then(data => {
-          setAlerts(data.slice(0, 4));
-          setLoadingAlerts(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setLoadingAlerts(false);
-        });
-    };
-
-    const fetchNotifications = () => {
-      fetch('/server/case_management/case-management/notifications')
-        .then(res => res.ok ? res.json() : { notifications: [] })
-        .then(data => {
-          setNotifications((Array.isArray(data) ? data : data.notifications || []).slice(0, 4));
-          setLoadingNotifs(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setLoadingNotifs(false);
-        });
-    };
-
-    fetchAlerts();
-    fetchNotifications();
-    const alertInterval = setInterval(fetchAlerts, 5000);
-    const notifInterval = setInterval(fetchNotifications, 15000);
-    return () => {
-      clearInterval(alertInterval);
-      clearInterval(notifInterval);
-    };
+    let active = true;
+    Promise.all([
+      fetch('/server/fir_api/alerts').then((response) => response.ok ? response.json() : []),
+      fetch('/server/case_management/case-management/notifications').then((response) => response.ok ? response.json() : { notifications: [] }),
+    ]).then(([alertData, notificationData]) => {
+      if (!active) return;
+      setAlerts((Array.isArray(alertData) ? alertData : []).slice(0, 3));
+      setNotifications((Array.isArray(notificationData) ? notificationData : notificationData.notifications || []).slice(0, 3));
+    }).catch(() => {}).finally(() => active && setLoading(false));
+    return () => { active = false; };
   }, []);
 
-  const renderSkeleton = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 0' }}>
-      <div className="skeleton-bar" style={{ width: '40%' }}></div>
-      <div className="skeleton-bar" style={{ width: '90%' }}></div>
-      <div className="skeleton-bar" style={{ width: '70%' }}></div>
-    </div>
-  );
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      {/* Proactive Alerts Section */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h4 style={{
-            margin: 0,
-            fontSize: '11px',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-body)'
-          }}>
-            Proactive Alerts
-          </h4>
-          <span className="pulsing-dot" style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--pastel-red-text)',
-            boxShadow: '0 0 8px var(--pastel-red-text)',
-            display: 'inline-block'
-          }}></span>
+    <aside className="insightRail" aria-label="Operational updates">
+      <div className="railHeader">
+        <div>
+          <span>Live desk</span>
+          <h2>Operational pulse</h2>
         </div>
-
-        {loadingAlerts ? (
-          <>
-            {renderSkeleton()}
-            {renderSkeleton()}
-          </>
-        ) : alerts.length === 0 ? (
-          <div style={{
-            padding: '16px',
-            textAlign: 'center',
-            fontSize: '12px',
-            color: 'var(--text-secondary)',
-            border: '1px dashed var(--border)',
-            borderRadius: '12px'
-          }}>
-            No active threat alerts
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {alerts.map(alert => (
-              <div
-                key={alert.id}
-                style={{
-                  padding: '14px',
-                  backgroundColor: 'var(--surface-alt)',
-                  borderRadius: '16px',
-                  border: '1px solid var(--border-light)',
-                  transition: 'transform 0.15s ease'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                  <span style={{
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: 'var(--text)',
-                    fontFamily: 'var(--font-body)'
-                  }}>
-                    {alert.title}
-                  </span>
-                  <span style={{
-                    fontSize: '9px',
-                    fontWeight: 600,
-                    padding: '2px 6px',
-                    borderRadius: 'var(--radius-full)',
-                    backgroundColor: alert.severity === 'CRITICAL' ? 'var(--pastel-red)' : 'var(--pastel-amber)',
-                    color: alert.severity === 'CRITICAL' ? 'var(--pastel-red-text)' : 'var(--pastel-amber-text)',
-                    textTransform: 'uppercase'
-                  }}>
-                    {alert.severity}
-                  </span>
-                </div>
-                <p style={{
-                  margin: 0,
-                  fontSize: '12px',
-                  color: 'var(--text-secondary)',
-                  lineHeight: '1.4',
-                  marginBottom: '8px'
-                }}>
-                  {alert.description}
-                </p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{
-                    fontSize: '10px',
-                    color: 'var(--text-secondary)',
-                    fontFamily: 'var(--font-mono)'
-                  }}>
-                    {new Date(alert.created_at || alert.timestamp || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  {alert.recommendation && (
-                    <span style={{
-                      fontSize: '10px',
-                      color: 'var(--accent)',
-                      fontWeight: 500,
-                      cursor: 'help'
-                    }} title={alert.recommendation}>
-                      View Action
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="railLive"><span /> Live</div>
       </div>
 
-      {/* Victim Notifications Section */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h4 style={{
-            margin: 0,
-            fontSize: '11px',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-body)'
-          }}>
-            Victim Notifications
-          </h4>
-          <span style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--pastel-blue-text)',
-            display: 'inline-block'
-          }}></span>
-        </div>
+      <section className="railSection">
+        <div className="railSectionTitle"><PiShieldWarning weight="fill" /><h3>Proactive alerts</h3><span>{alerts.length}</span></div>
+        {loading ? <><LoadingBlock /><LoadingBlock /></> : alerts.length ? alerts.map((alert) => (
+          <article className="railItem" key={alert.id}>
+            <div className="railItemTop">
+              <strong>{alert.title}</strong>
+              <span className={`railSeverity railSeverity--${String(alert.severity || 'watch').toLowerCase()}`}>{alert.severity || 'Watch'}</span>
+            </div>
+            <p>{alert.description}</p>
+            <time>{new Date(alert.created_at || alert.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+          </article>
+        )) : <div className="railEmpty">No active threat alerts</div>}
+      </section>
 
-        {loadingNotifs ? (
-          <>
-            {renderSkeleton()}
-            {renderSkeleton()}
-          </>
-        ) : notifications.length === 0 ? (
-          <div style={{
-            padding: '16px',
-            textAlign: 'center',
-            fontSize: '12px',
-            color: 'var(--text-secondary)',
-            border: '1px dashed var(--border)',
-            borderRadius: '12px'
-          }}>
-            No recent notification dispatches
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {notifications.map(notif => (
-              <div
-                key={notif.caseId}
-                style={{
-                  padding: '14px',
-                  backgroundColor: 'var(--surface)',
-                  borderRadius: '16px',
-                  border: '1px solid var(--border)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: 'var(--text)',
-                    fontFamily: 'var(--font-mono)'
-                  }}>
-                    {notif.firNo}
-                  </span>
-                  {notif.unread && (
-                    <span style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--accent)'
-                    }}></span>
-                  )}
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: 'var(--text-secondary)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <span>Stage: <strong style={{ color: 'var(--text)' }}>{notif.currentStage}</strong></span>
-                  <span style={{
-                    fontSize: '10px',
-                    padding: '1px 6px',
-                    borderRadius: 'var(--radius-full)',
-                    backgroundColor: 'var(--pastel-blue)',
-                    color: 'var(--pastel-blue-text)',
-                    fontFamily: 'var(--font-body)'
-                  }}>
-                    {notif.notificationCount} sent
-                  </span>
-                </div>
-              </div>
-            ))}
-            <Link
-              to="notifications"
-              style={{
-                display: 'block',
-                textAlign: 'center',
-                fontSize: '12px',
-                fontWeight: 500,
-                color: 'var(--accent)',
-                marginTop: '4px',
-                textDecoration: 'none'
-              }}
-            >
-              View Dispatch Ledger →
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
+      <section className="railSection">
+        <div className="railSectionTitle"><PiBellRinging weight="fill" /><h3>Victim notifications</h3><span>{notifications.length}</span></div>
+        {loading ? <LoadingBlock /> : notifications.length ? notifications.map((notification) => (
+          <article className="railItem railItem--notification" key={notification.caseId}>
+            <div className="railItemTop"><strong>{notification.firNo}</strong>{notification.unread && <i />}</div>
+            <p>Stage: <b>{notification.currentStage}</b></p>
+            <time>{notification.notificationCount} dispatches</time>
+          </article>
+        )) : <div className="railEmpty">No recent dispatches</div>}
+        <Link className="railLink" to="notifications">Open dispatch ledger <PiArrowRight /></Link>
+      </section>
+    </aside>
   );
-};
-
-export default RightSidebar;
+}

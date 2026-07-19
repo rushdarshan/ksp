@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
+import './App.scss';
 import './styles/components.css';
 import './styles/mobile.css';
+import './styles/dashboard.css';
 import RedactionSkeleton from './ui/Dropdown/RedactionSkeleton';
 import {
   createHashRouter,
@@ -61,6 +63,17 @@ const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoar
 
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
+
+const AppFrame = ({ children, showChat = true }) => (
+  <>
+    {children}
+    {showChat && (
+      <React.Suspense fallback={null}>
+        <ChatPanel />
+      </React.Suspense>
+    )}
+  </>
+);
 
 const sharedChildren = [
   {
@@ -146,36 +159,36 @@ const ProtectedRoute = ({ element: Element }) => {
 };
 
 const router = createHashRouter([
-  { path: "/", element: <Lazy><LandingPage/></Lazy> },
-  { path: "/login", element: <Lazy><Login/></Lazy> },
-  { path: "/register", element: <Lazy><Register/></Lazy> },
+  { path: "/", element: <AppFrame showChat={false}><Lazy><LandingPage/></Lazy></AppFrame> },
+  { path: "/login", element: <AppFrame><Lazy><Login/></Lazy></AppFrame> },
+  { path: "/register", element: <AppFrame><Lazy><Register/></Lazy></AppFrame> },
   {
     path: "/dashboard",
-    element: <ProtectedRoute element={<Lazy><Dashboard /></Lazy>} />,
-    children: [{ path: "home", element: <Lazy><Body /></Lazy> }, ...sharedChildren,
+    element: <AppFrame><ProtectedRoute element={<Lazy><Dashboard /></Lazy>} /></AppFrame>,
+    children: [{ index: true, element: <Navigate to="home" replace /> }, { path: "home", element: <Lazy><Body /></Lazy> }, ...sharedChildren,
       { path: "details", element: <Lazy><Details/></Lazy> },
     ]
   },
   {
     path: "/inspector",
-    element: <ProtectedRoute element={<Lazy><InspectorDash/></Lazy>} />,
+    element: <AppFrame><ProtectedRoute element={<Lazy><InspectorDash/></Lazy>} /></AppFrame>,
     children: [{ path: "home", element: <Lazy><InspectorBody/></Lazy>, index: true }, ...sharedChildren]
   },
   {
     path: "/subinspector",
-    element: <ProtectedRoute element={<Lazy><SubinspectorDash /></Lazy>} />,
+    element: <AppFrame><ProtectedRoute element={<Lazy><SubinspectorDash /></Lazy>} /></AppFrame>,
     children: [{ path: "home", element: <Lazy><SubinspectorBody/></Lazy> }, ...sharedChildren]
   },
   {
     path: "/supervisor",
-    element: <ProtectedRoute element={<InspectorDash />} />,
+    element: <AppFrame><ProtectedRoute element={<InspectorDash />} /></AppFrame>,
     children: [
       { path: "station-overview", element: <Lazy><StationOverview/></Lazy> },
       { path: "chargesheet-review", element: <Lazy><ChargesheetReview/></Lazy> },
       ...sharedChildren,
     ]
   },
-  { path: "/public/deterrence", element: <Lazy><DeterrenceDashboard/></Lazy> }
+  { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> }
 ]);
 
 function App() {
@@ -183,9 +196,6 @@ function App() {
     <AuthProvider>
       <FilterProvider>
         <RouterProvider router={router} />
-        <React.Suspense fallback={null}>
-          <ChatPanel />
-        </React.Suspense>
       </FilterProvider>
     </AuthProvider>
   )

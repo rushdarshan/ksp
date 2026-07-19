@@ -1,8 +1,6 @@
 // ── ChatPanel — ZIA Chat Assistant ─────────────────────────
-$navy: #1a3a5c;
-$amber: #b8860b;
+// Fully reconciled with DESIGN.md tokens.
 
-// ── Floating Action Button ──
 .cp__fab {
   position: fixed;
   bottom: 28px;
@@ -12,20 +10,20 @@ $amber: #b8860b;
   align-items: center;
   gap: 8px;
   padding: 14px 22px;
-  background: $navy;
-  color: #fdfcfc;
+  background: var(--accent);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 50px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--size-sub);
   font-weight: 600;
-  box-shadow: 0 4px 24px rgba(26, 58, 92, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s var(--easing), box-shadow 0.2s var(--easing);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(26, 58, 92, 0.45);
+    box-shadow: 0 8px 32px rgba(26, 58, 92, 0.35);
   }
 
   &:active {
@@ -49,27 +47,35 @@ $amber: #b8860b;
   max-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
-  background: #fdfcfc;
-  border-radius: 16px;
-  border: 1px solid var(--border-light, #e8e6e3);
-  box-shadow: 0 12px 48px rgba(26, 58, 92, 0.18), 0 0 0 1px rgba(26, 58, 92, 0.06);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   font-family: var(--font-body);
-  animation: cp-slide-in 0.25s ease-out;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-@keyframes cp-slide-in {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes cp-slide-out {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to { opacity: 0; transform: translateY(16px) scale(0.97); }
-}
-
+.cp.entering,
 .cp.closing {
-  animation: cp-slide-out 0.25s ease-out forwards;
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp {
+    transform: none;
+    transition: opacity 160ms ease;
+  }
+
+  .cp.entering,
+  .cp.closing {
+    transform: none;
+  }
 }
 
 // ── Header ──
@@ -78,8 +84,8 @@ $amber: #b8860b;
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: linear-gradient(135deg, #1a2a3f 0%, var(--accent) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--accent);
+  border-bottom: 1px solid var(--border);
 }
 
 .cp__header-left {
@@ -91,24 +97,24 @@ $amber: #b8860b;
 .cp__header-icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-indigo-100);
+  color: var(--text-inverse);
 }
 
 .cp__header-title {
-  font-family: 'Fraunces', serif;
-  font-size: 15px;
+  font-family: var(--font-body);
+  font-size: var(--size-body);
   font-weight: 600;
-  color: var(--color-indigo-100);
+  color: var(--text-inverse);
 }
 
 .cp__header-sub {
-  font-size: 11px;
-  color: var(--color-gray-400);
+  font-size: var(--size-caption);
+  color: var(--text-secondary);
   margin-top: 1px;
 }
 
@@ -121,24 +127,24 @@ $amber: #b8860b;
   width: 40px;
   height: 40px;
   min-height: 40px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
-  color: var(--color-gray-400);
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s var(--easing), color 0.15s var(--easing);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--color-indigo-100);
+    background: rgba(27, 44, 71, 0.08);
+    color: var(--accent);
   }
 
   &--close:hover {
-    background: rgba(248, 113, 113, 0.2);
-    color: var(--color-red-soft);
+    background: var(--status-critical-bg);
+    color: var(--status-critical-text);
   }
 }
 
@@ -150,7 +156,7 @@ $amber: #b8860b;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fdfcfc;
+  background: var(--bg);
 }
 
 .cp__body::-webkit-scrollbar {
@@ -162,8 +168,8 @@ $amber: #b8860b;
 }
 
 .cp__body::-webkit-scrollbar-thumb {
-  background: var(--border, #e8e6e3);
-  border-radius: 4px;
+  background: var(--border);
+  border-radius: var(--radius-full);
 }
 
 // ── Message Bubble ──
@@ -177,18 +183,14 @@ $amber: #b8860b;
     flex-direction: row-reverse;
 
     .cp__msg-content {
-      background: $navy;
-      color: var(--color-indigo-100);
+      background: var(--accent);
+      color: var(--text-inverse);
       border-radius: 14px 14px 4px 14px;
     }
 
     .cp__msg-icon {
-      background: $navy;
-      color: var(--color-indigo-100);
-    }
-
-    .cp__msg-time {
-      color: var(--color-gray-400);
+      background: var(--accent);
+      color: var(--text-inverse);
     }
   }
 
@@ -196,15 +198,15 @@ $amber: #b8860b;
     align-self: flex-start;
 
     .cp__msg-content {
-      background: var(--surface, #ffffff);
-      color: var(--text, #0a0a0a);
+      background: var(--surface);
+      color: var(--text);
       border-radius: 14px 14px 14px 4px;
-      border: 1px solid var(--border-light, #e8e6e3);
+      border: 1px solid var(--border-light);
     }
 
     .cp__msg-icon {
-      background: var(--pastel-blue, #E1F3FE);
-      color: var(--pastel-blue-text, #1F6C9F);
+      background: var(--status-info-bg);
+      color: var(--status-info-text);
     }
   }
 }
@@ -213,7 +215,7 @@ $amber: #b8860b;
   width: 28px;
   height: 28px;
   min-width: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,7 +224,7 @@ $amber: #b8860b;
 
 .cp__msg-content {
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: var(--size-sub);
   line-height: 1.6;
   word-break: break-word;
 
@@ -231,22 +233,22 @@ $amber: #b8860b;
   }
 
   strong {
-    font-weight: 700;
+    font-weight: 600;
     color: inherit;
   }
 }
 
 .cp__msg-label {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--size-caption);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-secondary, #6b6b6b);
+  color: var(--text-secondary);
   margin-bottom: 4px;
 }
 
 .cp__msg-text {
-  font-size: 13px;
+  font-size: var(--size-sub);
   line-height: 1.6;
 }
 
@@ -256,21 +258,21 @@ $amber: #b8860b;
   gap: 4px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--border-light, #e8e6e3);
+  border-top: 1px solid var(--border-light);
 }
 
 .cp__msg-source {
   font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
-  background: var(--pastel-blue, #E1F3FE);
-  color: var(--pastel-blue-text, #1F6C9F);
-  border-radius: 4px;
+  background: var(--status-info-bg);
+  color: var(--status-info-text);
+  border-radius: var(--radius-sm);
 }
 
 .cp__msg-time {
   font-size: 10px;
-  color: var(--text-secondary, #6b6b6b);
+  color: var(--text-secondary);
   margin-top: 4px;
   text-align: right;
 }
@@ -286,7 +288,7 @@ $amber: #b8860b;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--text-secondary, #6b6b6b);
+  background: var(--text-secondary);
   animation: cp-pulse 1.2s ease-in-out infinite;
 
   &:nth-child(2) { animation-delay: 0.15s; }
@@ -304,32 +306,32 @@ $amber: #b8860b;
   flex-wrap: wrap;
   gap: 6px;
   padding: 0 16px 12px;
-  background: #fdfcfc;
+  background: var(--bg);
 }
 
 .cp__suggestion {
   padding: 6px 12px;
-  font-size: 11px;
+  font-size: var(--size-caption);
   font-weight: 500;
-  color: $navy;
-  background: var(--pastel-blue, #E1F3FE);
-  border: 1px solid rgba(26, 58, 92, 0.12);
-  border-radius: 20px;
+  color: var(--accent);
+  background: var(--status-info-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
   cursor: pointer;
   font-family: var(--font-body);
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s var(--easing), border-color 0.15s var(--easing);
 
   &:hover {
-    background: rgba(26, 58, 92, 0.12);
-    border-color: $navy;
+    background: rgba(27, 44, 71, 0.08);
+    border-color: var(--accent);
   }
 }
 
 // ── Footer (Input) ──
 .cp__footer {
   padding: 12px 16px;
-  border-top: 1px solid var(--border-light, #e8e6e3);
-  background: #fdfcfc;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface);
 }
 
 .cp__input-wrap {
@@ -337,14 +339,14 @@ $amber: #b8860b;
   align-items: center;
   gap: 8px;
   padding: 4px 4px 4px 16px;
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #e8e6e3);
-  border-radius: 12px;
-  transition: border-color 0.15s;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s var(--easing);
 
   &:focus-within {
-    border-color: $navy;
-    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.08);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(27, 44, 71, 0.12);
   }
 }
 
@@ -352,14 +354,14 @@ $amber: #b8860b;
   flex: 1;
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: var(--size-sub);
   font-family: var(--font-body);
-  color: var(--text, #0a0a0a);
+  color: var(--text);
   background: transparent;
   padding: 8px 0;
 
   &::placeholder {
-    color: var(--text-secondary, #6b6b6b);
+    color: var(--text-secondary);
   }
 
   &:disabled {
@@ -371,18 +373,18 @@ $amber: #b8860b;
   width: 40px;
   height: 40px;
   min-width: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: none;
-  background: $navy;
-  color: #fdfcfc;
+  background: var(--accent);
+  color: var(--text-inverse);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, transform 0.1s;
+  transition: background 0.15s var(--easing), transform 0.1s var(--easing);
 
   &:hover:not(:disabled) {
-    background: darken($navy, 8%);
+    background: var(--accent-hover);
   }
 
   &:active:not(:disabled) {

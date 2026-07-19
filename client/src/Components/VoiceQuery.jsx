@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaMicrophone, FaStop, FaVolumeUp, FaKeyboard, FaSpinner } from 'react-icons/fa';
+import { PiKeyboard, PiMicrophone, PiSpinner, PiStop, PiSpeakerHigh } from 'react-icons/pi';
 
 const VoiceQuery = () => {
     const [status, setStatus] = useState('Idle');
@@ -195,7 +195,7 @@ const VoiceQuery = () => {
                             gap: '4px'
                         }}
                     >
-                        <FaMicrophone /> Voice (Kannada)
+                        <PiMicrophone /> Voice (Kannada)
                     </button>
                     <button 
                         onClick={() => setMode('text')} 
@@ -213,7 +213,7 @@ const VoiceQuery = () => {
                             gap: '4px'
                         }}
                     >
-                        <FaKeyboard /> Text Input
+                        <PiKeyboard /> Text Input
                     </button>
                 </div>
             </div>
@@ -258,7 +258,7 @@ const VoiceQuery = () => {
                                     boxShadow: '0 4px 12px rgba(159, 47, 45, 0.3)'
                                 }}
                             >
-                                <FaStop />
+                                <PiStop weight="fill" />
                             </button>
                             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Click to stop recording</span>
                         </div>
@@ -283,7 +283,7 @@ const VoiceQuery = () => {
                                     opacity: status.includes('Processing') || status.includes('Querying') ? 0.6 : 1
                                 }}
                             >
-                                <FaMicrophone />
+                                <PiMicrophone />
                             </button>
                             <span style={{ fontSize: '13px', fontWeight: 600 }}>Click to speak query (in Kannada)</span>
                             <span style={{ fontSize: '11px', color: 'var(--muted)' }}>E.g. "ಖೂನಿಗೆ ಶಿಕ್ಷೆ ಏನು?" (What is the punishment for murder?)</span>
@@ -338,7 +338,7 @@ const VoiceQuery = () => {
                     {status}
                 </span>
                 {(status.includes('Processing') || status.includes('Querying') || status.includes('Generating')) && (
-                    <FaSpinner className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                    <PiSpinner className="spin" style={{ animation: 'spin 1s linear infinite' }} />
                 )}
             </div>
 
@@ -388,7 +388,7 @@ const VoiceQuery = () => {
                                 gap: '4px'
                             }}
                         >
-                            <FaVolumeUp /> Hear response (Kannada)
+                            <PiSpeakerHigh /> Hear response (Kannada)
                         </button>
                     )}
                 </div>

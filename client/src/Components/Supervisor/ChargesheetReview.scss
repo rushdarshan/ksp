@@ -79,7 +79,7 @@
 
   &__feedback-display {
     padding: 10px 12px;
-    background: var(--color-red-soft)10;
+    background: #f8717110;
     border: 1px solid #f8717130;
     border-radius: var(--radius-sm);
     margin-bottom: 12px;
@@ -139,10 +139,10 @@
     &--approve {
       background: #4ade8018;
       color: #16a34a;
-      border-color: var(--color-green-alt)40;
+      border-color: #4ade8040;
 
       &:hover {
-        background: var(--color-green-alt)30;
+        background: #4ade8030;
       }
     }
 
@@ -152,7 +152,7 @@
       border-color: #f8717130;
 
       &:hover {
-        background: var(--color-red-soft)20;
+        background: #f8717120;
       }
     }
 

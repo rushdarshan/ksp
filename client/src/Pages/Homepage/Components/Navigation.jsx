@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
+  const sentinel = useRef(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const el = sentinel.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => setScrolled(!e.isIntersecting),
+      { threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   return (
     <nav className={`landing-nav ${scrolled ? 'landing-nav--scrolled' : ''}`}>
+      <div ref={sentinel} style={{ position: 'absolute', top: 0, height: 1 }} />
       <div className="nav-inner">
         <Link to="/" className="nav-brand">
           <img src={logo} alt="KSP" className="nav-logo" />

@@ -59,7 +59,7 @@ const FairnessAuditPanel = () => {
   const chartOptions = {
     xaxis: { categories: groups.map(([name]) => name) },
     yaxis: { title: { text: 'Rate (%)' } },
-    colors: ['#1a3a5c', 'var(--color-amber)', 'var(--color-red)'],
+    colors: ['var(--accent)', 'var(--color-amber)', 'var(--color-red)'],
     plotOptions: { bar: { horizontal: false, borderRadius: 4 } },
   };
 

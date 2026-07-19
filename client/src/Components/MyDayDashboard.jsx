@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { FiClock } from 'react-icons/fi';
+import { PiClock, PiShieldCheck, PiSiren, PiTimer } from 'react-icons/pi';
 import DailyBrief from './MyDay/DailyBrief';
 import AlertsFeed from './MyDay/AlertsFeed';
 import PanelCard from './panels/PanelCard';
@@ -38,23 +38,11 @@ function WelcomeWidget({ user, formattedDate }) {
   );
 }
 
-function ShortcutsWidget() {
-  return (
-    <div className="panel-shell panel-shell--compact myday-shortcuts">
-      <div className="myday-shortcuts__title">Keyboard Shortcuts</div>
-      <div className="myday-shortcuts__list">
-        <div className="myday-shortcuts__row">
-          <span>Open Command Palette</span>
-          <kbd className="myday-shortcuts__kbd">Ctrl+K</kbd>
-        </div>
-        <div className="myday-shortcuts__row">
-          <span>Close active overlays</span>
-          <kbd className="myday-shortcuts__kbd">Esc</kbd>
-        </div>
-      </div>
-    </div>
-  );
-}
+const SUMMARY = [
+  { label: 'Priority cases', value: '05', note: '+2 since yesterday', icon: PiSiren, tone: 'plum' },
+  { label: 'Case readiness', value: '86%', note: '+6% this week', icon: PiShieldCheck, tone: 'peach' },
+  { label: 'SLA coverage', value: '74%', note: '2 deadlines at risk', icon: PiTimer, tone: 'blue' },
+];
 
 export default function MyDayDashboard() {
   const { user } = useAuth();
@@ -80,8 +68,8 @@ export default function MyDayDashboard() {
           timestamp: 'COMPLETED OVERNIGHT RUN · 05:30 AM',
           message: "Good morning, Officer. ZIA has analyzed the district active queue. \u200b**3 cases need attention today.**\u200b FIR \u200b**KSP-2026-0142**\u200b has a critical development: the suspect's phone number was matched in 2 other active robbery cases. We recommend requesting immediate CDR logs and assigning a warrant officer to track \u0905\u0930\u0941\u0923 \u0928\u093e\u092f\u0930 (Arun Nair) who remains at large.",
           tags: [
-            { label: '\ud83d\udea8 1 CRITICAL MATCH', color: 'red' },
-            { label: '\u23f0 2 SLA BREACHES', color: 'amber' },
+            { label: '1 critical match', color: 'red' },
+            { label: '2 SLA breaches', color: 'amber' },
           ],
         },
       });
@@ -113,6 +101,19 @@ export default function MyDayDashboard() {
     <div className="myday">
       <WelcomeWidget user={user} formattedDate={formattedDate} />
 
+      <div className="myday-summary" aria-label="Daily case summary">
+        {SUMMARY.map(({ label, value, note, icon: Icon, tone }) => (
+          <article className={`myday-stat myday-stat--${tone}`} key={label}>
+            <div className="myday-stat__top">
+              <span><Icon weight="bold" /> {label}</span>
+              <button type="button" aria-label={`View ${label.toLowerCase()}`}>+</button>
+            </div>
+            <div className="myday-stat__value">{value}</div>
+            <p>{note}</p>
+          </article>
+        ))}
+      </div>
+
       <DailyBrief
         brief={briefState.data}
         loading={briefState.loading}
@@ -137,7 +138,7 @@ export default function MyDayDashboard() {
                   <div className="queue-item-bottom">
                     <PanelBadge status={PRIORITY_BADGE[c.priority]} label={STATUS_LABELS[c.status]} />
                     <span className="queue-item-meta">
-                      <FiClock size={11} /> {c.updatedAt} · {c.location}
+                      <PiClock size={12} /> {c.updatedAt} · {c.location}
                     </span>
                   </div>
                 </div>
@@ -150,7 +151,6 @@ export default function MyDayDashboard() {
       <div className="myday-grid">
         <div className="myday-sidebar myday-sidebar--full">
           <AlertsFeed alerts={alertsState.data} loading={alertsState.loading} />
-          <ShortcutsWidget />
         </div>
       </div>
     </div>

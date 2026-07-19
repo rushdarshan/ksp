@@ -27,7 +27,9 @@ const BeatOptimizerPanel = () => {
     useEffect(() => {
         fetch('/server/beat_optimizer/districts')
             .then(r => r.json())
-            .then(setDistricts)
+            .then(data => setDistricts(
+                Array.isArray(data) ? data : Array.isArray(data?.districts) ? data.districts : KARNATAKA_DISTRICTS
+            ))
             .catch(() => setDistricts(KARNATAKA_DISTRICTS));
     }, []);
 
@@ -62,7 +64,7 @@ const BeatOptimizerPanel = () => {
                     style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db' }}>
                     {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
-                <button onClick={load} style={{ padding: '6px 16px', background: '#0d6efd', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+                <button onClick={load} style={{ padding: '6px 16px', background: 'var(--color-blue-500)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                     Refresh
                 </button>
             </div>
@@ -70,7 +72,7 @@ const BeatOptimizerPanel = () => {
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
                 {['beats', 'optimize', 'patrol'].map(t => (
                     <button key={t} onClick={() => setTab(t)}
-                        style={{ padding: '8px 16px', background: tab === t ? '#0d6efd' : 'var(--color-surface-50)', color: tab === t ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+                        style={{ padding: '8px 16px', background: tab === t ? 'var(--color-blue-500)' : 'var(--color-surface-50)', color: tab === t ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                         {t === 'beats' ? 'Beats' : t === 'optimize' ? 'Optimization' : 'Patrol Routes'}
                     </button>
                 ))}
@@ -97,11 +99,11 @@ const BeatOptimizerPanel = () => {
                             {beats.beats.map(b => (
                                 <tr key={b.id} style={{ borderBottom: '1px solid var(--color-border-200)' }}>
                                     <td style={td}>{b.name}</td>
-                                    <td style={td}>{b.totalCrimes}</td>
-                                    <td style={td}>{b.areaKm2}</td>
-                                    <td style={td}>{b.officersAssigned}</td>
-                                    <td style={td}>{b.responseTimeMin}</td>
-                                    <td style={td}><span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: b.riskScore > 0.6 ? '#fef2f2' : '#f0fdf4', color: b.riskScore > 0.6 ? 'var(--color-red)' : '#22c55e' }}>{b.riskScore.toFixed(2)}</span></td>
+                                    <td style={td}>{b.totalCrimes ?? '—'}</td>
+                                    <td style={td}>{b.areaKm2 ?? '—'}</td>
+                                    <td style={td}>{b.officersAssigned ?? '—'}</td>
+                                    <td style={td}>{b.responseTimeMin ?? '—'}</td>
+                                    <td style={td}><span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: b.riskScore > 0.6 ? 'var(--color-surface-red)' : '#f0fdf4', color: b.riskScore > 0.6 ? 'var(--color-red)' : '#22c55e' }}>{Number(b.riskScore || 0).toFixed(2)}</span></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -113,7 +115,7 @@ const BeatOptimizerPanel = () => {
                 <>
                     <div style={{ display: 'grid', gridTemplateColumns: optimization.flowMode ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
                         {[
-                            { label: 'Total Beats', value: optimization.summary.totalBeats, color: '#0d6efd' },
+                            { label: 'Total Beats', value: optimization.summary.totalBeats, color: 'var(--color-blue-500)' },
                             { label: 'Overloaded', value: optimization.summary.overloaded, color: 'var(--color-red)' },
                             { label: 'Balanced', value: optimization.summary.balanced, color: 'var(--color-green)' },
                             { label: 'Avg Crime Load', value: optimization.summary.avgLoad, color: 'var(--color-gray-500)' },
@@ -143,13 +145,13 @@ const BeatOptimizerPanel = () => {
                                         <td style={td}>{o.loadRatio}</td>
                                         <td style={td}>
                                             <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600,
-                                                background: o.status === 'Overloaded' ? '#fef2f2' : o.status === 'Underloaded' ? '#fffbeb' : '#f0fdf4',
+                                                background: o.status === 'Overloaded' ? 'var(--color-surface-red)' : o.status === 'Underloaded' ? '#fffbeb' : 'var(--color-surface-green)',
                                                 color: o.status === 'Overloaded' ? 'var(--color-red)' : o.status === 'Underloaded' ? '#d97706' : 'var(--color-green)' }}>
                                                 {o.status}
                                             </span>
                                         </td>
                                         {flow && <>
-                                            <td style={td}><span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: flow.flowRiskScore > 0.8 ? '#fef2f2' : '#f0fdf4', color: flow.flowRiskScore > 0.8 ? 'var(--color-red)' : '#22c55e' }}>{flow.flowRiskScore.toFixed(2)}</span></td>
+                                            <td style={td}><span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: flow.flowRiskScore > 0.8 ? 'var(--color-surface-red)' : '#f0fdf4', color: flow.flowRiskScore > 0.8 ? 'var(--color-red)' : '#22c55e' }}>{Number(flow.flowRiskScore || 0).toFixed(2)}</span></td>
                                             <td style={{ ...td, textTransform: 'capitalize', fontSize: '12px' }}>{flow.predictedTargetCrime}</td>
                                             <td style={{ ...td, fontSize: '12px' }}>{flow.recommendedPatrolShift}</td>
                                         </>}
@@ -167,7 +169,7 @@ const BeatOptimizerPanel = () => {
                             </p>
                             <div style={{ display: 'grid', gap: '8px' }}>
                                 {optimization.flowData.criminalClusters.map(c => (
-                                    <div key={c.clusterId} style={{ padding: '10px', background: 'white', borderRadius: '8px', border: '1px solid #e0e7ff' }}>
+                                    <div key={c.clusterId} style={{ padding: '10px', background: 'white', borderRadius: '8px', border: '1px solid var(--color-indigo-100)' }}>
                                         <div style={{ fontWeight: 600, fontSize: '13px' }}>Cluster {c.clusterId} — {c.criminalCount} criminals</div>
                                         <div style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>Top crime: {c.topCrimeType} · Avg travel: {c.avgTravelKm}km</div>
                                     </div>
@@ -189,9 +191,9 @@ const BeatOptimizerPanel = () => {
                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                 {r.route.map((p, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#e0f2fe', borderRadius: '6px', fontSize: '12px' }}>
-                                        <span style={{ fontWeight: 700, color: '#0d6efd' }}>#{i + 1}</span>
+                                        <span style={{ fontWeight: 700, color: 'var(--color-blue-500)' }}>#{i + 1}</span>
                                         <span>{p.label}</span>
-                                        <span style={{ color: '#666', fontSize: '10px' }}>({p.lat.toFixed(2)}, {p.lng.toFixed(2)})</span>
+                                        <span style={{ color: '#666', fontSize: '10px' }}>({Number(p.lat || 0).toFixed(2)}, {Number(p.lng || 0).toFixed(2)})</span>
                                         {i < r.route.length - 1 && <span style={{ color: 'var(--color-gray-400)' }}>→</span>}
                                     </div>
                                 ))}

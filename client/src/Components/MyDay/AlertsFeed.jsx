@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiAlertCircle } from 'react-icons/fi';
+import { PiBellSimpleRinging, PiWarningCircle } from 'react-icons/pi';
 
 function AlertsFeedSkeleton() {
   const pulse = {
@@ -47,7 +47,7 @@ function AlertsFeedEmpty() {
       alignItems: 'center',
       textAlign: 'center',
     }}>
-      <FiAlertCircle size={24} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
+      <PiWarningCircle size={24} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
       <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>No overnight alerts</div>
       <div style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.7 }}>You're all caught up</div>
     </div>
@@ -62,7 +62,7 @@ export default function AlertsFeed({ alerts, loading }) {
   if (loading) return <AlertsFeedSkeleton />;
   if (!alerts?.length) return <AlertsFeedEmpty />;
 
-  const statusColor = { match: '#60a5fa', breach: '#e0b23a', new: 'var(--color-green-alt)' };
+  const statusColor = { match: 'var(--color-blue-400)', breach: '#e0b23a', new: 'var(--color-green-alt)' };
 
   return (
     <div style={{
@@ -74,7 +74,7 @@ export default function AlertsFeed({ alerts, loading }) {
       flexDirection: 'column',
       gap: '16px',
     }}>
-      <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-light)', paddingBottom: '10px' }}>Overnight Alerts</h3>
+      <h3 className="alerts-feed__title"><PiBellSimpleRinging /> Overnight alerts</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {alerts.map(a => (
           <div key={a.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { PiTarget } from 'react-icons/pi';
 import EvidenceClassification from './EvidenceClassification';
 import './TheoryBoard.scss';
 
@@ -206,7 +207,7 @@ export default function TheoryBoard({ firId }) {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <div className="tb-header">
         <div className="tb-header-left">
-          <span className="tb-header-icon">🎯</span>
+          <span className="tb-header-icon"><PiTarget weight="duotone" /></span>
           <span className="tb-header-title">Theory Board</span>
         </div>
         <span className="tb-header-badge">{theories.length} theories</span>

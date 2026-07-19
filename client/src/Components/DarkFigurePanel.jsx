@@ -65,7 +65,7 @@ export default function DarkFigurePanel() {
     if (loading) {
         return (
             <div style={{ padding: '1rem' }}>
-                <div style={{ height: '20px', width: '250px', background: '#e5e7eb', borderRadius: '4px', marginBottom: '16px' }} />
+                <div style={{ height: '20px', width: '250px', background: 'var(--color-gray-200)', borderRadius: '4px', marginBottom: '16px' }} />
                 {[1,2,3,4,5].map(i => (
                     <div key={i} style={{ height: '40px', background: '#f3f4f6', borderRadius: '4px', marginBottom: '12px' }} />
                 ))}
@@ -76,7 +76,7 @@ export default function DarkFigurePanel() {
     if (error) {
         return (
             <div style={{ padding: '1rem' }}>
-                <div style={{ padding: '12px', border: '1px solid #fca5a5', borderRadius: '8px', background: '#fef2f2', marginBottom: '12px' }}>
+                <div style={{ padding: '12px', border: '1px solid #fca5a5', borderRadius: '8px', background: 'var(--color-surface-red)', marginBottom: '12px' }}>
                     <p style={{ color: 'var(--color-red)', margin: '0 0 8px 0', fontSize: '14px' }}>{error}</p>
                     <button onClick={() => fetchData(districtId)} style={{ padding: '4px 12px', background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
                 </div>
@@ -102,11 +102,11 @@ export default function DarkFigurePanel() {
                     <div style={{ fontSize: '12px', color: '#3b82f6', fontWeight: 500 }}>Reported FIRs</div>
                     <div style={{ fontSize: '24px', fontWeight: 700, color: '#1e40af' }}>{totalReported}</div>
                 </div>
-                <div style={{ padding: '12px 16px', background: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
+                <div style={{ padding: '12px 16px', background: 'var(--color-surface-red)', borderRadius: '8px', border: '1px solid var(--color-red-200)' }}>
                     <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}>Estimated Actual (±35%)</div>
                     <div style={{ fontSize: '24px', fontWeight: 700, color: '#991b1b' }}>{totalEstimated}</div>
                 </div>
-                <div style={{ padding: '12px 16px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+                <div style={{ padding: '12px 16px', background: 'var(--color-surface-green)', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
                     <div style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>District</div>
                     <select value={districtId} onChange={e => setDistrictId(e.target.value)}
                         style={{ fontSize: '16px', fontWeight: 700, color: '#166534', border: 'none', background: 'transparent', cursor: 'pointer', padding: '2px 0' }}
@@ -122,8 +122,8 @@ export default function DarkFigurePanel() {
                 {data?.recommendation && (
                     <div style={{
                         padding: '10px 14px', borderRadius: '6px', marginBottom: '16px', fontSize: '14px', fontWeight: 500,
-                        background: data.gapPercent > 50 ? '#fef2f2' : '#f0fdf4',
-                        border: `1px solid ${data.gapPercent > 50 ? '#fecaca' : '#bbf7d0'}`,
+                        background: data.gapPercent > 50 ? 'var(--color-surface-red)' : '#f0fdf4',
+                        border: `1px solid ${data.gapPercent > 50 ? 'var(--color-red-200)' : '#bbf7d0'}`,
                         color: data.gapPercent > 50 ? '#991b1b' : '#166534'
                     }}>
                         {data.recommendation}
@@ -131,7 +131,7 @@ export default function DarkFigurePanel() {
                 )}
             </div>
 
-            <div style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+            <div style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px', border: '1px solid var(--color-gray-200)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Crime Type Breakdown</h3>
                     <span style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>Actual (blue) vs Estimated range (red dashed)</span>

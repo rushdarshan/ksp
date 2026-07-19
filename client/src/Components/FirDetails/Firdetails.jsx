@@ -499,7 +499,7 @@ const FirTable = () => {
               <tr>
                 <td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}>No records match your active search filters.</span>
+                    <span style={{ fontSize: '14px', fontFamily: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif', fontStyle: 'italic' }}>No records match your active search filters.</span>
                     {activeFilters.length > 0 && (
                       <button onClick={clearFilters} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline', fontSize: '12px' }}>
                         Reset filters

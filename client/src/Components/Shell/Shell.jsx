@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Sidebar from './Sidebar'
 import Top from './Top'
 import ErrorBoundary from './ErrorBoundary'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import RightSidebar from './RightSidebar'
 import { useAuth } from '../../AuthContext'
 import CommandPalette from '../CommandPalette/CommandPalette'
@@ -11,6 +11,7 @@ const Shell = ({ basePath = '/dashboard' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
 
   return (
     <div className='dashboard flex'>
@@ -28,7 +29,7 @@ const Shell = ({ basePath = '/dashboard' }) => {
           <Top setSidebarOpen={setSidebarOpen} />
           <div className="mainScroll">
             <div className="page-enter">
-              <ErrorBoundary>
+              <ErrorBoundary key={location.pathname}>
                 <Outlet />
               </ErrorBoundary>
             </div>

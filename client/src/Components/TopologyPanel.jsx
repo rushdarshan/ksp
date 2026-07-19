@@ -89,7 +89,7 @@ const TopologyPanel = () => {
                         edgeColor = e.weight > baselineEdge.weight ? '#ef4444' : '#3b82f6';
                     }
                 } else if (isHighlighted) {
-                    edgeColor = '#60a5fa';
+                    edgeColor = 'var(--color-blue-400)';
                 }
                 ctx.beginPath();
                 ctx.moveTo(src.x, src.y);
@@ -164,7 +164,7 @@ const TopologyPanel = () => {
                 <div style={{ marginBottom: '16px', padding: '12px', background: '#1e293b', borderRadius: '8px', color: 'var(--color-surface-50)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <span style={{ fontSize: '13px', fontWeight: 500 }}>Temporal Mode</span>
-                        <span style={{ fontSize: '13px', color: '#60a5fa' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--color-blue-400)' }}>
                             {currentMonthIndex >= 0 ? months[currentMonthIndex] : 'Baseline (full year)'}
                         </span>
                     </div>
@@ -197,7 +197,7 @@ const TopologyPanel = () => {
                     District: <strong>{data.metadata?.districtId || 1}</strong>
                 </div>
                 {data.metadata?.temporalMode && (
-                    <div style={{ fontSize: '13px', color: '#60a5fa', fontWeight: 500 }}>
+                    <div style={{ fontSize: '13px', color: 'var(--color-blue-400)', fontWeight: 500 }}>
                         Month: <strong>{data.metadata?.month || 'N/A'}</strong>
                     </div>
                 )}

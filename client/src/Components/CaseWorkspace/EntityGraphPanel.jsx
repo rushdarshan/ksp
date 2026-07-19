@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ForceGraph2D from 'react-force-graph-2d';
 
 const ENTITY_COLORS = {
-  person: '#60a5fa',
+  person: 'var(--color-blue-400)',
   phone: '#a78bfa',
   vehicle: '#f59e0b',
   location: 'var(--color-green-alt)',

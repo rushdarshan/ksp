@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { PanelCard } from './panels';
 
-const COMMUNITY_COLORS = ['#1a3a5c', '#b8860b', '#6b6b6b', '#d1cec9', '#1a2a3f', '#8a6a1a'];
+const COMMUNITY_COLORS = ['var(--accent)', '#b8860b', '#6b6b6b', '#d1cec9', '#1a2a3f', '#8a6a1a'];
 
 const NetworkGraph = () => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
@@ -26,7 +26,7 @@ const NetworkGraph = () => {
             const size = 4;
             const color = node.community != null
               ? COMMUNITY_COLORS[node.community % COMMUNITY_COLORS.length]
-              : '#1a3a5c';
+              : 'var(--accent)';
             ctx.fillStyle = color;
             ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size);
           }}

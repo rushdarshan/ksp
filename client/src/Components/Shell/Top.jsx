@@ -1,74 +1,57 @@
-import React from "react";
-import "./top.scss";
-import DropdownMenu from "../../ui/Dropdown/Dropdown";
-import { IoMdMenu } from "react-icons/io";
-import { useLocation, Link } from "react-router-dom";
-import { useAuth } from "../../AuthContext";
+import { useLocation } from 'react-router-dom';
+import { PiBell, PiFunnel, PiList, PiMagnifyingGlass, PiSlidersHorizontal } from 'react-icons/pi';
+import DropdownMenu from '../../ui/Dropdown/Dropdown';
+import './top.scss';
 
-const CRUMB_MAP = {
-  'home': 'My Day',
-  'firdetails': 'FIR Cases',
-  'veracity': 'FIR Veracity',
-  'chargesheet-clock': 'Chargesheet Clock',
-  'accused-at-large': 'Accused at Large',
-  'arrest-vector': 'Arrest Vector',
-  'predictive': 'Predictive Intel',
-  'beat-optimizer': 'Beat Optimizer',
-  'gbv': 'Gender Violence',
-  'victim-risk': 'Victim Risk',
-  'retraction-rate': 'Retraction Rate',
-  'co-accused': 'Crime Network',
-  'location': 'Command Map',
-  'officers': 'Officer Roster',
-  'deterrence': 'Public Portal',
-  'notifications': 'Notifications',
-  'voice': 'ZIA Voice',
-  'countercrime': 'Counter Crime',
-  'fir-quality': 'FIR Quality',
-  'fairness-audit': 'Fairness Audit',
-  'agent': 'Agent',
-  'case': 'Case',
+const TITLES = {
+  home: ['My day', 'Daily operational picture'],
+  notifications: ['Notifications', 'Victim communication ledger'],
+  firdetails: ['FIR cases', 'Case management ledger'],
+  case: ['Active case', 'Investigation workspace'],
+  'co-accused': ['Crime network', 'Cross-case relationships'],
+  voice: ['ZIA voice', 'Ask the intelligence workspace'],
+  location: ['Command map', 'Live district picture'],
+  officers: ['Officer roster', 'People and assignments'],
+  veracity: ['FIR veracity', 'Narrative quality assessment'],
+  'chargesheet-clock': ['Chargesheet clock', 'Statutory deadline control'],
+  'accused-at-large': ['Accused at large', 'Warrant and fugitive ledger'],
+  predictive: ['Predictive intelligence', 'Pattern-led deployment signals'],
+  'beat-optimizer': ['Beat optimizer', 'Patrol coverage planning'],
+  gbv: ['Gender violence', 'Protection and response analytics'],
+  'victim-risk': ['Victim risk', 'Repeat harm prevention'],
+  'retraction-rate': ['Retraction rate', 'Investigation quality signals'],
+  deterrence: ['Deterrence portal', 'Public crime intelligence'],
 };
 
-const Top = ({ setSidebarOpen }) => {
-  const location = useLocation();
-  const { user } = useAuth();
-  const segments = location.pathname.split('/').filter(Boolean);
-
-  const crumbs = segments.map((seg, i) => {
-    const path = '/' + segments.slice(0, i + 1).join('/');
-    const label = CRUMB_MAP[seg] || seg;
-    return { label, path };
-  });
+export default function Top({ setSidebarOpen }) {
+  const { pathname } = useLocation();
+  const segments = pathname.split('/').filter(Boolean);
+  const routeKey = segments[1] || 'home';
+  const [title, subtitle] = TITLES[routeKey] || [routeKey.replace(/-/g, ' '), 'Karnataka State Police'];
 
   return (
-    <div className="topBar">
+    <header className="topBar">
       <div className="topBar-left">
-        <button
-          className="topBar-menu"
-          onClick={(e) => { e.stopPropagation(); setSidebarOpen(prev => !prev); }}
-        >
-          <IoMdMenu />
+        <button className="topBar-menu" onClick={() => setSidebarOpen((open) => !open)} aria-label="Open navigation">
+          <PiList aria-hidden="true" />
         </button>
-        <nav className="topBar-breadcrumb">
-          <Link to="/dashboard" className="topBar-crumb-link">Dashboard</Link>
-          {crumbs.map((crumb, i) => (
-            <React.Fragment key={crumb.path}>
-              <span className="topBar-crumb-sep">/</span>
-              {i === crumbs.length - 1 ? (
-                <span className="topBar-crumb-current">{crumb.label}</span>
-              ) : (
-                <Link to={crumb.path} className="topBar-crumb-link">{crumb.label}</Link>
-              )}
-            </React.Fragment>
-          ))}
-        </nav>
+        <div className="topBar-title">
+          <h1>{title}</h1>
+          <span>{subtitle}</span>
+        </div>
       </div>
+
       <div className="topBar-right">
+        <button className="topBar-search" type="button" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}>
+          <PiMagnifyingGlass aria-hidden="true" />
+          <span>Search intelligence</span>
+          <kbd>Ctrl K</kbd>
+        </button>
+        <button className="topBar-icon" type="button" title="Filter current view" aria-label="Filter current view"><PiFunnel /></button>
+        <button className="topBar-icon topBar-icon--desktop" type="button" title="View settings" aria-label="View settings"><PiSlidersHorizontal /></button>
+        <button className="topBar-icon topBar-notification" type="button" title="Notifications" aria-label="Notifications"><PiBell /><span /></button>
         <DropdownMenu />
       </div>
-    </div>
+    </header>
   );
-};
-
-export default Top;
+}
