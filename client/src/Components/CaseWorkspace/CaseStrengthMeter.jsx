@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
@@ -34,7 +35,7 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
         }}
         title="Case Strength Meter — click for full breakdown"
       >
-        <div className="case-strength__popover" style={{
+        <div className="case-strength__gauge" style={{
           width: 32, height: 32, borderRadius: '50%',
           background: `conic-gradient(${color} ${score.overallScore * 3.6}deg, var(--border) 0deg)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -52,10 +53,10 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
       </button>
 
       {expanded && (
-        <div style={{
+        <div className="case-strength__details" style={{
           position: 'absolute', top: '100%', right: 0, marginTop: 8,
           width: 340, padding: '16px', background: 'var(--surface)',
-          border: '1px solid var(--border-light)', borderRadius: 12,
+          border: '1px solid var(--border-light)', borderRadius: 8,
           boxShadow: '0px 4px 20px rgba(0,0,0,0.06)', zIndex: 50,
         }}>
           <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: 12, color: 'var(--text)' }}>
@@ -92,3 +93,9 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
     </div>
   );
 }
+
+CaseStrengthMeter.propTypes = {
+  firId: PropTypes.string.isRequired,
+  expanded: PropTypes.bool,
+  onToggle: PropTypes.func,
+};

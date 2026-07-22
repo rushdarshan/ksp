@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCaseContext } from './CaseWorkspace';
+import { useCaseContext } from './caseContext';
 
 const MOCK_NOTES = [
   { id: 'n1', author: 'PI Dharmendra', timestamp: '2026-07-09T14:30:00', text: 'CDR analysis initiated for suspect phone 98450XXXXX. Awaiting Telecom Nodal response.', linkedEntity: 'E6' },

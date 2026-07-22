@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCaseContext } from './CaseWorkspace';
+import { useCaseContext } from './caseContext';
 
 const MOCK_EVENTS = [
   { date: '2026-07-06T09:15:00', type: 'report', label: 'FIR Registered', detail: 'Robbery reported at SH-9 junction, Brigade Road PS' },

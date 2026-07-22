@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PiArrowUpRight, PiCaretRight, PiClock, PiShieldCheck, PiSiren, PiTimer } from 'react-icons/pi';
@@ -38,6 +39,15 @@ function WelcomeWidget({ user, formattedDate }) {
     </div>
   );
 }
+
+WelcomeWidget.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    role: PropTypes.string,
+    rank: PropTypes.string,
+  }),
+  formattedDate: PropTypes.string.isRequired,
+};
 
 const SUMMARY = [
   { label: 'Priority cases', value: '05', note: '+2 since yesterday', icon: PiSiren, tone: 'plum', to: '/dashboard/firdetails' },
@@ -94,6 +104,17 @@ export default function MyDayDashboard() {
     }, 500);
   };
 
+  const openBriefAction = (action) => {
+    const destinations = {
+      explain: 'tab=brief&copilot=explain',
+      evidence: 'tab=evidence&copilot=evidence_gaps',
+      similar: 'tab=network&copilot=similar_cases',
+      assign: 'tab=notes&copilot=next_lead',
+      predict: 'tab=brief&copilot=outcome',
+    };
+    navigate(`/dashboard/case/KSP-2026-0142?${destinations[action] || destinations.explain}`);
+  };
+
   useEffect(() => {
     fetchBrief();
     fetchAlerts();
@@ -123,6 +144,7 @@ export default function MyDayDashboard() {
         loading={briefState.loading}
         error={briefState.error}
         onRetry={fetchBrief}
+        onAction={openBriefAction}
       />
 
       <div className="myday-queue">

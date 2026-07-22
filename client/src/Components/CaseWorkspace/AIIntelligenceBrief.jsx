@@ -1,6 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useCaseContext } from './CaseWorkspace';
-import { PiDownloadSimple, PiRobot } from 'react-icons/pi';
+import { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
+import { useCaseContext } from './caseContext';
+import {
+  PiArrowRight,
+  PiChartBar,
+  PiClipboardText,
+  PiDownloadSimple,
+  PiGraph,
+  PiLightning,
+  PiMagnifyingGlass,
+  PiRobot,
+} from 'react-icons/pi';
 import './AIIntelligenceBrief.scss';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
@@ -44,7 +54,7 @@ const MOCK_BRIEF = {
     { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
     { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
     { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
-    { priority: 'LOW', action: 'File supplementary chargesheet sections 395/397 IPC', deadline: '2026-07-25T18:00:00Z' },
+    { priority: 'LOW', action: 'Review BNS 309 and any applicable aggravated provision with the legal officer', deadline: '2026-07-25T18:00:00Z' },
   ],
   confidence: 0.82,
   provenance: [
@@ -70,13 +80,20 @@ function Skeleton() {
 }
 
 // ── Provenance badge ───────────────────────────────────────
-function ProvenanceBadge({ fn, label }) {
+function ProvenanceBadge({ fn, function: functionName, label }) {
+  const sourceName = fn || functionName || 'source';
   return (
-    <span className="aib-provenance" title={fn}>
-      {label || fn.replace(/_/g, ' ')}
+    <span className="aib-provenance" title={sourceName}>
+      {label || sourceName.replace(/_/g, ' ')}
     </span>
   );
 }
+
+ProvenanceBadge.propTypes = {
+  fn: PropTypes.string,
+  function: PropTypes.string,
+  label: PropTypes.string,
+};
 
 // ── Score gauge (SVG arc) ──────────────────────────────────
 function ScoreGauge({ score, label, size = 80 }) {
@@ -105,6 +122,12 @@ function ScoreGauge({ score, label, size = 80 }) {
   );
 }
 
+ScoreGauge.propTypes = {
+  score: PropTypes.number.isRequired,
+  label: PropTypes.string,
+  size: PropTypes.number,
+};
+
 // ── Veracity badge ─────────────────────────────────────────
 function VeracityBadge({ score, label }) {
   const color = label === 'GENUINE' ? 'var(--color-green-alt)' : label === 'NEEDS REVIEW' ? '#facc15' : 'var(--color-red-soft)';
@@ -115,6 +138,11 @@ function VeracityBadge({ score, label }) {
     </span>
   );
 }
+
+VeracityBadge.propTypes = {
+  score: PropTypes.number.isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 // ── Solvability factor row ─────────────────────────────────
 function FactorRow({ f }) {
@@ -133,6 +161,14 @@ function FactorRow({ f }) {
   );
 }
 
+FactorRow.propTypes = {
+  f: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
+    weight: PropTypes.number.isRequired,
+  }).isRequired,
+};
+
 // ── Main component ─────────────────────────────────────────
 export default function AIIntelligenceBrief() {
   const { firId, switchTab, timeRange } = useCaseContext();
@@ -148,7 +184,6 @@ export default function AIIntelligenceBrief() {
     setData(null);
     setLatency(false);
 
-    const start = Date.now();
     timerRef.current = setTimeout(() => {
       if (!cancelled) setLatency(true);
     }, 5000);
@@ -175,7 +210,7 @@ export default function AIIntelligenceBrief() {
 
   // Re-fetch on time range change (shows refresh indicator)
   useEffect(() => {
-    if (data && timeRange.from) {
+    if (timeRange.from) {
       setRefreshing(true);
       const t = setTimeout(() => setRefreshing(false), 1500);
       return () => clearTimeout(t);
@@ -261,7 +296,7 @@ export default function AIIntelligenceBrief() {
       {/* Narrative */}
       <section className="aib__card">
         <div className="aib__card-head">
-          <span>📋</span>
+          <PiClipboardText aria-hidden="true" />
           <h3>Case Narrative</h3>
           {data.confidence != null && (
             <span className="aib__conf">{Math.round(data.confidence * 100)}% confidence</span>
@@ -277,7 +312,7 @@ export default function AIIntelligenceBrief() {
       {/* Solvability */}
       <section className="aib__card">
         <div className="aib__card-head">
-          <span>📊</span>
+          <PiChartBar aria-hidden="true" />
           <h3>Solvability Analysis</h3>
           <VeracityBadge score={data.solvability?.score || 0} label={data.solvability?.label || '—'} />
           {provMap.solvability_index && <ProvenanceBadge {...provMap.solvability_index} />}
@@ -285,7 +320,7 @@ export default function AIIntelligenceBrief() {
         <div className="aib__card-body">
           {(data.solvability?.factors || []).map((f, i) => <FactorRow key={i} f={f} />)}
           {data.solvability?.recommendation && (
-            <div className="aib__reco-note">→ {data.solvability.recommendation}</div>
+            <div className="aib__reco-note"><PiArrowRight aria-hidden="true" /> {data.solvability.recommendation}</div>
           )}
         </div>
       </section>
@@ -293,7 +328,7 @@ export default function AIIntelligenceBrief() {
       {/* Veracity */}
       <section className="aib__card">
         <div className="aib__card-head">
-          <span>🔍</span>
+          <PiMagnifyingGlass aria-hidden="true" />
           <h3>Veracity Assessment</h3>
           {provMap.veracity_index && <ProvenanceBadge {...provMap.veracity_index} />}
         </div>
@@ -302,7 +337,7 @@ export default function AIIntelligenceBrief() {
             {(data.veracity?.flags || []).map((f, i) => {
               const c = f.weight >= 0.7 ? 'var(--color-green-alt)' : f.weight >= 0.4 ? '#facc15' : 'var(--color-red-soft)';
               return (
-                <div key={i} className="aib__vflag" style={{ borderLeftColor: c }}>
+                <div key={i} className="aib__vflag">
                   <span className="aib__vflag-type">{f.type.replace(/_/g, ' ')}</span>
                   <span className="aib__vflag-pct" style={{ color: c }}>{Math.round(f.weight * 100)}%</span>
                   <span className="aib__vflag-desc">{f.description}</span>
@@ -319,7 +354,7 @@ export default function AIIntelligenceBrief() {
       {/* Similar Cases */}
       <section className="aib__card">
         <div className="aib__card-head">
-          <span>🔗</span>
+          <PiGraph aria-hidden="true" />
           <h3>Similar Cases</h3>
         </div>
         <div className="aib__card-body">
@@ -329,7 +364,7 @@ export default function AIIntelligenceBrief() {
               const color = pct >= 70 ? 'var(--color-green-alt)' : pct >= 50 ? '#facc15' : '#60a5fa';
               return (
                 <button key={i} className="aib__similar" onClick={() => switchTab('network')}>
-                  <span className="aib__similar-fir">KSP-2026-{String(c.caseId).padStart(3, '0')}</span>
+                  <span className="aib__similar-fir">KSP-2026-{String(c.caseId).padStart(4, '0')}</span>
                   <span className="aib__similar-pct" style={{ background: `${color}20`, color }}>{pct}% match</span>
                   <span className="aib__similar-why">{c.reason}</span>
                 </button>
@@ -342,7 +377,7 @@ export default function AIIntelligenceBrief() {
       {/* Entity Links */}
       <section className="aib__card">
         <div className="aib__card-head">
-          <span>🕸️</span>
+          <PiGraph aria-hidden="true" />
           <h3>Entity Links</h3>
           {provMap.network_analysis && <ProvenanceBadge {...provMap.network_analysis} />}
         </div>
@@ -362,14 +397,14 @@ export default function AIIntelligenceBrief() {
       {/* Recommendations */}
       <section className="aib__card">
         <div className="aib__card-head">
-          <span>⚡</span>
+          <PiLightning aria-hidden="true" />
           <h3>Recommended Next Steps</h3>
         </div>
         <div className="aib__card-body">
           {(data.recommendations || []).map((r, i) => {
             const pc = r.priority === 'HIGH' ? 'var(--color-red-soft)' : r.priority === 'MEDIUM' ? 'var(--color-amber-alt)' : 'var(--color-green-alt)';
             return (
-              <div key={i} className="aib__reco" style={{ borderLeftColor: pc }}>
+              <div key={i} className="aib__reco">
                 <span className="aib__reco-pri" style={{ background: `${pc}20`, color: pc }}>{r.priority}</span>
                 <span className="aib__reco-action">{r.action}</span>
                 {r.deadline && (

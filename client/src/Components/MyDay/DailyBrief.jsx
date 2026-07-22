@@ -1,5 +1,21 @@
-import React from 'react';
-import { PiBrain, PiWarningCircle } from 'react-icons/pi';
+import PropTypes from 'prop-types';
+import {
+  PiBrain,
+  PiFiles,
+  PiLightbulb,
+  PiMagnifyingGlass,
+  PiTrendUp,
+  PiUserPlus,
+  PiWarningCircle,
+} from 'react-icons/pi';
+
+const BRIEF_ACTIONS = [
+  { id: 'explain', label: 'Explain why', icon: PiLightbulb },
+  { id: 'evidence', label: 'Show evidence', icon: PiFiles },
+  { id: 'similar', label: 'Similar cases', icon: PiMagnifyingGlass },
+  { id: 'assign', label: 'Assign team', icon: PiUserPlus },
+  { id: 'predict', label: 'Readiness', icon: PiTrendUp },
+];
 
 function DailyBriefSkeleton() {
   return (
@@ -44,7 +60,7 @@ function renderBriefMessage(message) {
   ));
 }
 
-export default function DailyBrief({ brief, loading, error, onRetry }) {
+export default function DailyBrief({ brief, loading, error, onRetry, onAction }) {
   if (loading) return <DailyBriefSkeleton />;
   if (error) return <DailyBriefError onRetry={onRetry} />;
   if (!brief) return null;
@@ -70,6 +86,33 @@ export default function DailyBrief({ brief, loading, error, onRetry }) {
           ))}
         </div>
       )}
+      <div className="daily-brief__actions" role="group" aria-label="Morning brief actions">
+        {BRIEF_ACTIONS.map(({ id, label, icon: Icon }) => (
+          <button type="button" key={id} onClick={() => onAction?.(id)}>
+            <Icon aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
+
+DailyBrief.propTypes = {
+  brief: PropTypes.shape({
+    timestamp: PropTypes.string,
+    message: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      color: PropTypes.string,
+    })),
+  }),
+  loading: PropTypes.bool.isRequired,
+  error: PropTypes.bool.isRequired,
+  onRetry: PropTypes.func.isRequired,
+  onAction: PropTypes.func,
+};
+
+DailyBriefError.propTypes = {
+  onRetry: PropTypes.func.isRequired,
+};

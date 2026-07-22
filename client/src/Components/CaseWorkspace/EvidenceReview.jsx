@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCaseContext } from './CaseWorkspace';
+import { useCaseContext } from './caseContext';
 
 const MOCK_EVIDENCE = [
   { id: 'E1', type: 'Digital', desc: 'CCTV footage — SH-9 junction camera', status: 'intact', date: '2026-07-08', officer: 'PI Dharmendra', aiAnalysis: 'Vehicle KA-01-AB-1234 visible at 14:32. Two individuals exit vehicle. No section 65B certificate filed.' },

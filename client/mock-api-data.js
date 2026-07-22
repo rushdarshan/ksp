@@ -400,6 +400,50 @@ export function defineMockApi() {
     'POST /server/crime_chat/query': ({ body }) => {
       const query = String(body?.query || '').toLowerCase();
       const kannada = body?.language === 'kn';
+      const copilotResponse = (intent, answer, confidence, reasoning, sources, limitations = []) => ({
+        intent,
+        answer,
+        confidence,
+        reasoning,
+        sources,
+        limitations,
+        method: intent === 'similar_cases' ? 'same-mo-and-entity-retrieval' : 'synthetic-schema-grounded-analysis',
+        mode: 'demo',
+      });
+      const caseSources = [
+        { label: 'CaseMaster #142', table: 'CaseMaster', record: 142 },
+        { label: 'Accused records (3)', table: 'Accused', record: 142 },
+        { label: 'ArrestSurrender records (1)', table: 'ArrestSurrender', record: 142 },
+        { label: 'ActSectionAssociation (2)', table: 'ActSectionAssociation', record: 142 },
+      ];
+      if (/missing evidence|evidence gap|completeness/.test(query)) {
+        return copilotResponse('evidence_gaps', 'The case has strong witness and location records, but CCTV acquisition, chain-of-custody confirmation, and one accused process event remain unresolved. Completeness is 72% across the available demonstration checks.', 0.89, [
+          { label: 'Witness statements', value: 'Recorded', impact: 'Two witness records support event reconstruction.' },
+          { label: 'CCTV acquisition', value: 'Pending', impact: 'Footage is referenced but its evidence hash is not recorded.' },
+          { label: 'Process status', value: '1 unmatched', impact: 'One accused has no matching arrest or surrender event.' },
+        ], caseSources, ['The supplied schema has no complete digital evidence or chain-of-custody table.']);
+      }
+      if (/next investigative lead|next lead|prioriti[sz]e/.test(query)) {
+        return copilotResponse('next_lead', 'Retrieve and hash the SH-9 junction CCTV first, then verify the unmatched accused process status. The footage has the shortest preservation window and can validate the vehicle description used in two similar robberies.', 0.88, [
+          { label: 'Time sensitivity', value: 'High', impact: 'Referenced CCTV may be overwritten before other evidence expires.' },
+          { label: 'Cross-case value', value: '2 candidates', impact: 'A vehicle match could connect the current FIR to two comparable incidents.' },
+          { label: 'Operational gap', value: '1 accused', impact: 'No matching process event is recorded for one accused.' },
+        ], caseSources, ['Recommendation prioritizes record preservation; an investigating officer must approve operational action.']);
+      }
+      if (/similar case|same modus|same mo|historical match/.test(query)) {
+        return copilotResponse('similar_cases', 'Three comparison cases were retrieved. KSP-2026-0089 is the strongest candidate because it shares a two-wheeler snatching MO, evening time window, and nearby station geography.', 0.86, [
+          { label: 'KSP-2026-0089', value: '78% match', impact: 'Same MO, time window, and nearby geography.' },
+          { label: 'KSP-2026-0301', value: '65% match', impact: 'Shares an accused association and vehicle descriptor.' },
+          { label: 'KSP-2026-0255', value: '52% match', impact: 'Geographic similarity without a confirmed entity match.' },
+        ], [...caseSources, { label: 'CaseMaster comparison set (3)', table: 'CaseMaster' }], ['Matches identify cases for comparison, not proof that incidents are connected.']);
+      }
+      if (/readiness|outcome|case confidence|case strength/.test(query)) {
+        return copilotResponse('readiness_forecast', 'Investigation readiness is 67%. Witness coverage and prompt reporting are strong; missing CCTV custody confirmation and an unresolved accused process status prevent a higher score. This is not a conviction forecast.', 0.9, [
+          { label: 'Witness coverage', value: 'Strong', impact: 'Two identified witnesses improve reconstruction readiness.' },
+          { label: 'Digital evidence', value: 'At risk', impact: 'CCTV is referenced but acquisition and hash are not confirmed.' },
+          { label: 'Suspect process', value: 'Incomplete', impact: 'One accused lacks a matching arrest or surrender event.' },
+        ], caseSources, ['Readiness measures recorded completeness, not guilt, conviction probability, or legal sufficiency.']);
+      }
       if (/142|ಸಂಕ್ಷಿಪ್ತ/u.test(query)) {
         return {
           answer: kannada
@@ -411,6 +455,12 @@ export function defineMockApi() {
             { label: 'ArrestSurrender records (1)', table: 'ArrestSurrender', record: 142 },
             { label: 'ActSectionAssociation (2)', table: 'ActSectionAssociation', record: 142 },
           ],
+          reasoning: [
+            { label: 'Witness coverage', value: '2 recorded', impact: 'Independent witness records support reconstruction of the reported event.' },
+            { label: 'Digital evidence', value: 'CCTV referenced', impact: 'The record identifies footage, but acquisition and chain-of-custody still require confirmation.' },
+            { label: 'Network signal', value: 'Repeat cluster', impact: 'The primary accused shares relational indicators with previous robbery records.' },
+          ],
+          limitations: ['This demonstration summary uses synthetic CCTNS records. Every fact and legal provision requires officer verification.'],
           method: 'synthetic-schema-grounded-join', confidence: 0.92, mode: 'demo', intent: 'case_summary'
         };
       }
@@ -473,7 +523,6 @@ export function defineMockApi() {
 
     // === Chargesheet Clock ===
     'GET /server/chargesheet_clock/stats': () => {
-      const now = Date.now();
       const cases = [
         { caseId: 1, firNo: 'KSP-2026-0142', crimeType: 'robbery', officer: 'PI Dharmendra', districtId: 3, dateRegistered: '2026-03-15', daysSinceRegistration: 114, cpcLimitDays: 90, daysOverdue: 24, deadlineDate: '2026-06-13', status: 'overdue' },
         { caseId: 2, firNo: 'KSP-2026-0089', crimeType: 'burglary', officer: 'PI Maruti', districtId: 7, dateRegistered: '2026-02-28', daysSinceRegistration: 129, cpcLimitDays: 90, daysOverdue: 39, deadlineDate: '2026-05-29', status: 'overdue' },
@@ -648,7 +697,7 @@ export function defineMockApi() {
     }),
 
     // === Arrest Vector ===
-    'GET /server/arrest_vector/vectors': ({ query }) => {
+    'GET /server/arrest_vector/vectors': () => {
       const karnatakaStations = [
         { name: 'Brigade Road PS', district: 'Bangalore Urban', lat: 12.9719, lng: 77.6067 },
         { name: 'Cubbon Park PS', district: 'Bangalore Urban', lat: 12.9762, lng: 77.5933 },
@@ -972,8 +1021,7 @@ export function defineMockApi() {
     },
 
     // === Agentic Cross Check Mock ===
-    'POST /server/agentic_police/agentic/cross-check/:id/demo': ({ params }) => {
-      const id = parseInt(params.id) || 142;
+    'POST /server/agentic_police/agentic/cross-check/:id/demo': () => {
       return {
         demoMode: true,
         alertsStored: 1,
@@ -1090,7 +1138,7 @@ export function defineMockApi() {
       confirmedAt: new Date().toISOString(),
       newConfidence: Math.min(0.99, (body?.currentConfidence || 0.85) + 0.07)
     }),
-    'POST /server/zia/theories/:firId/add': ({ params, body }) => ({
+    'POST /server/zia/theories/:firId/add': ({ body }) => ({
       success: true,
       theory: {
         id: `T${Date.now()}`,
@@ -1164,12 +1212,14 @@ export function defineMockApi() {
 
     // === ZIA Synthesis Brief ===
     'POST /server/zia_brief/zia_brief': ({ body }) => {
-      const caseId = body?.caseId || 142;
+      const requestedCase = String(body?.caseId || '142');
+      const caseId = requestedCase.match(/(\d+)$/)?.[1] || '142';
+      const firNo = requestedCase.startsWith('KSP-') ? requestedCase : `KSP-2026-${String(caseId).padStart(4, '0')}`;
       return {
         caseId,
-        narrative: `FIR KSP-2026-${caseId} involves a robbery near MG Road metro station reported on 2026-03-15. Solvability analysis indicates strong witness and CCTV evidence. Veracity score is 84% (GENUINE). Network analysis links primary accused to the M G Road Snatchers gang with 2 co-offenders. The case is currently under investigation at Brigade Road PS with golden period expired but chargesheet deadline in 18 days.`,
+        narrative: `FIR ${firNo} involves a robbery near MG Road metro station reported on 2026-03-15. Solvability analysis indicates strong witness and CCTV evidence. Veracity score is 84% (GENUINE). Network analysis links primary accused to the M G Road Snatchers gang with 2 co-offenders. The case is currently under investigation at Brigade Road PS with golden period expired but chargesheet review is due in 18 days.`,
         solvability: {
-          firNo: `KSP-2026-${caseId}`,
+          firNo,
           score: 0.67,
           label: 'SOLVABLE',
           factors: [
@@ -1209,7 +1259,7 @@ export function defineMockApi() {
           { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
           { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
           { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
-          { priority: 'LOW', action: 'File supplementary chargesheet sections 395/397 IPC', deadline: '2026-07-25T18:00:00Z' },
+          { priority: 'LOW', action: 'Review BNS 309 and any applicable aggravated provision with the legal officer', deadline: '2026-07-25T18:00:00Z' },
         ],
         confidence: 0.82,
         provenance: [

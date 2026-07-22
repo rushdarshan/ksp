@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCaseContext } from './CaseWorkspace';
+import { useCaseContext } from './caseContext';
 
 export default function ChargesheetIntelligence() {
   const { firId } = useCaseContext();

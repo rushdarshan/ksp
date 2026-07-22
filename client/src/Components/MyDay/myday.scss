@@ -305,10 +305,46 @@
   place-items: center;
   border-radius: 8px;
   background: var(--dashboard-ink);
-  color: #fff;
+  color: var(--text-inverse);
 }
 
 .daily-brief__icon svg { width: 19px; height: 19px; }
+
+.daily-brief__actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.daily-brief__actions button {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: 650 12px var(--font-body);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.daily-brief__actions button:hover {
+  color: var(--text-inverse);
+  background: var(--dashboard-ink);
+  border-color: var(--dashboard-ink);
+}
+
+.daily-brief__actions svg { width: 14px; height: 14px; }
+
+.daily-brief__actions button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .alerts-feed__title {
   margin: 0;
@@ -326,6 +362,8 @@
   .myday-summary { grid-template-columns: 1fr; }
   .myday-stat { min-height: 112px; }
   .myday-welcome__title { font-size: 18px; }
+  .daily-brief__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-brief__actions button { justify-content: flex-start; }
 }
 
 // Shortcuts widget

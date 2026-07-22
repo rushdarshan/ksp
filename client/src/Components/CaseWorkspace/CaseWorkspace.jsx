@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   PiArrowLeft, PiCalendar, PiClipboardText, PiFlask, PiGraph,
   PiNotePencil, PiRobot, PiScales, PiTarget
 } from 'react-icons/pi';
-import CrimeGenomePanel from '../FirDetails/CrimeGenomePanel';
-import CoAccusedNetworkPanel from '../CoAccusedNetworkPanel';
 import EntityGraphPanel from './EntityGraphPanel';
 import MemoryNotSearch from './MemoryNotSearch';
 import CaseStrengthMeter from './CaseStrengthMeter';
@@ -16,12 +14,13 @@ import TheoryBoard from './TheoryBoard';
 import EvidenceReview from './EvidenceReview';
 import CaseNotes from './CaseNotes';
 import ChargesheetIntelligence from './ChargesheetIntelligence';
+import InvestigationCopilot from './InvestigationCopilot';
+import InvestigationReportButton from './InvestigationReportButton';
+import { CaseContext } from './caseContext';
+import { buildCaseWorkspaceSearch, getRouteTab } from './caseWorkspaceRouting';
 import './CaseWorkspace.scss';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
-
-export const CaseContext = createContext(null);
-export const useCaseContext = () => useContext(CaseContext);
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: PiClipboardText },
@@ -34,11 +33,6 @@ const TABS = [
   { id: 'chargesheet', label: 'Chargesheet', icon: PiScales },
 ];
 
-function getHashTab() {
-  const hash = window.location.hash.replace('#', '');
-  return TABS.some(t => t.id === hash) ? hash : 'overview';
-}
-
 function statusClass(stage) {
   if (!stage) return 'case-status case-status--investigation';
   const s = stage.toLowerCase();
@@ -50,24 +44,24 @@ function statusClass(stage) {
 export default function CaseWorkspace() {
   const { caseId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(getHashTab);
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() => getRouteTab(location.search));
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState({ from: null, to: null });
 
   const firId = caseId || 'KSP-2026-0142';
+  const initialCopilotAction = new URLSearchParams(location.search).get('copilot');
 
   const switchTab = useCallback((tabId) => {
     setActiveTab(tabId);
-    window.history.replaceState(null, '', `#${tabId}`);
-  }, []);
+    navigate(`${location.pathname}${buildCaseWorkspaceSearch(location.search, tabId)}`, { replace: true });
+  }, [location.pathname, location.search, navigate]);
 
   useEffect(() => {
-    const onHashChange = () => setActiveTab(getHashTab());
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
+    setActiveTab(getRouteTab(location.search));
+  }, [location.search]);
 
   useEffect(() => {
     setLoading(true);
@@ -109,24 +103,29 @@ export default function CaseWorkspace() {
             <span style={{ color: 'var(--text)', fontWeight: 600 }}>{firId}</span>
           </div>
 
-          <div className="case-info">
-            <div className="case-title-row">
-              <h1 className="case-title">Case {firId}</h1>
+          <div className="case-header-main">
+            <div className="case-info">
+              <div className="case-title-row">
+                <h1 className="case-title">Case {firId}</h1>
+                {caseData && (
+                  <span className={statusClass(caseData.fir_stage)}>
+                    {caseData.fir_stage || 'Under Investigation'}
+                  </span>
+                )}
+              </div>
               {caseData && (
-                <span className={statusClass(caseData.fir_stage)}>
-                  {caseData.fir_stage || 'Under Investigation'}
-                </span>
+                <p className="case-meta">
+                  {caseData.CrimeGroup_Name || 'Robbery'} · {caseData.UnitName} · {caseData.DistrictName}
+                </p>
               )}
             </div>
-            {caseData && (
-              <p className="case-meta">
-                {caseData.CrimeGroup_Name || 'Robbery'} · {caseData.UnitName} · {caseData.DistrictName}
-              </p>
-            )}
-          </div>
 
-          <CaseStrengthMeter firId={firId} />
-          <button className="case-back" onClick={() => navigate(-1)}><PiArrowLeft /> Back</button>
+            <div className="case-header-actions">
+              <CaseStrengthMeter firId={firId} />
+              <InvestigationReportButton />
+              <button className="case-back" onClick={() => navigate(-1)}><PiArrowLeft /> Back</button>
+            </div>
+          </div>
         </div>
 
         <div className="case-tabs">
@@ -144,6 +143,8 @@ export default function CaseWorkspace() {
             );
           })}
         </div>
+
+        <InvestigationCopilot initialAction={initialCopilotAction} />
 
         <div className="case-content">
           {loading ? (

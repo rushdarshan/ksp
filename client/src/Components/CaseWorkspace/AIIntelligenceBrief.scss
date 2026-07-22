@@ -15,8 +15,8 @@ $text2: var(--text-secondary);
   // ── Refresh / latency bar ──
   &__refresh-bar {
     padding: 8px 16px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
-    color: #fff;
+    background: var(--dashboard-ink);
+    color: var(--text-inverse);
     font-size: 12px;
     font-weight: 600;
     border-radius: 8px;
@@ -31,7 +31,7 @@ $text2: var(--text-secondary);
     gap: 14px;
     padding: 18px 20px;
     background: var(--surface-alt);
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid var(--border-light);
     flex-wrap: wrap;
   }
@@ -72,7 +72,7 @@ $text2: var(--text-secondary);
   &__card {
     background: $surface;
     border: 1px solid $border;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
   }
 
@@ -92,6 +92,12 @@ $text2: var(--text-secondary);
       font-weight: 700;
       color: $text;
     }
+  }
+
+  &__card-head > svg {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
   }
 
   &__card-body {
@@ -170,6 +176,13 @@ $text2: var(--text-secondary);
     background: var(--surface-alt);
     border-radius: 8px;
     border: 1px solid var(--border-light);
+  }
+
+
+  &__reco-note svg {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
   }
 
   // ── Veracity flags ──
@@ -350,8 +363,7 @@ $text2: var(--text-secondary);
   &__bar {
     height: 18px;
     border-radius: 6px;
-    background: linear-gradient(90deg, $navy, $amber);
-    background-size: 200% 100%;
+    background: var(--border);
     opacity: 0.18;
     animation: aib-redact 1.4s ease-in-out infinite alternate;
   }
@@ -431,19 +443,22 @@ $text2: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   font-family: var(--font-body);
-  color: #e0e7ff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-inverse);
+  background: var(--dashboard-ink);
+  border: 1px solid var(--dashboard-ink);
   border-radius: 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--text);
+    border-color: var(--text);
   }
+
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 
 // ── Keyframes ──

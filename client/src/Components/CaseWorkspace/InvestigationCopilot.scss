@@ -1,0 +1,161 @@
+.investigation-copilot {
+  padding: 14px 24px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border-light);
+  display: grid;
+  grid-template-columns: minmax(190px, 0.7fr) minmax(520px, 2fr);
+  gap: 14px 20px;
+  align-items: center;
+}
+
+.investigation-copilot__lead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.investigation-copilot__lead div { min-width: 0; }
+.investigation-copilot__lead strong { display: block; color: var(--text); font-size: 14px; }
+.investigation-copilot__lead span:not(.investigation-copilot__icon) { display: block; margin-top: 2px; color: var(--text-secondary); font-size: 12px; }
+
+.investigation-copilot__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: var(--dashboard-ink);
+  color: var(--text-inverse);
+  flex: 0 0 auto;
+}
+
+.investigation-copilot__icon svg { width: 19px; height: 19px; }
+
+.investigation-copilot__actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(96px, 1fr));
+  gap: 6px;
+}
+
+.investigation-copilot__actions button {
+  min-height: 44px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: 600 12px/1.2 var(--font-body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.investigation-copilot__actions button:hover,
+.investigation-copilot__actions button.is-active {
+  background: var(--dashboard-ink);
+  border-color: var(--dashboard-ink);
+  color: var(--text-inverse);
+}
+
+.investigation-copilot__actions button:disabled { cursor: wait; opacity: 0.65; }
+.investigation-copilot__actions svg { width: 15px; height: 15px; flex: 0 0 auto; }
+
+.investigation-copilot__result {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  animation: copilot-enter 220ms ease both;
+}
+
+.investigation-copilot__loading {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.investigation-copilot__loading svg { animation: copilot-spin 900ms linear infinite; }
+
+.investigation-copilot__result-head,
+.investigation-copilot__result-head > div,
+.investigation-copilot__footer,
+.investigation-copilot__evidence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.investigation-copilot__result-head { justify-content: space-between; }
+.investigation-copilot__result-head strong { font-size: 14px; }
+
+.investigation-copilot__mode {
+  padding: 3px 7px;
+  border-radius: 5px;
+  font: 700 9px/1.2 var(--font-mono);
+  text-transform: uppercase;
+}
+
+.investigation-copilot__mode--live { background: var(--pastel-green); color: var(--pastel-green-text); }
+.investigation-copilot__mode--demo { background: var(--pastel-yellow); color: var(--pastel-yellow-text); }
+
+.investigation-copilot__confidence { display: flex; align-items: center; gap: 8px; color: var(--text); font: 700 11px var(--font-mono); }
+.investigation-copilot__confidence i { width: 78px; height: 5px; overflow: hidden; border-radius: 3px; background: var(--border-light); }
+.investigation-copilot__confidence b { display: block; height: 100%; background: var(--pastel-green-text); }
+
+.investigation-copilot__answer { margin: 13px 0; max-width: 980px; color: var(--text); font-size: 14px; line-height: 1.6; white-space: pre-line; }
+
+.investigation-copilot__reasoning {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.investigation-copilot__reasoning > div { border: 1px solid var(--border-light); background: var(--surface-alt); padding: 9px 11px; }
+.investigation-copilot__reasoning span { color: var(--text-secondary); font-size: 10px; text-transform: uppercase; }
+.investigation-copilot__reasoning strong { display: block; margin-top: 3px; color: var(--text); font-size: 13px; }
+.investigation-copilot__reasoning p { margin: 3px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.4; }
+
+.investigation-copilot__evidence { padding-top: 11px; border-top: 1px solid var(--border-light); }
+.investigation-copilot__evidence > span { color: var(--text-secondary); font: 700 10px var(--font-mono); text-transform: uppercase; }
+.investigation-copilot__evidence small { padding: 3px 7px; border-radius: 5px; background: var(--pastel-blue); color: var(--pastel-blue-text); font-size: 10px; }
+.investigation-copilot__limits { margin: 10px 0 0; color: var(--text-secondary); font-size: 11px; }
+.investigation-copilot__footer { justify-content: space-between; margin-top: 12px; }
+.investigation-copilot__footer > span { color: var(--muted); font: 10px var(--font-mono); text-transform: uppercase; }
+.investigation-copilot__footer button { min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--accent-text); font: 700 12px var(--font-body); cursor: pointer; }
+
+.investigation-copilot button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@keyframes copilot-spin { to { transform: rotate(360deg); } }
+@keyframes copilot-enter { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 980px) {
+  .investigation-copilot { grid-template-columns: 1fr; }
+  .investigation-copilot__actions { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 620px) {
+  .investigation-copilot { padding: 12px 14px; }
+  .investigation-copilot__actions { display: flex; overflow-x: auto; padding-bottom: 2px; }
+  .investigation-copilot__actions button { min-width: 126px; }
+  .investigation-copilot__reasoning { grid-template-columns: 1fr; }
+  .investigation-copilot__confidence { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .investigation-copilot__result { animation: none; }
+  .investigation-copilot__loading svg { animation-duration: 1.8s; }
+}

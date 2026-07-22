@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCaseContext } from './CaseWorkspace';
+import { useCaseContext } from './caseContext';
 
 const MOCK_ENTITIES = [
   { type: 'Person', name: 'Ravi Kumar', role: 'Prime Suspect' },

@@ -13,7 +13,7 @@ const precomputedBriefs = new Map();
 const AI_FUNCTIONS = [
     { name: 'solvability_index', path: '/server/solvability_index/solvability', method: 'POST', body: {} },
     { name: 'veracity_index', path: '/server/veracity_index/analyze', method: 'POST', body: {} },
-    { name: 'network_analysis', path: '/server/network_analysis/graph', method: 'GET' },
+    { name: 'network_analysis', path: '/server/co_accused_network/graph', method: 'GET' },
     { name: 'daily_brief', path: '/server/agentic/briefs', method: 'GET' },
     { name: 'agentic_police', path: '/server/agentic/actions', method: 'GET' },
 ];

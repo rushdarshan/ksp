@@ -22,11 +22,15 @@ function extractCaseId(query, history) {
 
 function detectIntent(query, caseId) {
     const normalized = query.toLowerCase();
-    if (caseId) return 'case_summary';
+    if (/missing evidence|evidence gap|completeness|what is missing/i.test(normalized)) return 'evidence_gaps';
+    if (/next investigative lead|next lead|prioriti[sz]e|what.*next/i.test(normalized)) return 'next_lead';
+    if (/similar case|same modus|same mo|historical match/i.test(normalized)) return 'similar_cases';
+    if (/readiness|outcome|case confidence|case strength/i.test(normalized)) return 'readiness_forecast';
     if (/bns|section|legal|punishment|ವಿಧಿ|ಶಿಕ್ಷೆ/u.test(normalized)) return 'legal';
     if (/at large|not arrested|abscond|ಬಂಧನವಾಗದ/u.test(normalized)) return 'accused_at_large';
     if (/hotspot|cluster|where|ಹಾಟ್.?ಸ್ಪಾಟ್/u.test(normalized)) return 'hotspots';
     if (/trend|pattern|compare|increase|decrease|ಮಾದರಿ/u.test(normalized)) return 'trends';
+    if (caseId) return 'case_summary';
     return 'general';
 }
 
@@ -97,6 +101,119 @@ async function caseSummary(catalystApp, caseId) {
         ],
         confidence: 0.96,
         method: 'schema-grounded-relational-join',
+        reasoning: [
+            { label: 'Case record', value: 'Registered', impact: 'CaseMaster supplies the controlling FIR facts and station.' },
+            { label: 'People linked', value: `${accused.length} accused · ${victims.length} victims`, impact: 'Counts come from direct CaseMasterID relationships.' },
+            { label: 'Process status', value: `${arrests.length} arrest events`, impact: 'Absence of a matching row is a review flag, not proof that a person is absconding.' },
+        ],
+        limitations: ['The supplied schema does not include a complete digital evidence or chain-of-custody table.'],
+    };
+}
+
+async function investigativeSupport(catalystApp, caseId, intent) {
+    const zcql = catalystApp.zcql();
+    const [caseRows, accusedRows, victimRows, arrestRows, sectionRows, chargesheetRows] = await Promise.all([
+        zcql.executeZCQLQuery(`SELECT * FROM CaseMaster WHERE CaseMasterID = ${caseId} LIMIT 1`),
+        zcql.executeZCQLQuery(`SELECT * FROM Accused WHERE CaseMasterID = ${caseId} LIMIT 50`),
+        zcql.executeZCQLQuery(`SELECT * FROM Victim WHERE CaseMasterID = ${caseId} LIMIT 50`),
+        zcql.executeZCQLQuery(`SELECT * FROM ArrestSurrender WHERE CaseMasterID = ${caseId} LIMIT 50`),
+        zcql.executeZCQLQuery(`SELECT * FROM ActSectionAssociation WHERE CaseMasterID = ${caseId} LIMIT 50`),
+        zcql.executeZCQLQuery(`SELECT * FROM ChargesheetDetails WHERE CaseMasterID = ${caseId} LIMIT 20`),
+    ]);
+    const record = unwrap(caseRows[0], 'CaseMaster');
+    if (!record.CaseMasterID) return null;
+    const accused = accusedRows.map(row => unwrap(row, 'Accused'));
+    const victims = victimRows.map(row => unwrap(row, 'Victim'));
+    const arrests = arrestRows.map(row => unwrap(row, 'ArrestSurrender'));
+    const sections = sectionRows.map(row => unwrap(row, 'ActSectionAssociation'));
+    const chargesheets = chargesheetRows.map(row => unwrap(row, 'ChargesheetDetails'));
+    const arrestedIds = new Set(arrests.map(item => String(item.AccusedMasterID)));
+    const unmatchedAccused = accused.filter(item => !arrestedIds.has(String(item.AccusedMasterID)));
+    const sources = [
+        { label: `CaseMaster #${caseId}`, table: 'CaseMaster', record: caseId },
+        { label: `Accused (${accused.length})`, table: 'Accused', record: caseId },
+        { label: `Victim (${victims.length})`, table: 'Victim', record: caseId },
+        { label: `ArrestSurrender (${arrests.length})`, table: 'ArrestSurrender', record: caseId },
+        { label: `ActSectionAssociation (${sections.length})`, table: 'ActSectionAssociation', record: caseId },
+        { label: `ChargesheetDetails (${chargesheets.length})`, table: 'ChargesheetDetails', record: caseId },
+    ];
+    const limitations = [
+        'The supplied schema has no complete evidence inventory, chain-of-custody, CDR, vehicle, bank-account, or forensic-result table.',
+        'These results prioritize record review; they do not infer guilt or legal sufficiency.',
+    ];
+
+    if (intent === 'evidence_gaps') {
+        const checks = [
+            { label: 'Victim linkage', ready: victims.length > 0, detail: victims.length ? `${victims.length} record(s) linked` : 'No victim record linked' },
+            { label: 'Accused linkage', ready: accused.length > 0, detail: accused.length ? `${accused.length} record(s) linked` : 'No accused record linked' },
+            { label: 'Legal classification', ready: sections.length > 0, detail: sections.length ? `${sections.length} provision record(s)` : 'No section association recorded' },
+            { label: 'Process event', ready: arrests.length > 0, detail: arrests.length ? `${arrests.length} arrest/surrender event(s)` : 'No arrest or surrender event recorded' },
+            { label: 'Chargesheet', ready: chargesheets.length > 0, detail: chargesheets.length ? `${chargesheets.length} chargesheet record(s)` : 'No chargesheet record found' },
+        ];
+        const complete = checks.filter(check => check.ready).length;
+        return {
+            answer: `The supplied relational record is complete on ${complete} of ${checks.length} measurable checks. ${checks.filter(check => !check.ready).map(check => check.label).join(', ') || 'No relational gap'} requires review. Digital evidence completeness cannot be calculated because the required evidence tables were not supplied.`,
+            sources,
+            confidence: 0.91,
+            method: 'schema-completeness-check',
+            reasoning: checks.map(check => ({ label: check.label, value: check.ready ? 'Recorded' : 'Gap', impact: check.detail })),
+            limitations,
+        };
+    }
+
+    if (intent === 'next_lead') {
+        const lead = unmatchedAccused.length
+            ? `Verify the current process status and last known location for ${unmatchedAccused[0].AccusedName || 'the unmatched accused'}; no matching ArrestSurrender row was found.`
+            : !chargesheets.length
+                ? 'Review the legal classification and outstanding evidence before the next supervisory case review; no chargesheet record was found.'
+                : 'Reconcile the chargesheet record against the linked legal provisions and victim records before supervisory approval.';
+        return {
+            answer: lead,
+            sources,
+            confidence: 0.88,
+            method: 'priority-rule-over-relational-gaps',
+            reasoning: [
+                { label: 'Unmatched accused', value: String(unmatchedAccused.length), impact: 'Accused records without a matching process event receive first review priority.' },
+                { label: 'Chargesheet state', value: chargesheets.length ? 'Recorded' : 'Not recorded', impact: 'Determines whether the immediate task is investigation completion or supervisory reconciliation.' },
+                { label: 'Legal provisions', value: String(sections.length), impact: 'Provision records define the legal review scope but require officer verification.' },
+            ],
+            limitations,
+        };
+    }
+
+    if (intent === 'similar_cases') {
+        const head = Number(record.CrimeMajorHeadID || 0);
+        const rows = head ? await zcql.executeZCQLQuery(`SELECT CaseMasterID, CrimeNo, PoliceStationID, CrimeMinorHeadID, BriefFacts FROM CaseMaster WHERE CrimeMajorHeadID = ${head} LIMIT 20`) : [];
+        const matches = rows.map(row => unwrap(row, 'CaseMaster')).filter(item => Number(item.CaseMasterID) !== Number(caseId)).slice(0, 5);
+        return {
+            answer: matches.length
+                ? `Found ${matches.length} candidates sharing crime major head ${head}. They are candidates for officer comparison, not confirmed linked cases.`
+                : 'No same-head comparison cases were found in the current query window.',
+            sources: [...sources, { label: `CaseMaster crime-head comparison (${matches.length})`, table: 'CaseMaster' }],
+            confidence: matches.length ? 0.84 : 0.4,
+            method: 'same-crime-head-retrieval',
+            reasoning: matches.map(item => ({
+                label: String(item.CrimeNo || `Case ${item.CaseMasterID}`),
+                value: `Station ${item.PoliceStationID || 'unknown'}`,
+                impact: `Same major crime head${String(item.CrimeMinorHeadID) === String(record.CrimeMinorHeadID) ? ' and minor head' : ''}; compare MO and entities manually.`,
+            })),
+            limitations: [...limitations, 'Similarity uses recorded crime classification only; narrative embeddings and MO features require validated model deployment.'],
+        };
+    }
+
+    const factors = [Boolean(record.BriefFacts), victims.length > 0, accused.length > 0, sections.length > 0, arrests.length > 0, chargesheets.length > 0];
+    const readiness = Math.round(factors.filter(Boolean).length / factors.length * 100);
+    return {
+        answer: `Investigation record readiness is ${readiness}% across six observable relational checks. This is a completeness forecast, not a prediction of conviction, guilt, or judicial outcome.`,
+        sources,
+        confidence: 0.9,
+        method: 'transparent-readiness-score',
+        reasoning: [
+            { label: 'Core narrative', value: record.BriefFacts ? 'Present' : 'Missing', impact: 'Provides the factual basis for downstream review.' },
+            { label: 'People coverage', value: `${accused.length + victims.length} records`, impact: 'Measures linked accused and victim records.' },
+            { label: 'Procedure coverage', value: `${arrests.length + chargesheets.length} events`, impact: 'Measures recorded arrest/surrender and chargesheet milestones.' },
+        ],
+        limitations,
     };
 }
 
@@ -169,6 +286,10 @@ app.post('/query', async (req, res) => {
         let result;
 
         if (intent === 'case_summary') result = await caseSummary(catalystApp, caseId);
+        if (['evidence_gaps', 'next_lead', 'similar_cases', 'readiness_forecast'].includes(intent)) {
+            if (!caseId) return res.status(400).json({ error: 'An FIR or case number is required for this copilot action' });
+            result = await investigativeSupport(catalystApp, caseId, intent);
+        }
         if (intent === 'accused_at_large') result = await accusedAtLarge(catalystApp);
         if (intent === 'hotspots' || intent === 'trends') result = await aggregateIntelligence(catalystApp, intent);
         if (intent === 'legal') result = await legalQuery(analysisQuery);
