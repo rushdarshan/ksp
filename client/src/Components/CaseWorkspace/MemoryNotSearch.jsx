@@ -82,7 +82,7 @@ export default function MemoryNotSearch({ firId = 'KSP-2026-0142' }) {
                 }}
               >{sc.caseId}</span>
               <span style={{
-                fontSize: 10, fontWeight: 700, padding: '2px 8px',
+                fontSize: 11, fontWeight: 700, padding: '2px 8px',
                 background: '#f59e0b20', color: '#f59e0b', borderRadius: 6,
               }}>{sc.overlapCount} overlap</span>
             </div>
@@ -94,7 +94,7 @@ export default function MemoryNotSearch({ firId = 'KSP-2026-0142' }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: sc.crossStation ? 6 : 0 }}>
               {sc.overlapEntities.map(e => (
                 <span key={e} style={{
-                  fontSize: 10, padding: '1px 6px', borderRadius: 4,
+                  fontSize: 11, padding: '1px 6px', borderRadius: 4,
                   background: 'var(--surface)', border: '1px solid var(--border-light)',
                   color: 'var(--text-secondary)',
                 }}>{e}</span>

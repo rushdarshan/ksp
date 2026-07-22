@@ -108,7 +108,7 @@ export default function PredictivePanel() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span className="prediction-icon"><CrimeIcon weight="duotone" /></span>
                                 <span style={{
-                                    fontSize: '10px',
+                                    fontSize: '11px',
                                     fontWeight: 700,
                                     padding: '3px 8px',
                                     borderRadius: '999px',

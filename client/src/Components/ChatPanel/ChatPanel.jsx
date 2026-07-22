@@ -1,232 +1,245 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiChats, PiDownloadSimple, PiPaperPlaneTilt, PiRobot, PiUser, PiX } from 'react-icons/pi';
+import {
+  PiChats,
+  PiDownloadSimple,
+  PiPaperPlaneTilt,
+  PiRobot,
+  PiShieldCheck,
+  PiTranslate,
+  PiUser,
+  PiX,
+} from 'react-icons/pi';
 import apiFetch from '../../utils/apiFetch';
 import './ChatPanel.scss';
 
-var BOLD_RE = /\*\*(.*?)\*\*/g;
+const STORAGE_KEY = 'ksp-zia-conversation-v2';
 
-var SLASH_COMMANDS = {
-  '/help': { desc: 'Show available commands', usage: '/help' },
-  '/case': { desc: 'Jump to a case by FIR number', usage: '/case <FIR number> (e.g. /case 142)' },
-  '/person': { desc: 'Jump to a person profile', usage: '/person <name>' },
-  '/officer': { desc: 'Open officer roster', usage: '/officer' },
-  '/hotspots': { desc: 'Open crime hotspot map', usage: '/hotspots' },
-  '/clear': { desc: 'Clear conversation', usage: '/clear' },
-  '/export': { desc: 'Export conversation as text', usage: '/export' },
+const WELCOME = {
+  en: 'Welcome to ZIA. Ask about an FIR, accused person, hotspot, crime pattern, or applicable BNS provision.',
+  kn: 'ZIA ಗೆ ಸ್ವಾಗತ. FIR, ಆರೋಪಿ, ಅಪರಾಧ ಹಾಟ್‌ಸ್ಪಾಟ್, ಮಾದರಿ ಅಥವಾ ಅನ್ವಯಿಸುವ BNS ವಿಧಿಯ ಬಗ್ಗೆ ಕೇಳಿ.',
 };
 
-var SUGGESTED_QUERIES = [
-  'Show me unsolved robbery cases in Bengaluru',
-  'What are the top crime hotspots this month?',
-  'Summarize FIR KSP-2026-0142',
-  'Which accused are still at large?',
-  'Compare theft rates across districts',
-  'What BNS sections apply to chain snatching?',
-  'Show victim profile for FIR 142',
-  'What is the current case status?',
-  'Predict crime risk for next 7 days',
-  'Analyze the M G Road Snatchers gang network',
+const SUGGESTIONS = {
+  en: [
+    'Summarize FIR KSP-2026-0142',
+    'Show unsolved robbery patterns in Bengaluru',
+    'Which accused are still at large?',
+    'What BNS sections apply to chain snatching?',
+  ],
+  kn: [
+    'FIR KSP-2026-0142 ಅನ್ನು ಸಂಕ್ಷಿಪ್ತಗೊಳಿಸಿ',
+    'ಬೆಂಗಳೂರಿನ ಬಗೆಹರಿಯದ ದರೋಡೆ ಮಾದರಿಗಳನ್ನು ತೋರಿಸಿ',
+    'ಇನ್ನೂ ಬಂಧನವಾಗದ ಆರೋಪಿಗಳು ಯಾರು?',
+    'ಚೈನ್ ಸ್ನ್ಯಾಚಿಂಗ್‌ಗೆ ಯಾವ BNS ವಿಧಿಗಳು ಅನ್ವಯಿಸುತ್ತವೆ?',
+  ],
+};
+
+const FALLBACKS = [
+  {
+    match: /142|summari[sz]e fir|ಸಂಕ್ಷಿಪ್ತ/iu,
+    answer: '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses and CCTV are recorded; the primary accused is linked to a repeat-offender cluster. Solvability is 67%, veracity is 84%, and the chargesheet deadline is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
+    sources: ['CaseMaster #142', 'Accused.CaseMasterID #142', 'Solvability engine', 'Veracity engine'],
+  },
+  {
+    match: /at large|ಬಂಧನವಾಗದ/iu,
+    answer: '**Accused-at-large review**\n\nThe current demo dataset identifies four priority subjects without a matching arrest event. Two share co-accused links with the M G Road cluster. Open the Accused at Large ledger before operational action.',
+    sources: ['Accused table', 'ArrestSurrender table', 'Network analysis'],
+  },
+  {
+    match: /bns|chain snatch|ವಿಧಿ/iu,
+    answer: '**Legal retrieval required**\n\nChain-snatching facts may map to theft, robbery, hurt, or common-intention provisions depending on force, injury, and participation. Confirm the retrieved sections with the legal officer before filing.',
+    sources: ['Legal RAG knowledge base'],
+  },
 ];
 
-var MOCK_RESPONSES = {
-  'unsolved robbery': {
-    text: 'Based on CCTNS data, there are **23 unsolved robbery cases** in Bengaluru Urban district as of July 2026.\n\n**Top patterns identified:**\n- 67% occur between 8 PM to 2 AM\n- MG Road and Brigade Road corridors show highest concentration\n- Average solvability score: 0.42 (LOW)\n- 14 cases have CCTV evidence pending analysis\n\n**Recommended action:** Cross-reference with the M G Road Snatchers gang network — 8 cases share similar MO markers.',
-    sources: ['CCTNS-2026', 'Solvability Engine', 'Network Analysis'],
-  },
-  'crime hotspot': {
-    text: '**Top 5 Crime Hotspots — July 2026**\n\n1. **MG Road / Brigade Road** — 47 incidents (up 12% MoM)\n2. **Majestic / City Railway Station** — 38 incidents (up 8%)\n3. **Koramangala 5th Block** — 31 incidents (down 5%)\n4. **Whitefield Main Road** — 28 incidents (up 22%)\n5. **Yeshwanthpur Industrial Area** — 24 incidents (stable)\n\n**Key insight:** Whitefield shows the steepest climb — Recommend increasing patrol frequency during 6 to 10 PM window.',
-    sources: ['Hotspot Engine', 'Predictive Analytics'],
-  },
-  'summarize fir': {
-    text: '**FIR KSP-2026-0142 — Quick Summary**\n\nCase: Robbery near MG Road Metro Station\nReported: 2026-03-15\nStation: Brigade Road PS\nStage: Under Investigation\n\n**Key facts:**\n- 2 witnesses identified, CCTV footage within 48hr window\n- Primary accused linked to M G Road Snatchers gang\n- Solvability: 67% | Veracity: 84% (GENUINE)\n- Chargesheet deadline: 18 days remaining\n\n**Urgent:** CCTV from SH-9 junction needs retrieval before 48h overwrite.',
-    sources: ['Case Management', 'ZIA Brief'],
-  },
-  'at large': {
-    text: '**Accused At Large — Active Tracker**\n\nHIGH PRIORITY\n- **Mohan Kumar** (Age 28) — Linked to 4 robbery cases, last seen Peenya area\n- **Ravi Shankar** (Age 34) — Fugitive since 2026-02-20, Interceptor notice pending\n\nMEDIUM\n- **Ajay Patel** (Age 22) — Bail jumper, electronic surveillance active\n- **Deepak N** (Age 31) — Suspected cross-district operative\n\n**Network alert:** 2 of these accused share co-offender links with the M G Road Snatchers gang cluster.',
-    sources: ['Accused Tracker', 'Network Analysis'],
-  },
-  'theft rate': {
-    text: '**District-wise Theft Rate Comparison (Jan–Jul 2026)**\n\n- **Bengaluru Urban** — 1,247 cases, 18.3/100K (up 12%)\n- **Mysuru** — 423 cases, 14.1/100K (down 3%)\n- **Mangaluru** — 312 cases, 12.8/100K (up 5%)\n- **Hubli-Dharwad** — 287 cases, 15.2/100K (up 18%)\n- **Kalaburagi** — 198 cases, 9.4/100K (stable)\n\n**Insight:** Hubli-Dharwad shows alarming 18% increase — recommend deploying Crime Genome predictive resources.',
-    sources: ['Analytics Engine', 'Crime Head Database'],
-  },
-  'bns section': {
-    text: '**BNS Section Lookup — Chain Snatching**\n\n**Section 321 (BNS)**: Chain snatching — punishable with imprisonment up to 7 years and fine.\n\n**Related sections:**\n- Section 322: Attempt to commit murder during snatching\n- Section 323: Hurt caused during snatching\n- Section 324: Grievous hurt during snatching\n\n**Note:** IPC Section 397 replaced by BNS Section 321 following BNSS 2023 implementation.',
-    sources: ['Legal RAG', 'BNS Section Database'],
-  },
-  'gang network': {
-    text: '**M G Road Snatchers — Network Analysis**\n\nCluster size: 12 members across 8 FIRs\nPrimary activity zone: MG Road to Brigade Road corridor\nPeak hours: 20:00 to 02:00\n\n**Key nodes:**\n- Arjun Rao (leader) — 6 linked cases\n- Suresh HN (driver) — 4 linked cases\n- Vikram P (fence) — 3 linked cases\n\n**Cross-case links:** 4 cases share same MO pattern (motorcycle-based snatch, single victim)',
-    sources: ['Network Analysis', 'Co-Accused Graph'],
-  },
-  'default': {
-    text: 'I have processed your query. To provide a precise answer, please specify the FIR number, district, or crime type you want to investigate. You can also use slash commands like `/case 142` or `/person mohankumar` for direct lookups.',
-    sources: ['ZIA Analyst'],
-  },
-};
+function makeWelcome(language) {
+  return {
+    id: `welcome-${language}`,
+    role: 'bot',
+    text: WELCOME[language],
+    ts: new Date().toISOString(),
+    mode: 'system',
+  };
+}
+
+function loadConversation() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (stored?.messages?.length) return stored;
+  } catch {
+    // Ignore invalid local state and start a clean, auditable session.
+  }
+  return { language: 'en', messages: [makeWelcome('en')] };
+}
+
+function sourceLabel(source) {
+  if (typeof source === 'string') return source;
+  return source?.label || source?.record || source?.table || 'Evidence source';
+}
 
 function parseMarkdown(text) {
-  if (!text) return [];
-  const lines = text.split('\n');
-  const blocks = [];
-  let currentBlock = { type: 'text', content: '' };
-
-  lines.forEach(line => {
+  return String(text || '').split('\n').filter(Boolean).map((line) => {
     if (line.startsWith('**') && line.endsWith('**')) {
-      if (currentBlock.content.trim()) blocks.push(currentBlock);
-      currentBlock = { type: 'heading', content: line.replace(/\*\*/g, '') };
-    } else if (line.startsWith('- ')) {
-      if (currentBlock.type === 'text' && currentBlock.content.trim()) blocks.push(currentBlock);
-      if (currentBlock.type !== 'list') {
-        currentBlock = { type: 'list', content: [line.substring(2)] };
-      } else {
-        currentBlock.content.push(line.substring(2));
-      }
-    } else if (line.match(/^\d+\./)) {
-      if (currentBlock.type === 'text' && currentBlock.content.trim()) blocks.push(currentBlock);
-      if (currentBlock.type !== 'ordered') {
-        currentBlock = { type: 'ordered', content: [line.replace(/^\d+\.\s*/, '')] };
-      } else {
-        currentBlock.content.push(line.replace(/^\d+\.\s*/, ''));
-      }
-    } else {
-      if (currentBlock.content.trim()) blocks.push(currentBlock);
-      currentBlock = { type: 'text', content: line };
+      return { type: 'heading', content: line.replace(/\*\*/g, '') };
     }
+    if (line.startsWith('- ')) return { type: 'list', content: line.slice(2) };
+    return { type: 'text', content: line.replace(/\*\*/g, '') };
   });
-  if (currentBlock.content.trim()) blocks.push(currentBlock);
-  return blocks;
+}
+
+function demoResponse(query) {
+  const matched = FALLBACKS.find((item) => item.match.test(query));
+  return matched || {
+    answer: 'The live intelligence service is unavailable. Specify an FIR number, district, crime type, or accused person so the request can be constrained and verified.',
+    sources: ['Demo dataset'],
+  };
+}
+
+async function exportConversationPdf(messages, language) {
+  const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+    import('jspdf'),
+    import('html2canvas'),
+  ]);
+
+  const report = document.createElement('section');
+  report.className = 'cp__pdf-report';
+  report.lang = language === 'kn' ? 'kn' : 'en';
+  report.innerHTML = `
+    <header>
+      <p>KARNATAKA STATE POLICE · CRIME GENOME</p>
+      <h1>ZIA Conversation Evidence Report</h1>
+      <span>Generated ${new Date().toLocaleString('en-IN')} · Language ${language === 'kn' ? 'Kannada' : 'English'}</span>
+    </header>
+  `;
+
+  messages.forEach((message) => {
+    const article = document.createElement('article');
+    const title = document.createElement('strong');
+    title.textContent = `${message.role === 'bot' ? 'ZIA' : 'OFFICER'} · ${new Date(message.ts).toLocaleTimeString('en-IN')}`;
+    const body = document.createElement('p');
+    body.textContent = message.text.replace(/\*\*/g, '');
+    article.append(title, body);
+    if (message.sources?.length) {
+      const evidence = document.createElement('small');
+      evidence.textContent = `Evidence: ${message.sources.map(sourceLabel).join(' · ')}`;
+      article.append(evidence);
+    }
+    report.append(article);
+  });
+
+  document.body.append(report);
+  await document.fonts.ready;
+  const canvas = await html2canvas(report, { scale: 1.7, backgroundColor: '#ffffff', logging: false });
+  report.remove();
+
+  const pdf = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+  const margin = 32;
+  const pageWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+  const pageHeight = pdf.internal.pageSize.getHeight() - margin * 2;
+  const imageHeight = canvas.height * pageWidth / canvas.width;
+  const image = canvas.toDataURL('image/png');
+  const pages = Math.max(1, Math.ceil(imageHeight / pageHeight));
+
+  for (let page = 0; page < pages; page += 1) {
+    if (page > 0) pdf.addPage();
+    pdf.addImage(image, 'PNG', margin, margin - page * pageHeight, pageWidth, imageHeight);
+  }
+  pdf.save(`zia-evidence-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 const ChatPanel = () => {
   const navigate = useNavigate();
+  const initial = useRef(loadConversation()).current;
   const [isOpen, setIsOpen] = useState(false);
-  const [entering, setEntering] = useState(false);
   const [closing, setClosing] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 'welcome',
-      role: 'bot',
-      text: 'Welcome to ZIA, Karnataka Police Intelligence Assistant. How can I help with your investigation today?',
-      ts: new Date().toISOString(),
-    },
-  ]);
+  const [messages, setMessages] = useState(initial.messages);
+  const [language, setLanguage] = useState(initial.language || 'en');
   const [input, setInput] = useState('');
   const [status, setStatus] = useState('Idle');
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const scrollToBottom = useCallback(() => {
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ language, messages: messages.slice(-40) }));
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  }, [language, messages]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+  const clearConversation = useCallback(() => {
+    setMessages([makeWelcome(language)]);
+    setStatus('Idle');
+  }, [language]);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      await exportConversationPdf(messages, language);
+    } finally {
+      setExporting(false);
     }
-  }, [isOpen]);
+  }, [language, messages]);
 
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    setEntering(true);
-    const frame = requestAnimationFrame(() => setEntering(false));
-    return () => cancelAnimationFrame(frame);
-  }, [isOpen]);
+  const handleSend = useCallback(async (value) => {
+    const query = String(value || input).trim();
+    if (!query || status !== 'Idle') return;
 
-  const handleSend = useCallback(async (text) => {
-    const query = text || input;
-    if (!query.trim()) return;
+    if (query === '/clear') {
+      clearConversation();
+      setInput('');
+      return;
+    }
+    if (query.startsWith('/case ')) {
+      const caseId = query.split(/\s+/)[1];
+      navigate(`/dashboard/case/KSP-2026-${String(caseId).padStart(4, '0')}`);
+    }
 
-    const userMsg = {
-      id: Date.now().toString(),
-      role: 'user',
-      text: query,
-      ts: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, userMsg]);
+    const userMessage = { id: crypto.randomUUID(), role: 'user', text: query, ts: new Date().toISOString() };
+    const context = messages.slice(-8).map(({ role, text }) => ({ role, text }));
+    setMessages((current) => [...current, userMessage]);
     setInput('');
-    setShowSuggestions(false);
-    setStatus('Processing');
+    setStatus('Querying evidence');
 
-    // Simulate processing delay
-    setTimeout(() => {
-      setStatus('Querying');
-      setTimeout(() => {
-        const lowerQuery = query.toLowerCase();
-        let response = MOCK_RESPONSES.default;
-
-        for (const [key, val] of Object.entries(MOCK_RESPONSES)) {
-          if (key !== 'default' && lowerQuery.includes(key)) {
-            response = val;
-            break;
-          }
-        }
-
-        // Slash command handling
-        if (query.startsWith('/')) {
-          const parts = query.split(' ');
-          const cmd = parts[0].toLowerCase();
-          if (cmd === '/help') {
-            response = { text: 'Available commands: ' + Object.entries(SLASH_COMMANDS).map(([k, v]) => `${k}: ${v.desc}`).join('\n'), sources: ['ZIA'] };
-          } else if (cmd === '/case' && parts[1]) {
-            navigate(`/case/${parts[1]}`);
-            response = { text: `Navigating to case ${parts[1]}.`, sources: ['Navigation'] };
-          } else if (cmd === '/clear') {
-            setMessages([{
-              id: 'welcome',
-              role: 'bot',
-              text: 'Conversation cleared. How can I help?',
-              ts: new Date().toISOString(),
-            }]);
-            setStatus('Idle');
-            return;
-          } else if (cmd === '/export') {
-            const exportText = messages.map(m => `[${new Date(m.ts).toLocaleTimeString()}] ${m.role.toUpperCase()}: ${m.text}`).join('\n\n');
-            const blob = new Blob([exportText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `zia-brief-${new Date().toISOString().slice(0,10)}.txt`;
-            a.click();
-            response = { text: 'Conversation exported.', sources: ['Export'] };
-          } else if (SLASH_COMMANDS[cmd]) {
-            response = { text: `Usage: ${SLASH_COMMANDS[cmd].usage}\n\n${SLASH_COMMANDS[cmd].desc}`, sources: ['Commands'] };
-          } else {
-            response = { text: `Unknown command: ${cmd}. Type /help for available commands.`, sources: ['Commands'] };
-          }
-        }
-
-        const botMsg = {
-          id: (Date.now() + 1).toString(),
-          role: 'bot',
-          text: response.text,
-          sources: response.sources || ['ZIA Analyst'],
-          ts: new Date().toISOString(),
-        };
-        setMessages(prev => [...prev, botMsg]);
-        setStatus('Idle');
-      }, 600);
-    }, 300);
-  }, [input, navigate, messages]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleSend();
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    let payload;
+    try {
+      const response = await apiFetch('/crime_chat/query', {
+        method: 'POST',
+        body: JSON.stringify({ query, language, history: context }),
+      });
+      if (!response?.ok) throw new Error(`Crime intelligence service returned ${response?.status || 'no response'}`);
+      payload = await response.json();
+    } catch (error) {
+      const fallback = demoResponse(query);
+      payload = {
+        ...fallback,
+        mode: 'demo',
+        method: 'local-degraded-fallback',
+        confidence: 0.35,
+        warning: error.message,
+      };
     }
-  };
 
-  const handleSuggestion = (suggestion) => {
-    handleSend(suggestion);
+    setMessages((current) => [...current, {
+      id: crypto.randomUUID(),
+      role: 'bot',
+      text: payload.answer || payload.text,
+      sources: payload.sources || [],
+      method: payload.method,
+      confidence: payload.confidence,
+      mode: payload.mode || 'live',
+      ts: new Date().toISOString(),
+    }]);
+    setStatus('Idle');
+  }, [clearConversation, input, language, messages, navigate, status]);
+
+  const switchLanguage = () => {
+    const next = language === 'en' ? 'kn' : 'en';
+    setLanguage(next);
+    setMessages((current) => [...current, makeWelcome(next)]);
   };
 
   const handleClose = () => {
@@ -239,152 +252,89 @@ const ChatPanel = () => {
 
   if (!isOpen) {
     return (
-      <button
-        className="cp__fab"
-        onClick={() => {
-          setClosing(false);
-          setIsOpen(true);
-        }}
-        aria-label="Open ZIA Chat"
-      >
-        <PiChats size={16} />
+      <button className="cp__fab" onClick={() => setIsOpen(true)} aria-label="Open ZIA intelligence assistant">
+        <PiChats size={18} />
         <span className="cp__fab-label">ZIA Assistant</span>
       </button>
     );
   }
 
   return (
-    <div className={`cp ${entering ? 'entering' : ''} ${closing ? 'closing' : ''}`}>
-      <div className="cp__header">
+    <section className={`cp ${closing ? 'closing' : ''}`} aria-label="ZIA intelligence assistant">
+      <header className="cp__header">
         <div className="cp__header-left">
-          <div className="cp__header-icon">
-            <PiRobot size={18} />
-          </div>
+          <div className="cp__header-icon"><PiRobot size={19} /></div>
           <div>
             <div className="cp__header-title">ZIA Intelligence Assistant</div>
-            <div className="cp__header-sub">Status: {status}</div>
+            <div className="cp__header-sub">{status}</div>
           </div>
         </div>
         <div className="cp__header-actions">
-          <button
-            className="cp__header-btn"
-            onClick={() => {
-              const exportText = messages.map(m =>
-                `[${new Date(m.ts).toLocaleTimeString()}] ${m.role.toUpperCase()}: ${m.text}`
-              ).join('\n\n');
-              const blob = new Blob([exportText], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `zia-brief-${new Date().toISOString().slice(0, 10)}.txt`;
-              a.click();
-            }}
-            title="Export"
-          >
-            <PiDownloadSimple size={14} />
+          <button className="cp__header-btn" onClick={switchLanguage} title="Switch language" aria-label="Switch English and Kannada">
+            <PiTranslate size={17} /><span>{language === 'en' ? 'EN' : 'ಕ'}</span>
           </button>
-          <button
-            className="cp__header-btn cp__header-btn--close"
-            onClick={handleClose}
-            title="Close"
-          >
-            <PiX size={16} />
+          <button className="cp__header-btn" onClick={handleExport} disabled={exporting} title="Export evidence PDF" aria-label="Export conversation as PDF">
+            <PiDownloadSimple size={17} />
+          </button>
+          <button className="cp__header-btn cp__header-btn--close" onClick={handleClose} title="Close" aria-label="Close assistant">
+            <PiX size={18} />
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="cp__body">
-        {messages.map(msg => (
-          <div key={msg.id} className={`cp__msg cp__msg--${msg.role}`}>
-            <div className="cp__msg-icon">
-              {msg.role === 'bot' ? <PiRobot size={14} /> : <PiUser size={14} />}
-            </div>
+      <div className="cp__body" aria-live="polite">
+        {messages.map((message) => (
+          <article key={message.id} className={`cp__msg cp__msg--${message.role}`}>
+            <div className="cp__msg-icon">{message.role === 'bot' ? <PiRobot size={15} /> : <PiUser size={15} />}</div>
             <div className="cp__msg-content">
-              <div className="cp__msg-label">{msg.role === 'bot' ? 'ZIA' : 'You'}</div>
-              {parseMarkdown(msg.text).map((block, i) => {
-                if (block.type === 'heading') {
-                  return <strong key={i}>{block.content}</strong>;
-                }
-                if (block.type === 'list') {
-                  return block.content.map((item, j) => (
-                    <div key={j} style={{ paddingLeft: '12px', marginBottom: '2px' }}>
-                      {'\u2022'} {item}
-                    </div>
-                  ));
-                }
-                if (block.type === 'ordered') {
-                  return block.content.map((item, j) => (
-                    <div key={j} style={{ paddingLeft: '12px', marginBottom: '2px' }}>
-                      {j + 1}. {item}
-                    </div>
-                  ));
-                }
-                return <p key={i} className="cp__msg-text">{block.content}</p>;
-              })}
-              {msg.sources && msg.sources.length > 0 && (
-                <div className="cp__msg-sources">
-                  {msg.sources.map((src, i) => (
-                    <span key={i} className="cp__msg-source">{src}</span>
-                  ))}
+              <div className="cp__msg-label">{message.role === 'bot' ? 'ZIA' : 'You'}</div>
+              {message.role === 'bot' && message.mode && message.mode !== 'system' && (
+                <div className={`cp__trust cp__trust--${message.mode}`}>
+                  <PiShieldCheck />
+                  <span>{message.mode === 'live' ? 'Live evidence' : 'Demo fallback'}</span>
+                  {Number.isFinite(message.confidence) && <span>{Math.round(message.confidence * 100)}% confidence</span>}
                 </div>
               )}
-              <div className="cp__msg-time">
-                {new Date(msg.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-              </div>
+              {parseMarkdown(message.text).map((block, index) => {
+                if (block.type === 'heading') return <strong key={index}>{block.content}</strong>;
+                if (block.type === 'list') return <p key={index} className="cp__msg-text">• {block.content}</p>;
+                return <p key={index} className="cp__msg-text">{block.content}</p>;
+              })}
+              {message.sources?.length > 0 && (
+                <div className="cp__msg-sources" aria-label="Evidence sources">
+                  {message.sources.map((source, index) => <span key={`${sourceLabel(source)}-${index}`} className="cp__msg-source">{sourceLabel(source)}</span>)}
+                </div>
+              )}
+              <div className="cp__msg-time">{new Date(message.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
             </div>
-          </div>
+          </article>
         ))}
-        {status === 'Processing' && (
-          <div className="cp__msg cp__msg--bot">
-            <div className="cp__msg-icon"><PiRobot size={14} /></div>
-            <div className="cp__msg-content">
-              <div className="cp__typing">
-                <div className="cp__typing-dot" />
-                <div className="cp__typing-dot" />
-                <div className="cp__typing-dot" />
-              </div>
-            </div>
-          </div>
+        {status !== 'Idle' && (
+          <div className="cp__msg cp__msg--bot"><div className="cp__msg-icon"><PiRobot /></div><div className="cp__msg-content"><div className="cp__typing"><i /><i /><i /></div></div></div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {showSuggestions && (
+      {messages.length <= 2 && (
         <div className="cp__suggestions">
-          {SUGGESTED_QUERIES.slice(0, 4).map((s, i) => (
-            <button
-              key={i}
-              className="cp__suggestion"
-              onClick={() => handleSuggestion(s)}
-            >
-              {s}
-            </button>
-          ))}
+          {SUGGESTIONS[language].map((suggestion) => <button key={suggestion} className="cp__suggestion" onClick={() => handleSend(suggestion)}>{suggestion}</button>)}
         </div>
       )}
 
-      <form className="cp__footer" onSubmit={handleSubmit}>
+      <form className="cp__footer" onSubmit={(event) => { event.preventDefault(); handleSend(); }}>
         <div className="cp__input-wrap">
           <input
             ref={inputRef}
             className="cp__input"
-            type="text"
             value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask about cases, FIRs, BNS sections..."
+            onChange={(event) => setInput(event.target.value)}
+            placeholder={language === 'kn' ? 'FIR, ಆರೋಪಿ ಅಥವಾ ಅಪರಾಧ ಮಾದರಿಯ ಬಗ್ಗೆ ಕೇಳಿ…' : 'Ask about an FIR, person, pattern, or BNS section…'}
             disabled={status !== 'Idle'}
           />
-          <button
-            type="submit"
-            className="cp__send"
-            disabled={!input.trim() || status !== 'Idle'}
-          >
-            <PiPaperPlaneTilt size={14} />
-          </button>
+          <button type="submit" className="cp__send" disabled={!input.trim() || status !== 'Idle'} aria-label="Send query"><PiPaperPlaneTilt size={16} /></button>
         </div>
       </form>
-    </div>
+    </section>
   );
 };
 

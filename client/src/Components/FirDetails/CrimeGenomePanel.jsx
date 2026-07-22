@@ -150,7 +150,7 @@ function ZIABrief({ firId }) {
               border: '1px solid var(--border-light)',
             }}>
               <span style={{
-                fontSize: '10px', fontWeight: 700, padding: '2px 8px',
+                fontSize: '11px', fontWeight: 700, padding: '2px 8px',
                 borderRadius: '4px', background: `${priorityColor[r.priority]}20`,
                 color: priorityColor[r.priority], minWidth: '50px', textAlign: 'center',
               }}>{r.priority}</span>
@@ -448,14 +448,14 @@ function TheoryBoard({ firId }) {
                             <span style={{ fontSize: '11px', fontWeight: 600, color: evidenceTypeColor[e.type] || '#888', textTransform: 'capitalize' }}>{e.type}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'accept' ? '#4ade8030' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
-                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'reject' ? '#f8717130' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
-                            <button onClick={() => setEvidenceOverride(e.id, 'neutral')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'neutral' ? 'var(--color-gray-400)30' : 'var(--surface-alt)', color: status === 'neutral' ? '#94a3b8' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Neutral</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '11px', background: status === 'accept' ? '#4ade8030' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '11px', background: status === 'reject' ? '#f8717130' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'neutral')} style={{ padding: '2px 6px', fontSize: '11px', background: status === 'neutral' ? 'var(--color-gray-400)30' : 'var(--surface-alt)', color: status === 'neutral' ? '#94a3b8' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Neutral</button>
                           </div>
                         </div>
                         <p style={{ margin: 0, fontSize: '13px', color: 'var(--text)' }}>{e.text}</p>
                         {status !== 'suggested' && (
-                          <div style={{ fontSize: '10px', color: 'var(--accent)', marginTop: '4px', fontWeight: 600 }}>Officer Action: {status.toUpperCase()}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '4px', fontWeight: 600 }}>Officer Action: {status.toUpperCase()}</div>
                         )}
                       </div>
                     );
@@ -490,14 +490,14 @@ function TheoryBoard({ firId }) {
                             <span style={{ fontSize: '11px', fontWeight: 600, color: evidenceTypeColor[e.type] || '#888', textTransform: 'capitalize' }}>{e.type}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'accept' ? '#4ade8030' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
-                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'reject' ? '#f8717130' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
-                            <button onClick={() => setEvidenceOverride(e.id, 'neutral')} style={{ padding: '2px 6px', fontSize: '9px', background: status === 'neutral' ? 'var(--color-gray-400)30' : 'var(--surface-alt)', color: status === 'neutral' ? '#94a3b8' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Neutral</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'accept')} style={{ padding: '2px 6px', fontSize: '11px', background: status === 'accept' ? '#4ade8030' : 'var(--surface-alt)', color: status === 'accept' ? '#4ade80' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'reject')} style={{ padding: '2px 6px', fontSize: '11px', background: status === 'reject' ? '#f8717130' : 'var(--surface-alt)', color: status === 'reject' ? '#f87171' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Reject</button>
+                            <button onClick={() => setEvidenceOverride(e.id, 'neutral')} style={{ padding: '2px 6px', fontSize: '11px', background: status === 'neutral' ? 'var(--color-gray-400)30' : 'var(--surface-alt)', color: status === 'neutral' ? '#94a3b8' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>Neutral</button>
                           </div>
                         </div>
                         <p style={{ margin: 0, fontSize: '13px', color: 'var(--text)' }}>{e.text}</p>
                         {status !== 'suggested' && (
-                          <div style={{ fontSize: '10px', color: 'var(--accent)', marginTop: '4px', fontWeight: 600 }}>Officer Action: {status.toUpperCase()}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '4px', fontWeight: 600 }}>Officer Action: {status.toUpperCase()}</div>
                         )}
                       </div>
                     );
@@ -593,7 +593,7 @@ function CaseStrengthMeter({ firId }) {
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             }}>
               <span style={{ fontSize: '24px', fontWeight: 800, color: scoreColor }}>{data.overallScore}</span>
-              <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>/100</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>/100</span>
             </div>
           </div>
           <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>Overall Score</p>
@@ -627,7 +627,7 @@ function CaseStrengthMeter({ firId }) {
                 <span style={{ fontSize: '14px', color: c.check ? 'var(--color-green-alt)' : '#f87171', fontWeight: 'bold' }}>{c.check ? '✓' : '✗'}</span>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: c.check ? 'var(--text)' : 'var(--text-secondary)' }}>{c.label}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>{c.details}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>{c.details}</div>
                 </div>
               </div>
             ))}

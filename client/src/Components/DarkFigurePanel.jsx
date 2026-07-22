@@ -15,7 +15,7 @@ function CrimeBar({ crimeType, actual, lowerBound, upperBound }) {
                     display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
                     paddingRight: '4px', boxSizing: 'border-box'
                 }}>
-                    <span style={{ fontSize: '10px', color: '#fff' }}>{actual}</span>
+                    <span style={{ fontSize: '11px', color: '#fff' }}>{actual}</span>
                 </div>
                 <div style={{
                     position: 'absolute', left: `${(lowerBound / (maxVal || 1)) * 100}%`,

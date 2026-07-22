@@ -88,7 +88,7 @@ export default function CaseCard({ c }) {
             <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)' }}>{c.firNo}</span>
             {c.hasNewMatch && (
               <span style={{
-                padding: '2px 8px', fontSize: '9px', fontWeight: 800,
+                padding: '2px 8px', fontSize: '11px', fontWeight: 800,
                 background: '#f8717120', color: '#f87171', borderRadius: '4px',
                 border: '1px solid #f8717140', textTransform: 'uppercase',
               }}>New Match</span>
@@ -102,7 +102,7 @@ export default function CaseCard({ c }) {
         {/* Case Strength Meter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', lineHeight: 1 }}>Case Strength</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1 }}>Case Strength</div>
             <div style={{ fontSize: '13px', fontWeight: 800, color }}>{c.csmScore}/100</div>
           </div>
           <div style={{
@@ -135,7 +135,7 @@ export default function CaseCard({ c }) {
         {c.timeline.slice(0, 5).map((t, idx) => (
           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>• {t.event}</span>
-            <span style={{ fontSize: '10px', opacity: 0.7 }}>{t.date}</span>
+            <span style={{ fontSize: '11px', opacity: 0.7 }}>{t.date}</span>
           </div>
         ))}
       </div>

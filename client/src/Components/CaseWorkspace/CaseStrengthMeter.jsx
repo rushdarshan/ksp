@@ -22,8 +22,9 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
   const factors = score.factors || score.weightedFactors || [];
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="case-strength" style={{ position: 'relative' }}>
       <button
+        className="case-strength__button"
         onClick={toggle}
         style={{
           display: 'flex', alignItems: 'center', gap: '10px',
@@ -33,7 +34,7 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
         }}
         title="Case Strength Meter — click for full breakdown"
       >
-        <div style={{
+        <div className="case-strength__popover" style={{
           width: 32, height: 32, borderRadius: '50%',
           background: `conic-gradient(${color} ${score.overallScore * 3.6}deg, var(--border) 0deg)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -41,7 +42,7 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
           <div style={{
             width: 24, height: 24, borderRadius: '50%', background: 'var(--surface)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '10px', fontWeight: 800, color,
+            fontSize: '11px', fontWeight: 800, color,
           }}>{score.overallScore}</div>
         </div>
         <div>

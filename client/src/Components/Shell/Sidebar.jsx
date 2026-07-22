@@ -196,7 +196,7 @@ export default function Sidebar({ basePath, sidebarOpen, setSidebarOpen, userRol
         {!isCollapsed && (
           <div className="sidebarProfileCopy">
             <strong>{user?.name || 'KSP Officer'}</strong>
-            <span>{userRole || 'On duty'}</span>
+            <span>{userRole || user?.rank || 'On duty'}</span>
           </div>
         )}
         <button

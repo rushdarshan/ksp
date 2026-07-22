@@ -69,20 +69,20 @@ const BeatOptimizerPanel = () => {
                 </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
                 {['beats', 'optimize', 'patrol'].map(t => (
                     <button key={t} onClick={() => setTab(t)}
                         style={{ padding: '8px 16px', background: tab === t ? 'var(--color-blue-500)' : 'var(--color-surface-50)', color: tab === t ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                         {t === 'beats' ? 'Beats' : t === 'optimize' ? 'Optimization' : 'Patrol Routes'}
                     </button>
                 ))}
-                <div style={{ marginLeft: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-gray-500)' }}>
                         <input type="checkbox" checked={flowMode} onChange={e => setFlowMode(e.target.checked)}
                             style={{ marginRight: '4px' }} />
                         Criminal-Flow Mode
                     </label>
-                    {flowMode && <span style={{ fontSize: '10px', padding: '2px 6px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontWeight: 600 }}>BETA</span>}
+                    {flowMode && <span style={{ fontSize: '11px', padding: '2px 6px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontWeight: 600 }}>BETA</span>}
                 </div>
             </div>
 
@@ -193,7 +193,7 @@ const BeatOptimizerPanel = () => {
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#e0f2fe', borderRadius: '6px', fontSize: '12px' }}>
                                         <span style={{ fontWeight: 700, color: 'var(--color-blue-500)' }}>#{i + 1}</span>
                                         <span>{p.label}</span>
-                                        <span style={{ color: '#666', fontSize: '10px' }}>({Number(p.lat || 0).toFixed(2)}, {Number(p.lng || 0).toFixed(2)})</span>
+                                        <span style={{ color: '#666', fontSize: '11px' }}>({Number(p.lat || 0).toFixed(2)}, {Number(p.lng || 0).toFixed(2)})</span>
                                         {i < r.route.length - 1 && <span style={{ color: 'var(--color-gray-400)' }}>→</span>}
                                     </div>
                                 ))}

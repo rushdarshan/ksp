@@ -114,7 +114,7 @@
 
 .cp__header-sub {
   font-size: var(--size-caption);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.72);
   margin-top: 1px;
 }
 
@@ -124,13 +124,15 @@
 }
 
 .cp__header-btn {
-  width: 40px;
+  min-width: 40px;
   height: 40px;
   min-height: 40px;
+  padding: 0 9px;
+  gap: 4px;
   border-radius: var(--radius-sm);
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.82);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -138,8 +140,8 @@
   transition: background 0.15s var(--easing), color 0.15s var(--easing);
 
   &:hover {
-    background: rgba(27, 44, 71, 0.08);
-    color: var(--accent);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
   }
 
   &--close:hover {
@@ -262,7 +264,7 @@
 }
 
 .cp__msg-source {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
   background: var(--status-info-bg);
@@ -271,10 +273,29 @@
 }
 
 .cp__msg-time {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-secondary);
   margin-top: 4px;
   text-align: right;
+}
+
+.cp__trust {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 7px;
+  padding: 3px 7px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--status-clear-bg);
+  color: var(--status-clear-text);
+  font: 600 11px/1.2 var(--font-mono);
+}
+
+.cp__trust--demo {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-text);
 }
 
 // ── Typing Indicator ──
@@ -284,9 +305,10 @@
   padding: 8px 4px;
 }
 
-.cp__typing-dot {
+.cp__typing i {
   width: 6px;
   height: 6px;
+  display: block;
   border-radius: 50%;
   background: var(--text-secondary);
   animation: cp-pulse 1.2s ease-in-out infinite;
@@ -397,6 +419,45 @@
   }
 }
 
+.cp__pdf-report {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 760px;
+  padding: 44px;
+  background: #fff;
+  color: #111827;
+  font-family: Inter, "Noto Sans Kannada", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.cp__pdf-report header {
+  padding-bottom: 20px;
+  border-bottom: 2px solid #111827;
+}
+
+.cp__pdf-report header p,
+.cp__pdf-report header span,
+.cp__pdf-report article strong,
+.cp__pdf-report article small {
+  display: block;
+}
+
+.cp__pdf-report header p,
+.cp__pdf-report article strong,
+.cp__pdf-report article small {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+.cp__pdf-report header p { margin: 0 0 8px; font-size: 11px; }
+.cp__pdf-report header h1 { margin: 0 0 6px; font-size: 26px; }
+.cp__pdf-report header span { color: #4b5563; font-size: 12px; }
+.cp__pdf-report article { padding: 18px 0; border-bottom: 1px solid #d1d5db; }
+.cp__pdf-report article strong { margin-bottom: 8px; font-size: 11px; }
+.cp__pdf-report article p { margin: 0; white-space: pre-wrap; }
+.cp__pdf-report article small { margin-top: 10px; color: #4b5563; font-size: 10px; }
+
 // ── Responsive ──
 @media (max-width: 480px) {
   .cp {
@@ -412,5 +473,13 @@
   .cp__fab {
     bottom: 16px;
     right: 16px;
+    width: 46px;
+    height: 46px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .cp__fab-label {
+    display: none;
   }
 }

@@ -370,15 +370,18 @@ export function defineMockApi() {
     'POST /server/legal_rag/query': ({ body }) => {
       const q = (body.query || '').toLowerCase()
       let answer, context
-      if (/ipc\s*379/.test(q) || /what.*theft/.test(q)) {
-        answer = 'IPC 379: Theft. Whoever, intending to take dishonestly any movable property out of the possession of any person without that person\'s consent, moves that property in order to such taking. Punishment: Imprisonment up to 3 years or fine or both.'
-        context = 'IPC Section 379'
-      } else if (/ipc\s*302/.test(q) || /what.*murder/.test(q)) {
-        answer = 'IPC 302: Murder. Whoever commits murder shall be punished with death or imprisonment for life and shall also be liable to fine.'
-        context = 'IPC Section 302'
-      } else if (/ipc\s*420/.test(q) || /what.*cheating/.test(q)) {
-        answer = 'IPC 420: Cheating and dishonestly inducing delivery of property. Whoever cheats and thereby dishonestly induces the person deceived to deliver any property. Punishment: Imprisonment up to 7 years and fine.'
-        context = 'IPC Section 420'
+      if (/snatch|chain/.test(q)) {
+        answer = 'BNS 304: Snatching means suddenly, quickly, or forcibly seizing movable property from a person or their possession. Punishment may extend to three years and fine. Depending on force or hurt, BNS 309 robbery may also require review.'
+        context = 'BNS 304 · BNS 309 · official India Code'
+      } else if (/theft/.test(q)) {
+        answer = 'BNS 303: Theft. Punishment may extend to three years, or fine, or both; the section also contains enhanced and first-offence provisions.'
+        context = 'BNS 303 · official India Code'
+      } else if (/murder/.test(q)) {
+        answer = 'BNS 103: Whoever commits murder shall be punished with death or imprisonment for life, and shall also be liable to fine.'
+        context = 'BNS 103 · official India Code'
+      } else if (/cheating|fraud/.test(q)) {
+        answer = 'BNS 318: Cheating. Punishment depends on the applicable subsection and may extend from three to seven years, with fine.'
+        context = 'BNS 318 · official India Code'
       } else if (/highest.*chargesheet|chargesheet.*highest|which.*station.*most/.test(q)) {
         answer = 'Brigade Road PS has the highest chargesheet rate at 92%, followed by Cubbon Park PS at 85%. Mysuru North PS has the lowest at 58%.'
         context = 'KSP Chargesheet Statistics, Q2 2026'
@@ -389,10 +392,39 @@ export function defineMockApi() {
         answer = 'The CaseMaster table is the central CCTNS table. Key fields: CaseMasterID (PK), CrimeNo, FIRNumber, CrimeGroup, CrimeHead, IODate, FIRDate, Year, UnitID (FK→Unit), CourtID (FK→Court), Stage (Investigation/Chargesheet/Trial/Appeal), ActSection.'
         context = 'CCTNS Schema v1 — CaseMaster table'
       } else {
-        answer = 'I can answer questions about CCTNS schema, IPC sections, and station statistics. Try: "What is IPC 379?", "Which station has the highest chargesheet rate?", "Tell me about the CaseMaster table."'
+        answer = 'I can answer questions about CCTNS schema, verified BNS sections, and station statistics. Try: "What is BNS 304?", "Which station has the highest chargesheet rate?", or "Tell me about the CaseMaster table."'
         context = 'QuickML RAG Knowledge Base'
       }
-      return { answer, context, confidence: 0.87 }
+      return { answer: `${answer} Verify the facts and subsection against the official text before filing.`, sources: [context], method: 'verified-keyword-retrieval', confidence: 0.87 }
+    },
+    'POST /server/crime_chat/query': ({ body }) => {
+      const query = String(body?.query || '').toLowerCase();
+      const kannada = body?.language === 'kn';
+      if (/142|ಸಂಕ್ಷಿಪ್ತ/u.test(query)) {
+        return {
+          answer: kannada
+            ? '**FIR KSP-2026-0142 — ಸಾಕ್ಷ್ಯ ಸಾರಾಂಶ**\n\nಬ್ರಿಗೇಡ್ ರೋಡ್ ಪೊಲೀಸ್ ಠಾಣೆಯಲ್ಲಿ ದರೋಡೆ ಪ್ರಕರಣ ದಾಖಲಾಗಿದೆ. ಇಬ್ಬರು ಸಾಕ್ಷಿಗಳು ಮತ್ತು CCTV ದಾಖಲಿಸಲಾಗಿದೆ. ಪ್ರಾಥಮಿಕ ಆರೋಪಿ ಪುನರಾವರ್ತಿತ ಅಪರಾಧಿಗಳ ಜಾಲಕ್ಕೆ ಸಂಬಂಧಿಸಿದ್ದಾನೆ.\n\n**ಮುಂದಿನ ಕ್ರಮ:** CCTV ವೀಡಿಯೊವನ್ನು ಪಡೆದು ಅದರ ಹ್ಯಾಶ್ ಅನ್ನು ಸಂರಕ್ಷಿಸಿ.'
+            : '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses and CCTV are recorded; the primary accused is linked to a repeat-offender cluster. Solvability is 67%, veracity is 84%, and the chargesheet deadline is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
+          sources: [
+            { label: 'CaseMaster #142', table: 'CaseMaster', record: 142 },
+            { label: 'Accused records (3)', table: 'Accused', record: 142 },
+            { label: 'ArrestSurrender records (1)', table: 'ArrestSurrender', record: 142 },
+            { label: 'ActSectionAssociation (2)', table: 'ActSectionAssociation', record: 142 },
+          ],
+          method: 'synthetic-schema-grounded-join', confidence: 0.92, mode: 'demo', intent: 'case_summary'
+        };
+      }
+      if (/bns|snatch|ವಿಧಿ/u.test(query)) {
+        return {
+          answer: 'Based on the verified legal index: BNS 304 covers snatching and provides punishment that may extend to three years and fine. If force, hurt, or fear of instant hurt is involved, BNS 309 robbery may also require review. Verify the exact facts and subsection with the legal officer before filing.',
+          sources: [{ label: 'BNS 304 · India Code' }, { label: 'BNS 309 · India Code' }],
+          method: 'verified-keyword-retrieval', confidence: 0.87, mode: 'demo', intent: 'legal'
+        };
+      }
+      return {
+        answer: 'The synthetic evidence service needs a narrower query. Add an FIR number, district, crime type, accused person, or BNS provision.',
+        sources: [{ label: 'Synthetic CCTNS dataset' }], method: 'clarification-required', confidence: 0.35, mode: 'demo', intent: 'general'
+      };
     },
     'POST /server/zia_voice/tts': () => ({
       audioUrl: null,
@@ -440,7 +472,7 @@ export function defineMockApi() {
 
 
     // === Chargesheet Clock ===
-    'GET /server/chargesheet-clock/stats': () => {
+    'GET /server/chargesheet_clock/stats': () => {
       const now = Date.now();
       const cases = [
         { caseId: 1, firNo: 'KSP-2026-0142', crimeType: 'robbery', officer: 'PI Dharmendra', districtId: 3, dateRegistered: '2026-03-15', daysSinceRegistration: 114, cpcLimitDays: 90, daysOverdue: 24, deadlineDate: '2026-06-13', status: 'overdue' },
@@ -667,7 +699,7 @@ export function defineMockApi() {
     },
 
     // === Accused-at-Large Ledger ===
-    'GET /server/accused-at-large/ledger': () => {
+    'GET /server/accused_at_large/ledger': () => {
       const accused = [
         { id: 1, name: 'Suresh Patil', age: 34, crimeType: 'robbery', firNo: 'KSP-2026-0142', districtId: 3, abscondingSince: '2026-04-20', daysAtLarge: 78, status: 'absconding', lastKnownLocation: 'Hubli', warrantsIssued: 2, officer: 'PI Dharmendra' },
         { id: 2, name: 'Ravi Shetty', age: 28, crimeType: 'burglary', firNo: 'KSP-2026-0089', districtId: 7, abscondingSince: '2026-03-15', daysAtLarge: 114, status: 'absconding', lastKnownLocation: 'Belgaum', warrantsIssued: 3, officer: 'PI Maruti' },

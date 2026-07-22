@@ -46,7 +46,7 @@ const getCoordinates = async (place) => {
 
 export default function Map2() {
   const navigation = useNavigation();
-  const [userLocation, setUserLocation] = useState([20.5937, 78.9629]); // Default to central India
+  const [userLocation, setUserLocation] = useState([15.3173, 75.7139]);
   const [selectedValue, setSelectedValue] = useState("true");
   const [routingControl,setRoutingControl] = useState(null)
   // const beatData = useLoaderData();
@@ -144,10 +144,10 @@ export default function Map2() {
      return <Loader/>
 
   return (
-    <>
+    <section className={styles.commandMap}>
     <div className={styles.option_selector}>
-        Select Option
-        <select value={selectedValue} onChange={handleChange}>
+        <label htmlFor="command-map-mode">Map mode</label>
+        <select id="command-map-mode" value={selectedValue} onChange={handleChange}>
             <option value = {true}>Crime hotspots</option>
             <option value = {false}>Navigation</option>
         </select>
@@ -159,7 +159,7 @@ export default function Map2() {
         setRoutingControl={setRoutingControl}
         userLocation={userLocation}
       />}
-    </>
+    </section>
   );
 }
 

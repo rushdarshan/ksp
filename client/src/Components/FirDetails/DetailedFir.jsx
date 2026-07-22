@@ -692,7 +692,7 @@ function DetailedFir() {
                       <span style={{ fontSize: '20px', fontWeight: 700, color, fontFamily: 'var(--font-mono)' }}>
                         {isOverdue ? `+${elapsedDays - limit}` : remaining}
                       </span>
-                      <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
                         {isOverdue ? 'Days Overdue' : 'Days Left'}
                       </span>
                     </div>

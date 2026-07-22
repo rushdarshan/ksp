@@ -48,12 +48,12 @@ const DeterrenceDashboard = () => {
     const getTrend = (val) => val > 50 ? { label: 'Worsening', color: 'var(--color-red)' } : val > 25 ? { label: 'Stable', color: 'var(--color-amber)' } : { label: 'Improving', color: 'var(--color-green)' };
 
     return (
-        <div className="panel" style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
+        <div className="panel deterrence-panel" style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '22px', margin: '0 0 4px 0' }}>Crime Genome — Public Dashboard</h2>
                 <p style={{ fontSize: '13px', color: 'var(--color-gray-500)', margin: '0' }}>Karnataka State Police · Crime Intelligence for Citizen Awareness</p>
             </div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="deterrence-filter" style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center', justifyContent: 'center' }}>
                 <label style={{ fontWeight: 600, fontSize: '13px' }}>District:</label>
                 <select value={districtId} onChange={e => setDistrictId(Number(e.target.value))}
                     style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db' }}>
@@ -64,7 +64,7 @@ const DeterrenceDashboard = () => {
             {loading && <div style={{ textAlign: 'center', color: '#666' }}>Loading...</div>}
             {data && (
                 <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
+                    <div className="deterrence-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
                         <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
                             <div style={{ fontSize: '11px', color: 'var(--color-gray-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Crime Index</div>
                             <div style={{ fontSize: '36px', fontWeight: 700, color: data.exceedance.worstOffense.exceedanceCurve.find(e => e.returnPeriodYears === 1).thresholdExceedance > 30 ? 'var(--color-red)' : '#d97706' }}>
@@ -85,7 +85,7 @@ const DeterrenceDashboard = () => {
                             <div style={{ fontSize: '11px', color: 'var(--color-gray-400)', marginTop: '4px' }}>vs prior period</div>
                         </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                    <div className="deterrence-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                         <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', border: '1px solid var(--color-border-200)' }}>
                             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Risk Outlook</h3>
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

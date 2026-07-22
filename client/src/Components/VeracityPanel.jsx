@@ -113,14 +113,14 @@ const VeracityPanel = ({
       <PanelHeader
         subtitle="VeriPol-style analysis — 14 linguistic markers detect fabricated or exaggerated police reports"
         action={
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="veracity-presets" style={{ display: 'flex', gap: '8px' }}>
             <button onClick={() => loadPreset('genuine')} style={btnStyle}>Genuine</button>
             <button onClick={() => loadPreset('fabricated')} style={{ ...btnStyle, color: 'var(--pastel-red-text)' }}>Fabricated</button>
           </div>
         }
       />
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <form className="veracity-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <textarea
           value={narrative}
           onChange={e => setNarrative(e.target.value)}
@@ -129,7 +129,7 @@ const VeracityPanel = ({
           style={inputStyle}
           required
         />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div className="veracity-fields" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <input aria-label="Complainant name" value={complainantName} onChange={e => setComplainantName(e.target.value)} placeholder="Complainant name" style={inputStyle} />
           <input aria-label="Accused count" value={accusedCount} onChange={e => setAccusedCount(e.target.value)} placeholder="Accused count" type="number" style={inputStyle} />
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}>

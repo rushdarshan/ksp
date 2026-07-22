@@ -1,50 +1,68 @@
 const express = require('express');
-const catalyst = require('zcatalyst-sdk-node');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '256kb' }));
 app.use(express.raw({ type: 'audio/*', limit: '10mb' }));
 
+app.get('/capabilities', (_req, res) => {
+    res.status(200).json({
+        serverStt: Boolean(process.env.SPEECH_STT_URL),
+        serverTts: Boolean(process.env.SPEECH_TTS_URL),
+        browserFallback: true,
+        language: 'kn-IN',
+        note: 'Catalyst Zia does not provide STT, TTS, or translation APIs. Configure an approved speech provider or use browser speech capabilities.',
+    });
+});
+
 app.post('/stt', async (req, res) => {
+    if (!process.env.SPEECH_STT_URL) {
+        return res.status(501).json({
+            code: 'SERVER_STT_NOT_CONFIGURED',
+            message: 'Use browser Kannada speech recognition or configure SPEECH_STT_URL.',
+        });
+    }
+
     try {
-        const catalystApp = catalyst.initialize(req);
-        const zia = catalystApp.zia();
-        
-        const audioBuffer = req.body;
-        
-        // 1. Kannada STT
-        const sttResult = await zia.speechToText(audioBuffer, { language: 'kn-IN' });
-        const kannadaText = sttResult.text;
-        
-        // 2. Translate to English for query
-        const translation = await zia.translate(kannadaText, 'kn', 'en');
-        const englishText = translation.translated_text;
-        
-        res.status(200).json({ text: englishText, original: kannadaText });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Zia STT Error");
+        const response = await fetch(process.env.SPEECH_STT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': req.headers['content-type'] || 'audio/webm',
+                'X-API-Key': process.env.SPEECH_API_KEY || '',
+                'X-Language': 'kn-IN',
+            },
+            body: req.body,
+        });
+        const payload = await response.json();
+        return res.status(response.status).json(payload);
+    } catch (error) {
+        console.error('Configured STT provider failed:', error);
+        return res.status(502).json({ code: 'STT_PROVIDER_FAILED', message: error.message });
     }
 });
 
 app.post('/tts', async (req, res) => {
+    if (!process.env.SPEECH_TTS_URL) {
+        return res.status(501).json({
+            code: 'SERVER_TTS_NOT_CONFIGURED',
+            message: 'Use browser Kannada speech synthesis or configure SPEECH_TTS_URL.',
+        });
+    }
+
     try {
-        const catalystApp = catalyst.initialize(req);
-        const zia = catalystApp.zia();
-        
-        const { text } = req.body;
-        
-        // 1. Translate English answer to Kannada
-        const translation = await zia.translate(text, 'en', 'kn');
-        const kannadaText = translation.translated_text;
-        
-        // 2. Kannada TTS
-        const audioStream = await zia.textToSpeech(kannadaText, { language: 'kn-IN' });
-        
-        res.status(200).send(audioStream);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Zia TTS Error");
+        const response = await fetch(process.env.SPEECH_TTS_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': process.env.SPEECH_API_KEY || '',
+            },
+            body: JSON.stringify({ text: req.body?.text || '', language: 'kn-IN' }),
+        });
+        const audio = Buffer.from(await response.arrayBuffer());
+        res.set('Content-Type', response.headers.get('content-type') || 'audio/mpeg');
+        return res.status(response.status).send(audio);
+    } catch (error) {
+        console.error('Configured TTS provider failed:', error);
+        return res.status(502).json({ code: 'TTS_PROVIDER_FAILED', message: error.message });
     }
 });
 

@@ -154,7 +154,7 @@ export default function PersonPage() {
                   <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--pastel-yellow-text)', background: 'var(--pastel-yellow)', padding: '2px 6px', borderRadius: '4px' }}>
                     {fir.stage}
                   </span>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>{fir.date}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>{fir.date}</div>
                 </div>
               </div>
             ))}

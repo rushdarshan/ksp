@@ -172,7 +172,7 @@ const GbvPanel = () => {
                                     );
                                 })}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'var(--color-gray-400)', textAlign: 'center' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--color-gray-400)', textAlign: 'center' }}>
                                 Monthly GBV cases (last 24 months)
                             </div>
                         </div>

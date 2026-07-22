@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PiKeyboard, PiMicrophone, PiSpinner, PiStop, PiSpeakerHigh } from 'react-icons/pi';
+import apiFetch from '../utils/apiFetch';
 
 const VoiceQuery = () => {
     const [status, setStatus] = useState('Idle');
@@ -14,6 +15,7 @@ const VoiceQuery = () => {
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const mediaRecorderRef = useRef(null);
+    const recognitionRef = useRef(null);
     const audioChunksRef = useRef([]);
     const timerRef = useRef(null);
 
@@ -32,6 +34,34 @@ const VoiceQuery = () => {
 
     const startRecording = async () => {
         try {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'kn-IN';
+                recognition.interimResults = false;
+                recognition.continuous = false;
+                recognition.onresult = async (event) => {
+                    const spokenText = event.results?.[0]?.[0]?.transcript || '';
+                    setTranscript(spokenText);
+                    if (spokenText) await queryLegalRag(spokenText);
+                };
+                recognition.onerror = (event) => setStatus(`Kannada speech recognition unavailable: ${event.error}`);
+                recognition.onend = () => {
+                    setIsRecording(false);
+                    if (timerRef.current) clearInterval(timerRef.current);
+                };
+                recognitionRef.current = recognition;
+                recognition.start();
+                setIsRecording(true);
+                setStatus('Listening in Kannada (browser speech)...');
+                setRecordingTime(0);
+                setRagAnswer('');
+                setTranscript('');
+                setSources([]);
+                timerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
+                return;
+            }
+
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioChunksRef.current = [];
             
@@ -79,6 +109,10 @@ const VoiceQuery = () => {
     };
 
     const stopRecording = () => {
+        if (recognitionRef.current && isRecording) {
+            recognitionRef.current.stop();
+            recognitionRef.current = null;
+        }
         if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
@@ -91,7 +125,7 @@ const VoiceQuery = () => {
     const handleAudioUpload = async (blob) => {
         setStatus('Processing Kannada Speech (STT)...');
         try {
-            const sttRes = await fetch('/server/zia_voice/stt', {
+            const sttRes = await apiFetch('/zia_voice/stt', {
                 method: 'POST',
                 headers: { 'Content-Type': blob.type },
                 body: blob
@@ -110,15 +144,15 @@ const VoiceQuery = () => {
     const queryLegalRag = async (queryText) => {
         setStatus('Querying Legal RAG...');
         try {
-            const ragRes = await fetch('/server/legal_rag/query', {
+            const ragRes = await apiFetch('/crime_chat/query', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: queryText })
+                body: JSON.stringify({ query: queryText, language: 'kn', history: [] })
             });
             if (!ragRes.ok) throw new Error('RAG query failed');
             const ragData = await ragRes.json();
-            setRagAnswer(ragData.answer);
-            setSources(ragData.sources || []);
+            setRagAnswer(ragData.answer || ragData.text);
+            setSources((ragData.sources || []).map(source => typeof source === 'string' ? source : source.label));
             
             // Speak the response via Zia TTS
             await speakResponse(ragData.answer);
@@ -131,25 +165,34 @@ const VoiceQuery = () => {
     const speakResponse = async (textToSpeak) => {
         setStatus('Generating Kannada audio response...');
         try {
-            const ttsRes = await fetch('/server/zia_voice/tts', {
+            const ttsRes = await apiFetch('/zia_voice/tts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: textToSpeak })
             });
-            if (ttsRes.ok) {
-                const contentType = ttsRes.headers.get('content-type') || '';
-                if (contentType.includes('audio') || ttsRes.headers.get('content-disposition')) {
-                    const audioBlob = await ttsRes.blob();
-                    const url = URL.createObjectURL(audioBlob);
-                    setAudioUrl(url);
-                    const audio = new Audio(url);
-                    audio.play().catch(e => console.warn('Autoplay blocked:', e));
-                }
-            }
-            setStatus('Complete');
+            const contentType = ttsRes.headers.get('content-type') || '';
+            const hasAudio = contentType.includes('audio') || ttsRes.headers.get('content-disposition');
+            if (!ttsRes.ok || !hasAudio) throw new Error('Server Kannada voice is not configured');
+
+            const audioBlob = await ttsRes.blob();
+            const url = URL.createObjectURL(audioBlob);
+            setAudioUrl(url);
+            const audio = new Audio(url);
+            audio.play().catch(e => console.warn('Autoplay blocked:', e));
+            setStatus('Complete · server Kannada voice');
         } catch (ttsErr) {
-            console.warn('TTS generation failed:', ttsErr);
-            setStatus('Complete (TTS failed)');
+            console.warn('Server TTS unavailable, using browser speech:', ttsErr);
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'kn-IN';
+                const kannadaVoice = window.speechSynthesis.getVoices().find(voice => voice.lang?.toLowerCase().startsWith('kn'));
+                if (kannadaVoice) utterance.voice = kannadaVoice;
+                window.speechSynthesis.speak(utterance);
+                setStatus('Complete · browser Kannada voice');
+            } else {
+                setStatus('Complete · audio unavailable');
+            }
         }
     };
 
@@ -174,7 +217,7 @@ const VoiceQuery = () => {
 
     return (
         <div className="panel" style={{ padding: '24px', background: 'var(--surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
-            <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <h2 style={{ margin: 0, fontSize: 'var(--size-h3)', fontFamily: 'var(--font-display)', fontWeight: 500, color: 'var(--text)' }}>
                   Legal Intelligence Desk
                 </h2>
@@ -286,7 +329,7 @@ const VoiceQuery = () => {
                                 <PiMicrophone />
                             </button>
                             <span style={{ fontSize: '13px', fontWeight: 600 }}>Click to speak query (in Kannada)</span>
-                            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>E.g. "ಖೂನಿಗೆ ಶಿಕ್ಷೆ ಏನು?" (What is the punishment for murder?)</span>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>E.g. &quot;ಖೂನಿಗೆ ಶಿಕ್ಷೆ ಏನು?&quot; (What is the punishment for murder?)</span>
                         </div>
                     )}
                 </div>

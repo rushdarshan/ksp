@@ -50,7 +50,7 @@ export default function CaseTimeline() {
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{e.detail}</div>
             </div>
             <span style={{
-              fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+              fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
               background: `${typeColors[e.type]}20`, color: typeColors[e.type],
               alignSelf: 'flex-start', marginTop: 2,
             }}>{e.type}</span>

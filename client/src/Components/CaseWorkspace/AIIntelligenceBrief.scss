@@ -320,7 +320,7 @@ $text2: var(--text-secondary);
 
   &__reco-pri {
     padding: 2px 8px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     border-radius: 4px;
     min-width: 52px;
@@ -386,7 +386,7 @@ $text2: var(--text-secondary);
   }
 
   &__label {
-    font-size: 8px;
+    font-size: 11px;
     color: $text2;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -397,7 +397,7 @@ $text2: var(--text-secondary);
 .aib-provenance {
   margin-left: auto;
   padding: 2px 8px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: $text2;
   background: var(--surface-alt);
@@ -462,7 +462,7 @@ $text2: var(--text-secondary);
   .aib {
     &__header-scores { gap: 10px; }
     &__entity-grid { grid-template-columns: 1fr; }
-    &__vflag-type { min-width: 80px; font-size: 10px; }
+    &__vflag-type { min-width: 80px; font-size: 11px; }
     &__vflag-desc { display: none; }
   }
 }

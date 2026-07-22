@@ -124,33 +124,43 @@ const sharedChildren = [
 const ProtectedRoute = ({ element: Element }) => {
   const { isAuthenticated, setIsAuthenticated, setUser } = useAuth();
   const jwt_token = localStorage.getItem("token");
+  const [valid, setValid] = React.useState(null);
+
+  React.useEffect(() => {
+    if (isAuthenticated || !jwt_token) {
+      setValid(null);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    fetch(`${import.meta.env.VITE_API_URL || '/server'}/verify`, {
+      headers: { jwt_token },
+      signal: controller.signal,
+    }).then(async (response) => {
+      if (!response.ok) {
+        setValid(false);
+        return;
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      setValid(true);
+      setIsAuthenticated(true);
+    }).catch((error) => {
+      if (error.name !== 'AbortError') setValid(false);
+    });
+
+    return () => controller.abort();
+  }, [isAuthenticated, jwt_token, setIsAuthenticated, setUser]);
 
   if (isAuthenticated && jwt_token) {
     return Element;
   }
 
   if (!isAuthenticated && jwt_token) {
-    const [valid, setValid] = React.useState(null);
-    React.useEffect(() => {
-      fetch(`${import.meta.env.VITE_API_URL || '/server'}/verify`, {
-        headers: { jwt_token: localStorage.getItem('token') }
-      }).then(async r => {
-        if (r.ok) {
-          try {
-            const data = await r.json();
-            if (data.user) {
-              setUser(data.user);
-              localStorage.setItem("user", JSON.stringify(data.user));
-            }
-          } catch(e) {}
-          setValid(true);
-          setIsAuthenticated(true);
-        } else {
-          setValid(false);
-        }
-      })
-      .catch(() => setValid(false));
-    }, []);
     if (valid === null) return <Loader />;
     if (valid === true) return Element;
   }

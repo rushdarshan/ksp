@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ForceGraph2D from 'react-force-graph-2d'
 
-const PERSON_COLORS = { A1: 'var(--color-red)', A2: '#d97706', A3: '#6b7280' }
-const LINK_COLORS = { 'A1-A1': 'var(--color-red)', 'A1-A2': '#d97706', 'A1-A3': '#9ca3af' }
+const PERSON_COLORS = { A1: '#a33d32', A2: '#c46b08', A3: '#667085' }
+const LINK_COLORS = { 'A1-A1': '#a33d32', 'A1-A2': '#c46b08', 'A1-A3': '#98a2b3' }
 const PERSON_LABELS = { A1: 'Primary Accused', A2: 'Co-Accused', A3: 'Mentioned' }
 
 export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToFirNo = null, hideHeader = false }) {
@@ -11,6 +11,9 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
   const [selected, setSelected] = useState(null)
   const [gangFilter, setGangFilter] = useState(0)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [graphWidth, setGraphWidth] = useState(320)
+  const graphContainerRef = useRef(null)
+  const graphRef = useRef(null)
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
@@ -19,6 +22,15 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
+
+  useEffect(() => {
+    if (!graphContainerRef.current) return undefined
+    const observer = new ResizeObserver(([entry]) => {
+      setGraphWidth(Math.max(280, Math.floor(entry.contentRect.width)))
+    })
+    observer.observe(graphContainerRef.current)
+    return () => observer.disconnect()
+  }, [data])
 
   useEffect(() => {
     fetch('/server/co_accused_network/graph')
@@ -82,19 +94,19 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ACCUSED</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ACCUSED</div>
                 <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.totalAccused}</div>
               </div>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: 'var(--color-red)08', minWidth: 100 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>A1 (PRIMARY)</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>A1 (PRIMARY)</div>
                 <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-red)', fontFamily: 'var(--font-mono)' }}>{data.summary.A1Count}</div>
               </div>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>GANGS</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>GANGS</div>
                 <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.gangs}</div>
               </div>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>LINKS</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>LINKS</div>
                 <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.links.length}</div>
               </div>
             </div>
@@ -115,17 +127,18 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: 16 }}>
-          <div style={{ height: isMobile ? 250 : 500, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+          <div ref={graphContainerRef} style={{ height: isMobile ? 280 : 500, minWidth: 0, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
             <ForceGraph2D
+              ref={graphRef}
               graphData={filtered}
               nodeCanvasObject={(node, ctx) => {
                 const r = node.personId === 'A1' ? 8 : node.personId === 'A2' ? 5 : 3
-                const color = PERSON_COLORS[node.personId] || 'var(--color-gray-500)'
+                const color = PERSON_COLORS[node.personId] || '#667085'
                 ctx.beginPath()
                 ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
-                ctx.fillStyle = selected?.id === node.id ? '#fff' : color
+                ctx.fillStyle = selected?.id === node.id ? '#fbf8f0' : color
                 ctx.fill()
-                ctx.strokeStyle = selected?.id === node.id ? 'var(--accent)' : color
+                ctx.strokeStyle = selected?.id === node.id ? '#1b1a18' : color
                 ctx.lineWidth = selected?.id === node.id ? 3 : 1
                 ctx.stroke()
                 if (node.personId === 'A1') {
@@ -139,15 +152,16 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
               linkWidth={l => Math.min(l.cases, 3)}
               linkDirectionalArrowLength={3}
               linkDirectionalArrowRelPos={1}
-              backgroundColor="var(--surface)"
+              backgroundColor="#fbf8f0"
               onNodeClick={setSelected}
-              width={undefined}
-              height={isMobile ? 250 : 500}
+              onEngineStop={() => graphRef.current?.zoomToFit(320, 48)}
+              width={graphWidth}
+              height={isMobile ? 280 : 500}
             />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 500, overflowY: 'auto' }}>
-            <div style={{ display: 'flex', gap: 8, fontSize: 10, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
               {Object.entries(PERSON_COLORS).map(([k, c]) => (
                 <span key={k} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: c, display: 'inline-block' }} />

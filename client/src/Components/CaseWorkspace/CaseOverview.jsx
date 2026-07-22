@@ -69,7 +69,7 @@ export default function CaseOverview() {
               border: '1px solid var(--border-light)',
             }}>
               <span style={{
-                fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4,
                 background: e.type === 'Person' ? 'var(--color-blue-400)20' : e.type === 'Phone' ? '#a78bfa20' : '#f59e0b20',
                 color: e.type === 'Person' ? 'var(--color-blue-400)' : e.type === 'Phone' ? '#a78bfa' : '#f59e0b',
               }}>{e.type}</span>

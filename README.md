@@ -55,6 +55,8 @@ ksp/
 │       └── utils/                API fetch, PII masking
 ├── functions/       Zoho Catalyst serverless functions (Node.js)
 │   ├── case_management/    Case CRUD + Data Store tables
+│   ├── crime_chat/         Grounded conversational query router
+│   ├── co_accused_network/ Relational criminal network builder
 │   ├── zia_brief/          AI-powered case synthesis
 │   └── shared/             PII masking, audit logging
 ├── synthetic_data/  CCTNS synthetic dataset (27 tables)
@@ -103,7 +105,8 @@ The core investigative workflow — an 8-tab Case Workspace where officers move 
 - **My Day** — daily briefing with priority cases, alerts, and pending actions
 - **Person 360** — entity risk profiling with cross-case timeline and risk scores
 - **Command Palette** — global search with FIR shorthand (type "142" to open case #142)
-- **Voice Query** — MediaRecorder-based audio capture for voice-driven queries
+- **Conversational intelligence** — contextual English/Kannada queries with record citations, confidence, and local PDF export
+- **Voice Query** — browser Kannada speech recognition and playback, with optional provider-backed STT/TTS
 - **PII Masking** — Aadhaar and phone number redaction with reveal toggle
 - **Case Notes** — timestamped notes with evidence linking and audit logging
 
@@ -117,21 +120,21 @@ Serverless functions under `functions/`:
 
 | Endpoint | Purpose |
 |----------|---------|
+| `/server/crime_chat/query` | Grounded conversational crime intelligence (POST) |
 | `/server/zia_brief/zia_brief` | AI case synthesis (POST) |
 | `/server/case_management/*` | Case CRUD, notes, evidence |
-| `/server/login` | Authentication |
-| `/server/verify` | JWT verification |
-| `/server/chargesheet-clock/*` | Chargesheet deadline tracking |
-| `/server/accused-at-large/*` | Accused-at-large ledger |
-| `/server/retraction_rate/*` | Retraction rate analytics |
-| `/server/arrest_vector/*` | Arrest geography |
-| `/server/network_analysis/*` | Co-accused network graph |
+| `/server/chargesheet_clock/stats` | Data-backed investigation review clock |
+| `/server/accused_at_large/ledger` | Accused-to-arrest anti-join ledger |
+| `/server/co_accused_network/graph` | Shared-FIR accused network graph |
+| `/server/zia_voice/*` | Optional external STT/TTS adapter and capability report |
 
 ## Data
 
 27 CCTNS (Crime & Criminal Tracking Network & System) synthetic tables covering case registration, accused persons, arrests, chargesheets, employees, units, and crime classifications. All data is synthetic — generated for hackathon demonstration purposes.
 
 See `generate_ksp_data.py` for the data generation pipeline and `synthetic_data/` for the raw CSVs.
+
+See `docs/hackathon-readiness.md` for the deployment gate, capability truth table, and judge demo path.
 
 ## Project History
 

@@ -21,7 +21,7 @@ const Shell = ({ basePath = '/dashboard' }) => {
           basePath={basePath}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          userRole={user?.role}
+          userRole={user?.role || user?.rank}
           isCollapsed={sidebarCollapsed}
           setIsCollapsed={setSidebarCollapsed}
         />

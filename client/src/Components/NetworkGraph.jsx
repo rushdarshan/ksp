@@ -8,7 +8,7 @@ const NetworkGraph = () => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
 
   useEffect(() => {
-    fetch('/server/network_analysis/graph')
+    fetch('/server/co_accused_network/graph')
       .then(res => res.json())
       .then(data => setGraphData(data))
       .catch(err => console.error("Error fetching graph data:", err));

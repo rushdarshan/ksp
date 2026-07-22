@@ -15,7 +15,7 @@ export default function ChargesheetClockPanel() {
     if (dateFrom) p.set('dateFrom', dateFrom);
     if (dateTo) p.set('dateTo', dateTo);
     if (crimeType) p.set('crimeType', crimeType);
-    fetch('/server/chargesheet-clock/stats?' + p)
+    fetch('/server/chargesheet_clock/stats?' + p)
       .then(r => r.json())
       .then(setData)
       .catch(() => {})
@@ -30,8 +30,8 @@ export default function ChargesheetClockPanel() {
       <div className="panel-box">
         <h2 style={{ marginBottom: 4 }}>Chargesheet Clock</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-sub)', marginBottom: 20, maxWidth: 600 }}>
-          CrPC 173 deadline tracker — chargesheets must be filed within 90 days (60 for minor offences).
-          Red cases are already overdue.
+          Investigation milestone tracker using a configured 90-day review target. Verify the applicable
+          BNSS provision and custody status before treating any date as a statutory deadline.
         </p>
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -77,7 +77,7 @@ export default function ChargesheetClockPanel() {
                   <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: STATUS_COLORS[c.status] }}>
                     {c.status === 'overdue' ? `+${c.daysOverdue}` : `${c.daysRemaining}`}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
                     {c.status === 'overdue' ? 'days overdue' : 'days left'}
                   </div>
                 </div>
@@ -98,7 +98,7 @@ function StatBox({ label, value, color }) {
       padding: '12px 20px', borderRadius: 'var(--radius-md)', border: `1px solid ${color}40`,
       background: `${color}08`, minWidth: 120,
     }}>
-      <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 2 }}>{label.toUpperCase()}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 2 }}>{label.toUpperCase()}</div>
       <div style={{ fontSize: 24, fontWeight: 700, color, fontFamily: 'var(--font-mono)' }}>{value}</div>
     </div>
   )

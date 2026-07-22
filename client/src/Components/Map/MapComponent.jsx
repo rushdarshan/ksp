@@ -35,8 +35,8 @@ const MapComponent = ({
     <>
       <MapContainer
         center={userLocation}
-        zoom={isLocationFound ? 13 : 5}
-        style={{ height: "100vh", width: "100%" }}
+        zoom={isLocationFound ? 13 : 7}
+        style={{ height: "clamp(440px, calc(100vh - 190px), 720px)", width: "100%" }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -72,7 +72,7 @@ export default function CaseNotes() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
                 <span style={{ fontSize: 'var(--size-caption)', fontWeight: 700, color: 'var(--text)' }}>{n.author}</span>
                 {n.linkedEntity && (
-                  <span className="badge badge--info" style={{ fontSize: '10px', padding: '2px 8px' }}>{n.linkedEntity}</span>
+                  <span className="badge badge--info" style={{ fontSize: '11px', padding: '2px 8px' }}>{n.linkedEntity}</span>
                 )}
               </div>
               <span style={{ fontSize: 'var(--size-label)', color: 'var(--text-secondary)' }}>

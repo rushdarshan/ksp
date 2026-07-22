@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { PiClock, PiShieldCheck, PiSiren, PiTimer } from 'react-icons/pi';
+import { useNavigate } from 'react-router-dom';
+import { PiArrowUpRight, PiCaretRight, PiClock, PiShieldCheck, PiSiren, PiTimer } from 'react-icons/pi';
 import DailyBrief from './MyDay/DailyBrief';
 import AlertsFeed from './MyDay/AlertsFeed';
 import PanelCard from './panels/PanelCard';
@@ -24,7 +25,7 @@ function WelcomeWidget({ user, formattedDate }) {
     <div className="panel-shell myday-welcome">
       <div>
         <h1 className="myday-welcome__title">
-          Investigator Workspace — {user?.name || 'SI Ramesh'}
+          Investigator Workspace — {user?.name || 'KSP Officer'}
         </h1>
         <p className="panel-subtitle">
           Crime Genome Platform · {formattedDate}
@@ -32,20 +33,21 @@ function WelcomeWidget({ user, formattedDate }) {
       </div>
       <div className="badge badge--clear myday-welcome__status">
         <span className="myday-welcome__dot" />
-        Session Active · {user?.role || 'Sub-Inspector'}
+        Session Active · {user?.role || user?.rank || 'Officer'}
       </div>
     </div>
   );
 }
 
 const SUMMARY = [
-  { label: 'Priority cases', value: '05', note: '+2 since yesterday', icon: PiSiren, tone: 'plum' },
-  { label: 'Case readiness', value: '86%', note: '+6% this week', icon: PiShieldCheck, tone: 'peach' },
-  { label: 'SLA coverage', value: '74%', note: '2 deadlines at risk', icon: PiTimer, tone: 'blue' },
+  { label: 'Priority cases', value: '05', note: '+2 since yesterday', icon: PiSiren, tone: 'plum', to: '/dashboard/firdetails' },
+  { label: 'Case readiness', value: '86%', note: '+6% this week', icon: PiShieldCheck, tone: 'peach', to: '/dashboard/case/KSP-2026-0142' },
+  { label: 'SLA coverage', value: '74%', note: '2 deadlines at risk', icon: PiTimer, tone: 'blue', to: '/dashboard/chargesheet-clock' },
 ];
 
 export default function MyDayDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const formattedDate = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -102,11 +104,13 @@ export default function MyDayDashboard() {
       <WelcomeWidget user={user} formattedDate={formattedDate} />
 
       <div className="myday-summary" aria-label="Daily case summary">
-        {SUMMARY.map(({ label, value, note, icon: Icon, tone }) => (
+        {SUMMARY.map(({ label, value, note, icon: Icon, tone, to }) => (
           <article className={`myday-stat myday-stat--${tone}`} key={label}>
             <div className="myday-stat__top">
               <span><Icon weight="bold" /> {label}</span>
-              <button type="button" aria-label={`View ${label.toLowerCase()}`}>+</button>
+              <button type="button" aria-label={`View ${label.toLowerCase()}`} onClick={() => navigate(to)}>
+                <PiArrowUpRight aria-hidden="true" />
+              </button>
             </div>
             <div className="myday-stat__value">{value}</div>
             <p>{note}</p>
@@ -128,7 +132,13 @@ export default function MyDayDashboard() {
         >
           <div className="myday-queue-list">
             {PRIORITY_MOCK.map((c, i) => (
-              <div key={c.firNo} className="queue-item">
+              <button
+                key={c.firNo}
+                type="button"
+                className="queue-item"
+                onClick={() => navigate(`/dashboard/case/${c.firNo}`)}
+                aria-label={`Open ${c.firNo}, ${c.crimeType}`}
+              >
                 <span className="queue-item-rank">{i + 1}</span>
                 <div className="queue-item-main">
                   <div className="queue-item-top">
@@ -142,7 +152,8 @@ export default function MyDayDashboard() {
                     </span>
                   </div>
                 </div>
-              </div>
+                <PiCaretRight className="queue-item-caret" aria-hidden="true" />
+              </button>
             ))}
           </div>
         </PanelCard>
