@@ -7,3 +7,11 @@ dist/
 .impeccable/
 __pycache__/
 *.pyc
+
+# Local agent and browser verification artifacts
+.context/
+client/artifacts/
+client/*.png
+client/lint-output.txt
+client/src/$null
+design-preview.html

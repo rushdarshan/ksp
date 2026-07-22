@@ -13,6 +13,11 @@
     "targets": [
       "fir_api",
       "zia_voice",
+      "zia_brief",
+      "crime_chat",
+      "co_accused_network",
+      "accused_at_large",
+      "chargesheet_clock",
       "legal_rag",
       "quickml_predict",
       "alert_job",

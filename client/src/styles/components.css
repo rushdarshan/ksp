@@ -1,0 +1,239 @@
+/* components.css — Shared component classes for Intelligence Workbench design language.
+   Source of truth: App.scss :root tokens. Do NOT redefine tokens here. */
+
+/* === Panel Shell === */
+.panel-shell {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel-shell--compact {
+  padding: var(--space-md);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: var(--size-h3);
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.panel-subtitle {
+  font-size: var(--size-sub);
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+}
+
+/* === Status Badges === */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--size-caption);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge--critical { background: var(--pastel-red); color: var(--pastel-red-text); }
+.badge--warning { background: var(--pastel-amber); color: var(--pastel-amber-text); }
+.badge--info { background: var(--pastel-blue); color: var(--pastel-blue-text); }
+.badge--clear { background: var(--pastel-green); color: var(--pastel-green-text); }
+
+/* === KPI Cards === */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.kpi-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--border-light);
+}
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: var(--size-h2);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.kpi-label {
+  font-size: var(--size-caption);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-xs);
+}
+
+/* === Timeline Ribbon === */
+.timeline-ribbon {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: var(--space-md) 0;
+  overflow-x: auto;
+  border-top: 1px solid var(--border-light);
+}
+
+.timeline-bar {
+  flex-shrink: 0;
+  height: var(--bar-height, 8px);
+  min-width: 4px;
+  background: linear-gradient(90deg, var(--redaction-navy), var(--redaction-amber));
+  border-radius: var(--radius-bar);
+  opacity: 0.3;
+  transition: opacity 0.2s var(--easing);
+  animation: timeline-grow 0.4s var(--easing) both;
+}
+
+@keyframes timeline-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.timeline-bar:hover {
+  opacity: 0.7;
+}
+
+/* === Toolbar Tabs === */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.toolbar-tab {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--size-sub);
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s var(--easing), border-color 0.2s var(--easing);
+}
+
+.toolbar-tab:hover {
+  color: var(--text);
+}
+
+.toolbar-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* === Case Header === */
+.case-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.case-fir {
+  font-family: var(--font-mono);
+  font-size: var(--size-sub);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.case-accused {
+  font-family: var(--font-display);
+  font-size: var(--size-h3);
+  font-weight: 500;
+}
+
+.case-status {
+  margin-left: auto;
+}
+
+/* === Empty States === */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) var(--space-lg);
+  text-align: center;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: var(--size-h3);
+  color: var(--text);
+  margin-bottom: var(--space-sm);
+}
+
+.empty-state-text {
+  font-size: var(--size-sub);
+  color: var(--text-secondary);
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* === Redaction Bar (loading skeleton) === */
+.redaction-bar {
+  height: var(--bar-height, 8px);
+  width: var(--bar-width, 100%);
+  background: linear-gradient(90deg, var(--redaction-navy), var(--redaction-amber));
+  border-radius: var(--radius-bar);
+  opacity: 0.12;
+  animation: redaction-pulse 2s ease-in-out infinite;
+}
+
+@keyframes redaction-pulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.16; }
+}
+
+/* === Notification Tray === */
+.notification-tray {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.notification-tray > * {
+  pointer-events: auto;
+}
+
+/* === Grid Utilities === */
+.grid { display: grid; gap: var(--space-md); }
+.grid--2 { grid-template-columns: 1fr 1fr; }
+.grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+
+/* === Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+  .redaction-bar { animation: none; }
+  .timeline-bar { animation: none; transition: none; }
+  .toolbar-tab { transition: none; }
+  .page-enter { animation: none; }
+  .stagger > * { animation: none; }
+}

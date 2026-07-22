@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
 
-const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: '#dc2626' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: '#d97706' }, recent: { label: 'RECENT', color: '#22c55e' } }
+const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: 'var(--color-red)' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: 'var(--color-amber)' }, recent: { label: 'RECENT', color: 'var(--color-green)' } }
 
 export default function AccusedAtLargePanel() {
   const [data, setData] = useState(null)
@@ -13,7 +13,7 @@ export default function AccusedAtLargePanel() {
     if (dateFrom) p.set('dateFrom', dateFrom);
     if (dateTo) p.set('dateTo', dateTo);
     if (crimeType) p.set('crimeType', crimeType);
-    fetch('/server/accused-at-large/ledger?' + p)
+    fetch('/server/accused_at_large/ledger?' + p)
       .then(r => r.json())
       .then(setData)
       .catch(() => {})
@@ -32,8 +32,8 @@ export default function AccusedAtLargePanel() {
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <StatBox label="Total Tracked" value={data.total} />
-          <StatBox label="Absconding" value={data.abscondingCount} color="#dc2626" />
-          <StatBox label="Bailable Warrant" value={data.bailableWarrantCount} color="#d97706" />
+          <StatBox label="Absconding" value={data.abscondingCount} color="var(--color-red)" />
+          <StatBox label="Bailable Warrant" value={data.bailableWarrantCount} color="var(--color-amber)" />
           <StatBox label="Avg Days at Large" value={`${data.averageDaysAtLarge}d`} />
         </div>
 
@@ -48,22 +48,22 @@ export default function AccusedAtLargePanel() {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <strong style={{ fontSize: 'var(--size-sub)' }}>{a.name}</strong>
-                    <span style={{ fontSize: 10, color: badge.color, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', background: `${badge.color}12`, border: `1px solid ${badge.color}30` }}>
+                    <span style={{ fontSize: 11, color: badge.color, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', background: `${badge.color}12`, border: `1px solid ${badge.color}30` }}>
                       {badge.label}
                     </span>
                   </div>
                   <div style={{ fontSize: 'var(--size-caption)', color: 'var(--text-secondary)' }}>
                     {a.crimeType.charAt(0).toUpperCase() + a.crimeType.slice(1)} · {a.firNo} · {a.officer} · Dist {a.districtId} · {a.age}y
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>
-                    Last seen: {a.lastKnownLocation} · {a.warrantsIssued} warrant(s) issued
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    Last seen: {a.lastKnownLocation || 'not recorded'} · {a.warrantsIssued ?? 0} warrant(s) recorded
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', minWidth: 100 }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: a.daysAtLarge > 90 ? '#dc2626' : a.daysAtLarge > 30 ? '#d97706' : '#22c55e' }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-mono)', color: a.daysAtLarge > 90 ? '#dc2626' : a.daysAtLarge > 30 ? 'var(--color-amber)' : 'var(--color-green)' }}>
                     {a.daysAtLarge}d
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>at large</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>at large</div>
                 </div>
               </div>
             )
@@ -80,7 +80,7 @@ function StatBox({ label, value, color }) {
       padding: '12px 20px', borderRadius: 'var(--radius-md)', border: `1px solid ${color || 'var(--border)'}40`,
       background: color ? `${color}08` : 'var(--surface)', minWidth: 120,
     }}>
-      <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 2 }}>{label.toUpperCase()}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 2 }}>{label.toUpperCase()}</div>
       <div style={{ fontSize: 24, fontWeight: 700, color: color || 'var(--text)', fontFamily: 'var(--font-mono)' }}>{value}</div>
     </div>
   )

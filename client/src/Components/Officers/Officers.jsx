@@ -4,7 +4,7 @@ import { useFetchData } from '../FirDetails/Firdetails';
 import Loader from '../../ui/Dropdown/Loader';
 import inspector from "../Details/Inspector.png";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 export async function loader() {
   try {
@@ -455,7 +455,7 @@ export default function Officers() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#94a3b8',
+              color: 'var(--color-gray-400)',
               fontSize: '16px',
               cursor: 'pointer',
               marginLeft: '4px'

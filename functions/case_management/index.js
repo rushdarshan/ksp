@@ -88,6 +88,18 @@ const LEAD_TEMPLATES = {
 
 const OFFICERS = ['Inspector Kumar', 'Inspector Patil', 'Inspector Reddy', 'SI Venkatesh', 'SI Rangaswamy', 'SI Hegde'];
 
+// ponytail: in-memory arrays, migrate to Data Store tables
+let CASE_NOTES = [
+    { id: 'cn-001', caseId: 142, author: 'Inspector Kumar', text: 'Initial scene of crime visited. Blood samples collected from floor.', timestamp: '2026-07-01T09:00:00Z', linkedEntity: 'evidence-001' },
+    { id: 'cn-002', caseId: 142, author: 'SI Venkatesh', text: 'Neighbor witness statement recorded. Confirmed hearing raised voices at 11 PM.', timestamp: '2026-07-01T14:30:00Z', linkedEntity: null },
+    { id: 'cn-003', caseId: 142, author: 'Inspector Kumar', text: 'Accused phone CDR analysis pending from service provider.', timestamp: '2026-07-02T08:15:00Z', linkedEntity: 'evidence-003' },
+];
+
+let THEORY_BOARDS = [];
+let THEORY_CLASSIFICATIONS = [];
+let EVIDENCE_REVIEW_STATE = [];
+let AUDIT_LOG = [];
+
 function generateCases() {
     const cases = [];
     const startDate = new Date('2026-06-01');

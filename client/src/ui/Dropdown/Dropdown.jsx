@@ -1,42 +1,26 @@
-import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import {
-  HamburgerMenuIcon,
-  DotFilledIcon,
-  CheckIcon,
-  ChevronRightIcon,
-  ExitIcon,
-} from '@radix-ui/react-icons';
-import './dropdown.css';
+import { PiSignOut, PiUserCircle } from 'react-icons/pi';
 import { useAuth } from '../../AuthContext';
+import './dropdown.css';
 
-const Dropdown = () => {
-  const [bookmarksChecked, setBookmarksChecked] = React.useState(true);
-  const [urlsChecked, setUrlsChecked] = React.useState(false);
-  const [person, setPerson] = React.useState('pedro');
-const { logout } = useAuth();
-  
-  
+export default function Dropdown() {
+  const { logout } = useAuth();
 
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="IconButton" aria-label="Customise options">
-          <ExitIcon />
+        <button className="IconButton" aria-label="Open account menu" title="Account">
+          <PiUserCircle aria-hidden="true" />
         </button>
       </DropdownMenu.Trigger>
-
       <DropdownMenu.Portal>
-        <DropdownMenu.Content className="DropdownMenuContent" sideOffset={5}>
+        <DropdownMenu.Content className="DropdownMenuContent" sideOffset={7} align="end">
           <DropdownMenu.Item className="DropdownMenuItem" onClick={logout}>
-          
-           Logout<div className="RightSlot"> <ExitIcon /></div>
+            Sign out <span className="RightSlot"><PiSignOut /></span>
           </DropdownMenu.Item>
           <DropdownMenu.Arrow className="DropdownMenuArrow" />
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
-};
-
-export default Dropdown;
+}

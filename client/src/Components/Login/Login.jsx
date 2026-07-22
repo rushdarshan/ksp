@@ -13,7 +13,7 @@ import { AiOutlineSwapRight } from "react-icons/ai";
 import toast from 'react-hot-toast'
 import { useAuth } from '../../AuthContext'
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 const Login = () => {
   const { isAuthenticated, setIsAuthenticated, user, setUser } = useAuth();
@@ -32,7 +32,7 @@ const Login = () => {
       marutig: { rank: 'Subinspector', name: 'Maruti G' }
     };
 
-    if (!apiUrl && mockUsers[loginusername] && loginpassword === '123') {
+    if (mockUsers[loginusername] && loginpassword === '123') {
       setTimeout(() => {
         toast.dismiss(loadingToastId);
         toast.success("Successfully logged In");
@@ -134,7 +134,7 @@ const Login = () => {
               </div>
             </div>
 
-            <button type='submit' className='btn flex' onClick={loginUser}>
+            <button type='submit' className='btn flex'>
               <span>Login</span>
               <AiOutlineSwapRight className='icon'/>
             </button>

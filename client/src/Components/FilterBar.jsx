@@ -39,8 +39,8 @@ const FilterBar = () => {
         <option value="">All stations</option>
         {STATIONS.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
-      <input type="date" value={dateFrom || ''} onChange={e => setFilter('dateFrom', e.target.value)} style={styles.date} />
-      <input type="date" value={dateTo || ''} onChange={e => setFilter('dateTo', e.target.value)} style={styles.date} />
+      <input type="date" aria-label="Date from" value={dateFrom || ''} onChange={e => setFilter('dateFrom', e.target.value)} style={styles.date} />
+      <input type="date" aria-label="Date to" value={dateTo || ''} onChange={e => setFilter('dateTo', e.target.value)} style={styles.date} />
       <select value={crimeType || ''} onChange={e => setFilter('crimeType', e.target.value)} style={styles.select}>
         <option value="">All crime types</option>
         {CRIME_TYPES.map(c => <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>)}

@@ -5,7 +5,7 @@ import { Link, useNavigation } from "react-router-dom";
 import Loader from "../../ui/Dropdown/Loader";
 import { useFilter } from "../../FilterContext";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 export async function loader() {
   try {
@@ -499,7 +499,7 @@ const FirTable = () => {
               <tr>
                 <td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}>No records match your active search filters.</span>
+                    <span style={{ fontSize: '14px', fontFamily: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif', fontStyle: 'italic' }}>No records match your active search filters.</span>
                     {activeFilters.length > 0 && (
                       <button onClick={clearFilters} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline', fontSize: '12px' }}>
                         Reset filters
@@ -633,7 +633,7 @@ const FirTable = () => {
             style={{
               background: 'none',
               border: 'none',
-              color: '#94a3b8',
+              color: 'var(--color-gray-400)',
               fontSize: '16px',
               cursor: 'pointer',
               marginLeft: '4px'

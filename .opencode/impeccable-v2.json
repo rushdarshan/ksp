@@ -1,0 +1,88 @@
+[
+  {
+    "antipattern": "single-font",
+    "name": "Single font for everything",
+    "description": "Only one font family is used for the entire page. Pair a distinctive display font with a refined body font to create typographic hierarchy.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.jsx",
+    "line": 210,
+    "snippet": "only font used is fraunces"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\CaseWorkspace\\AIIntelligenceBrief.scss",
+    "line": 157,
+    "snippet": "transition: width",
+    "importedBy": [
+      "AIIntelligenceBrief.jsx",
+      "CaseWorkspace.jsx"
+    ]
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\CrimeGenomePanel.jsx",
+    "line": 663,
+    "snippet": "transition: width",
+    "importedBy": [
+      "CaseWorkspace.jsx",
+      "DetailedFir.jsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\DetailedFir.jsx",
+    "line": 632,
+    "snippet": "borderLeft: '4px solid"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card ΓÇö the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\FirDetails\\DetailedFir.jsx",
+    "line": 641,
+    "snippet": "borderLeft: '4px solid"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\RetractionRatePanel.jsx",
+    "line": 54,
+    "snippet": "transition: height"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\Shell\\Sidebar.jsx",
+    "line": 125,
+    "snippet": "transition: width, min-width",
+    "importedBy": [
+      "Shell.jsx"
+    ]
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\Shell\\sidebar.scss",
+    "line": 10,
+    "snippet": "transition: width, min-width"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\rushd\\Downloads\\New folder (3)\\ksp\\client\\src\\Components\\TheoryBoard\\theoryboard.scss",
+    "line": 117,
+    "snippet": "transition: width",
+    "importedBy": [
+      "TheoryBoard.jsx"
+    ]
+  }
+]

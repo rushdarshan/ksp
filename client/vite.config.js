@@ -8,4 +8,17 @@ export default defineConfig({
     react(),
     mockServerPlugin(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'icons-vendor': ['react-icons'],
+          'toast-vendor': ['react-hot-toast'],
+          'graph-vendor': ['react-force-graph-2d'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 800,
+  },
 })

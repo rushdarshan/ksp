@@ -38,7 +38,7 @@ const powerbi = () => {
         <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--text)' }}>
           State-wide Operations Ledger
         </h3>
-        <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+        <button aria-label="Dashboard menu" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
           ⋮
         </button>
       </div>

@@ -1,3 +1,7 @@
+## FILETREE.md
+
+`FILETREE.md` indexes every file with a one-line role summary, grouped by directory. Read it to find code by purpose before `ls`/`grep`/`find` — it turns "search the repo" into "look it up". Auto-maintained; don't hand-edit.
+
 ## gstack
 Use /browse from gstack for all web browsing. Never use mcp__claude-in-chrome__* tools.
 Available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-design-review,

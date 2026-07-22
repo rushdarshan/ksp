@@ -1,34 +1,37 @@
 import React, { Suspense } from 'react';
-import './styles/panel-tokens.css';
+import './App.scss';
+import './styles/components.css';
 import './styles/mobile.css';
+import './styles/dashboard.css';
 import RedactionSkeleton from './ui/Dropdown/RedactionSkeleton';
-import Body from './Components/Dashboard/Components/Body Section/Body';
-import InspectorBody from './Components/InspectorDash/Components/Body Section/Body';
-import SubinspectorBody from './Components/SubInspectorDash/Components/Body Section/Body';
-import Dashboard from './Components/Dashboard/Dashboard'
-import Login from './Components/Login/Login'
-import Register from './Components/Regsiter/Register'
 import {
   createHashRouter,
   Navigate,
   RouterProvider,
 } from "react-router-dom";
 import AuthProvider, { useAuth } from './AuthContext';
-import Officers from './Components/Officers/Officers';
-import InspectorDash from './Components/InspectorDash/InspectorDash';
-import SubinspectorDash from './Components/SubInspectorDash/SubinspectorDash';
-import Map2 from './Components/Map/Map2';
-import LandingPage from './Pages/Homepage/Landingpage';
-import FirTable from './Components/FirDetails/Firdetails';
-import DetailedFir from './Components/FirDetails/DetailedFir';
-import Details from './Components/Details/Details';
-import SubordinateDetails from './Components/SubordinateDetails/Details/Details';
-import OfficersList from './Components/Officers/OfficersList';
-import FirList from './Components/FirDetails/FirList';
-import AddFir from './Components/FirDetails/AddFir';
-import Loader from './ui/Dropdown/Loader';
 import { FilterProvider } from './FilterContext';
 import PanelGuard from './PanelGuard';
+import Loader from './ui/Dropdown/Loader';
+
+const Body = React.lazy(() => import('./Components/Dashboard/Components/Body Section/Body'));
+const InspectorBody = React.lazy(() => import('./Components/InspectorDash/Components/Body Section/Body'));
+const SubinspectorBody = React.lazy(() => import('./Components/SubInspectorDash/Components/Body Section/Body'));
+const Dashboard = React.lazy(() => import('./Components/Dashboard/Dashboard'));
+const Login = React.lazy(() => import('./Components/Login/Login'));
+const Register = React.lazy(() => import('./Components/Regsiter/Register'));
+const Officers = React.lazy(() => import('./Components/Officers/Officers'));
+const InspectorDash = React.lazy(() => import('./Components/InspectorDash/InspectorDash'));
+const SubinspectorDash = React.lazy(() => import('./Components/SubInspectorDash/SubinspectorDash'));
+const Map2 = React.lazy(() => import('./Components/Map/Map2'));
+const LandingPage = React.lazy(() => import('./Pages/Homepage/Landingpage'));
+const FirTable = React.lazy(() => import('./Components/FirDetails/Firdetails'));
+const DetailedFir = React.lazy(() => import('./Components/FirDetails/DetailedFir'));
+const Details = React.lazy(() => import('./Components/Details/Details'));
+const SubordinateDetails = React.lazy(() => import('./Components/SubordinateDetails/Details/Details'));
+const OfficersList = React.lazy(() => import('./Components/Officers/OfficersList'));
+const FirList = React.lazy(() => import('./Components/FirDetails/FirList'));
+const AddFir = React.lazy(() => import('./Components/FirDetails/AddFir'));
 
 const NetworkGraph = React.lazy(() => import('./Components/NetworkGraph'));
 const HotspotMap = React.lazy(() => import('./Components/HotspotMap'));
@@ -47,29 +50,51 @@ const ArrestVectorPanel = React.lazy(() => import('./Components/ArrestVectorPane
 const RetractionRatePanel = React.lazy(() => import('./Components/RetractionRatePanel'))
 const CoAccusedNetworkPanel = React.lazy(() => import('./Components/CoAccusedNetworkPanel'))
 const PredictivePanel = React.lazy(() => import('./Components/PredictivePanel'))
+const CounterCrimePanel = React.lazy(() => import('./Components/CounterCrimePanel'))
+const FirQualityPanel = React.lazy(() => import('./Components/FirQualityPanel'))
+const FairnessAuditPanel = React.lazy(() => import('./Components/FairnessAuditPanel'))
+const AgentPanel = React.lazy(() => import('./Components/AgentPanel'))
+const PersonPage = React.lazy(() => import('./Components/PersonPage'))
+const CaseWorkspace = React.lazy(() => import('./Components/CaseWorkspace/CaseWorkspace'))
+const StationOverview = React.lazy(() => import('./Components/Supervisor/StationOverview'))
+const ChargesheetReview = React.lazy(() => import('./Components/Supervisor/ChargesheetReview'))
+const ChatPanel = React.lazy(() => import('./Components/ChatPanel/ChatPanel'))
+const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoard'))
+
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
+
+const AppFrame = ({ children, showChat = true }) => (
+  <>
+    {children}
+    {showChat && (
+      <React.Suspense fallback={null}>
+        <ChatPanel />
+      </React.Suspense>
+    )}
+  </>
+);
 
 const sharedChildren = [
   {
     path: "officers",
-    element: <OfficersList/>,
+    element: <Lazy><OfficersList/></Lazy>,
     children: [
-      { path: "officerdetails/:id", element: <SubordinateDetails/> },
-      { element: <Officers/>, index: true }
+      { path: "officerdetails/:id", element: <Lazy><SubordinateDetails/></Lazy> },
+      { element: <Lazy><Officers/></Lazy>, index: true }
     ]
   },
-  { path: "location", element: <Map2/> },
-  { path: "profile", element: <Details/> },
+  { path: "location", element: <Lazy><Map2/></Lazy> },
+  { path: "profile", element: <Lazy><Details/></Lazy> },
   {
     path: "firdetails",
-    element: <FirList/>,
+    element: <Lazy><FirList/></Lazy>,
     children: [
-      { element: <FirTable/>, index: true },
-      { path: ":FirNo/:FirYear", element: <DetailedFir/> }
+      { element: <Lazy><FirTable/></Lazy>, index: true },
+      { path: ":FirNo/:FirYear", element: <Lazy><DetailedFir/></Lazy> }
     ]
   },
-  { path: "addfir", element: <AddFir/> },
+  { path: "addfir", element: <Lazy><AddFir/></Lazy> },
   { path: "hotspots", element: <Lazy><HotspotMap/></Lazy> },
   { path: "voice", element: <Lazy><VoiceQuery/></Lazy> },
   { path: "veracity", element: <Lazy><VeracityPanel/></Lazy> },
@@ -85,40 +110,57 @@ const sharedChildren = [
   { path: "retraction-rate", element: <Lazy><RetractionRatePanel/></Lazy> },
   { path: "co-accused", element: <Lazy><CoAccusedNetworkPanel/></Lazy> },
   { path: "predictive", element: <Lazy><PredictivePanel/></Lazy> },
+  { path: "countercrime", element: <Lazy><CounterCrimePanel/></Lazy> },
+  { path: "fir-quality", element: <Lazy><FirQualityPanel/></Lazy> },
+  { path: "fairness-audit", element: <Lazy><FairnessAuditPanel/></Lazy> },
+  { path: "agent", element: <Lazy><AgentPanel/></Lazy> },
   { path: "arrest-vector", element: <PanelGuard requiredRole="admin"><Lazy><ArrestVectorPanel/></Lazy></PanelGuard> },
+  { path: "theory-board", element: <Lazy><TheoryBoard/></Lazy> },
+  { path: "person/:personId", element: <Lazy><PersonPage/></Lazy> },
+  { path: "case/:caseId", element: <Lazy><CaseWorkspace/></Lazy> },
   { index: true, path: "network", element: <Lazy><NetworkGraph/></Lazy> },
 ];
 
 const ProtectedRoute = ({ element: Element }) => {
   const { isAuthenticated, setIsAuthenticated, setUser } = useAuth();
   const jwt_token = localStorage.getItem("token");
+  const [valid, setValid] = React.useState(null);
+
+  React.useEffect(() => {
+    if (isAuthenticated || !jwt_token) {
+      setValid(null);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    fetch(`${import.meta.env.VITE_API_URL || '/server'}/verify`, {
+      headers: { jwt_token },
+      signal: controller.signal,
+    }).then(async (response) => {
+      if (!response.ok) {
+        setValid(false);
+        return;
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      setValid(true);
+      setIsAuthenticated(true);
+    }).catch((error) => {
+      if (error.name !== 'AbortError') setValid(false);
+    });
+
+    return () => controller.abort();
+  }, [isAuthenticated, jwt_token, setIsAuthenticated, setUser]);
 
   if (isAuthenticated && jwt_token) {
     return Element;
   }
 
   if (!isAuthenticated && jwt_token) {
-    const [valid, setValid] = React.useState(null);
-    React.useEffect(() => {
-      fetch(`${import.meta.env.VITE_API_URL}/verify`, {
-        headers: { jwt_token: localStorage.getItem('token') }
-      }).then(async r => {
-        if (r.ok) {
-          try {
-            const data = await r.json();
-            if (data.user) {
-              setUser(data.user);
-              localStorage.setItem("user", JSON.stringify(data.user));
-            }
-          } catch(e) {}
-          setValid(true);
-          setIsAuthenticated(true);
-        } else {
-          setValid(false);
-        }
-      })
-      .catch(() => setValid(false));
-    }, []);
     if (valid === null) return <Loader />;
     if (valid === true) return Element;
   }
@@ -127,28 +169,36 @@ const ProtectedRoute = ({ element: Element }) => {
 };
 
 const router = createHashRouter([
-  { path: "/", element: <LandingPage/> },
-  { path: "/login", element: <Login/> },
-  { path: "/register", element: <Register/> },
+  { path: "/", element: <AppFrame showChat={false}><Lazy><LandingPage/></Lazy></AppFrame> },
+  { path: "/login", element: <AppFrame><Lazy><Login/></Lazy></AppFrame> },
+  { path: "/register", element: <AppFrame><Lazy><Register/></Lazy></AppFrame> },
   {
     path: "/dashboard",
-    element: <ProtectedRoute element={<Dashboard />} />,
-    children: [{ path: "home", element: <Body /> }, ...sharedChildren,
-      { path: "checkout", element: <div>hi</div> },
-      { path: "details", element: <Details/> },
+    element: <AppFrame><ProtectedRoute element={<Lazy><Dashboard /></Lazy>} /></AppFrame>,
+    children: [{ index: true, element: <Navigate to="home" replace /> }, { path: "home", element: <Lazy><Body /></Lazy> }, ...sharedChildren,
+      { path: "details", element: <Lazy><Details/></Lazy> },
     ]
   },
   {
     path: "/inspector",
-    element: <ProtectedRoute element={<InspectorDash/>} />,
-    children: [{ path: "home", element: <InspectorBody/>, index: true }, ...sharedChildren]
+    element: <AppFrame><ProtectedRoute element={<Lazy><InspectorDash/></Lazy>} /></AppFrame>,
+    children: [{ path: "home", element: <Lazy><InspectorBody/></Lazy>, index: true }, ...sharedChildren]
   },
   {
     path: "/subinspector",
-    element: <ProtectedRoute element={<SubinspectorDash />} />,
-    children: [{ path: "home", element: <SubinspectorBody/> }, ...sharedChildren]
+    element: <AppFrame><ProtectedRoute element={<Lazy><SubinspectorDash /></Lazy>} /></AppFrame>,
+    children: [{ path: "home", element: <Lazy><SubinspectorBody/></Lazy> }, ...sharedChildren]
   },
-  { path: "/public/deterrence", element: <Lazy><DeterrenceDashboard/></Lazy> }
+  {
+    path: "/supervisor",
+    element: <AppFrame><ProtectedRoute element={<InspectorDash />} /></AppFrame>,
+    children: [
+      { path: "station-overview", element: <Lazy><StationOverview/></Lazy> },
+      { path: "chargesheet-review", element: <Lazy><ChargesheetReview/></Lazy> },
+      ...sharedChildren,
+    ]
+  },
+  { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> }
 ]);
 
 function App() {

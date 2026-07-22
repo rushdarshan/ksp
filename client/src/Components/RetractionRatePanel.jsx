@@ -36,10 +36,10 @@ export default function RetractionRatePanel() {
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <KpiBox label="Total Chargesheets" value={summary.totalChargesheets} />
-          <KpiBox label="Retraction Rate" value={`${retractionRate}%`} color={retractionRate > 25 ? '#dc2626' : retractionRate > 15 ? '#d97706' : '#22c55e'} />
-          <KpiBox label="Type B (Mistake)" value={summary.typeB} color="#d97706" />
-          <KpiBox label="Type C (False)" value={summary.typeC} color="#dc2626" />
-          <KpiBox label="Normal (Type A)" value={summary.typeA} color="#22c55e" />
+          <KpiBox label="Retraction Rate" value={`${retractionRate}%`} color={retractionRate > 25 ? 'var(--color-red)' : retractionRate > 15 ? '#d97706' : 'var(--color-green)'} />
+          <KpiBox label="Type B (Mistake)" value={summary.typeB} color="var(--color-amber)" />
+          <KpiBox label="Type C (False)" value={summary.typeC} color="var(--color-red)" />
+          <KpiBox label="Normal (Type A)" value={summary.typeA} color="var(--color-green)" />
         </div>
 
         <div style={{ marginBottom: 20, height: 80, display: 'flex', alignItems: 'end', gap: 8 }}>
@@ -47,13 +47,13 @@ export default function RetractionRatePanel() {
             const pct = m.retracted / m.total
             return (
               <div key={m.month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <div style={{ fontSize: 10, color: pct > 0.2 ? '#dc2626' : 'var(--text-secondary)', fontWeight: 600 }}>{Math.round(pct * 100)}%</div>
+                <div style={{ fontSize: 11, color: pct > 0.2 ? 'var(--color-red)' : 'var(--text-secondary)', fontWeight: 600 }}>{Math.round(pct * 100)}%</div>
                 <div style={{
                   width: '100%', maxWidth: 40, height: `${pct * 100}%`, minHeight: 4,
-                  borderRadius: 'var(--radius-sm)', background: pct > 0.2 ? '#dc2626' : '#d97706',
+                  borderRadius: 'var(--radius-sm)', background: pct > 0.2 ? '#dc2626' : 'var(--color-amber)',
                   transition: 'height 0.3s',
                 }} />
-                <div style={{ fontSize: 9, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{m.month.slice(5)}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{m.month.slice(5)}</div>
               </div>
             )
           })}
@@ -83,7 +83,7 @@ export default function RetractionRatePanel() {
             const name = item.station || item.officer
             const subtitle = item.district || item.station
             const pct = item.retractionPct
-            const barColor = pct > 30 ? '#dc2626' : pct > 20 ? '#d97706' : '#22c55e'
+            const barColor = pct > 30 ? 'var(--color-red)' : pct > 20 ? '#d97706' : '#22c55e'
             return (
               <div key={name} style={{
                 padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)',
@@ -92,14 +92,14 @@ export default function RetractionRatePanel() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div>
                     <strong style={{ fontSize: 'var(--size-sub)' }}>{name}</strong>
-                    {subtitle && <span style={{ fontSize: 10, color: 'var(--text-secondary)', marginLeft: 8 }}>{subtitle}</span>}
+                    {subtitle && <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 8 }}>{subtitle}</span>}
                   </div>
                   <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-mono)', color: barColor }}>{pct}%</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: 'var(--border)', overflow: 'hidden' }}>
                   <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: barColor }} />
                 </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 10, color: 'var(--text-secondary)' }}>
+                <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: 11, color: 'var(--text-secondary)' }}>
                   <span>A: {item.A}</span>
                   <span>B: {item.B}</span>
                   <span>C: {item.C}</span>
@@ -120,7 +120,7 @@ function KpiBox({ label, value, color }) {
       padding: '12px 20px', borderRadius: 'var(--radius-md)', border: `1px solid ${color || 'var(--border)'}40`,
       background: color ? `${color}08` : 'var(--surface)', minWidth: 120,
     }}>
-      <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 2 }}>{label.toUpperCase()}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px', marginBottom: 2 }}>{label.toUpperCase()}</div>
       <div style={{ fontSize: 24, fontWeight: 700, color: color || 'var(--text)', fontFamily: 'var(--font-mono)' }}>{value}</div>
     </div>
   )

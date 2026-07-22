@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PanelCard, PanelHeader, PanelTable, PanelBadge } from './panels';
 
 const PRESET_FIRS = {
@@ -20,16 +20,34 @@ const PRESET_FIRS = {
   }
 };
 
-const VeracityPanel = () => {
-  const [narrative, setNarrative] = useState('');
-  const [complainantName, setComplainantName] = useState('');
-  const [accusedCount, setAccusedCount] = useState('');
-  const [hasWitnesses, setHasWitnesses] = useState(false);
-  const [delayReason, setDelayReason] = useState('');
-  const [propertyValue, setPropertyValue] = useState('');
+const VeracityPanel = ({
+  initialNarrative = '',
+  initialComplainantName = '',
+  initialAccusedCount = '',
+  initialHasWitnesses = false,
+  initialDelayReason = '',
+  initialPropertyValue = '',
+  autoAnalyze = false
+}) => {
+  const [narrative, setNarrative] = useState(initialNarrative);
+  const [complainantName, setComplainantName] = useState(initialComplainantName);
+  const [accusedCount, setAccusedCount] = useState(initialAccusedCount);
+  const [hasWitnesses, setHasWitnesses] = useState(initialHasWitnesses);
+  const [delayReason, setDelayReason] = useState(initialDelayReason);
+  const [propertyValue, setPropertyValue] = useState(initialPropertyValue);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Sync state if props change
+  useEffect(() => {
+    setNarrative(initialNarrative);
+    setComplainantName(initialComplainantName);
+    setAccusedCount(initialAccusedCount);
+    setHasWitnesses(initialHasWitnesses);
+    setDelayReason(initialDelayReason);
+    setPropertyValue(initialPropertyValue);
+  }, [initialNarrative, initialComplainantName, initialAccusedCount, initialHasWitnesses, initialDelayReason, initialPropertyValue]);
 
   const analyze = async (data) => {
     setLoading(true);
@@ -48,6 +66,20 @@ const VeracityPanel = () => {
       setLoading(false);
     }
   };
+
+  // Auto analyze on mount or narrative change if requested
+  useEffect(() => {
+    if (autoAnalyze && initialNarrative) {
+      analyze({
+        narrative: initialNarrative,
+        complainantName: initialComplainantName,
+        accusedCount: parseInt(initialAccusedCount) || 0,
+        hasWitnesses: initialHasWitnesses,
+        delayReason: initialDelayReason,
+        propertyValue: parseInt(initialPropertyValue) || 0
+      });
+    }
+  }, [autoAnalyze, initialNarrative]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -81,14 +113,14 @@ const VeracityPanel = () => {
       <PanelHeader
         subtitle="VeriPol-style analysis — 14 linguistic markers detect fabricated or exaggerated police reports"
         action={
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="veracity-presets" style={{ display: 'flex', gap: '8px' }}>
             <button onClick={() => loadPreset('genuine')} style={btnStyle}>Genuine</button>
             <button onClick={() => loadPreset('fabricated')} style={{ ...btnStyle, color: 'var(--pastel-red-text)' }}>Fabricated</button>
           </div>
         }
       />
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <form className="veracity-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <textarea
           value={narrative}
           onChange={e => setNarrative(e.target.value)}
@@ -97,15 +129,15 @@ const VeracityPanel = () => {
           style={inputStyle}
           required
         />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <input value={complainantName} onChange={e => setComplainantName(e.target.value)} placeholder="Complainant name" style={inputStyle} />
-          <input value={accusedCount} onChange={e => setAccusedCount(e.target.value)} placeholder="Accused count" type="number" style={inputStyle} />
+        <div className="veracity-fields" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <input aria-label="Complainant name" value={complainantName} onChange={e => setComplainantName(e.target.value)} placeholder="Complainant name" style={inputStyle} />
+          <input aria-label="Accused count" value={accusedCount} onChange={e => setAccusedCount(e.target.value)} placeholder="Accused count" type="number" style={inputStyle} />
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}>
             <input type="checkbox" checked={hasWitnesses} onChange={e => setHasWitnesses(e.target.checked)} /> Witnesses
           </label>
-          <input value={propertyValue} onChange={e => setPropertyValue(e.target.value)} placeholder="Property value (Rs.)" type="number" style={inputStyle} />
+          <input aria-label="Property value" value={propertyValue} onChange={e => setPropertyValue(e.target.value)} placeholder="Property value (Rs.)" type="number" style={inputStyle} />
         </div>
-        <input value={delayReason} onChange={e => setDelayReason(e.target.value)} placeholder="Delay reason (if any)" style={inputStyle} />
+        <input aria-label="Delay reason" value={delayReason} onChange={e => setDelayReason(e.target.value)} placeholder="Delay reason (if any)" style={inputStyle} />
         <button type="submit" disabled={loading} style={{ ...btnStyle, color: 'var(--accent)', fontWeight: 600 }}>
           {loading ? 'Analyzing...' : 'Analyze veracity'}
         </button>
@@ -113,61 +145,65 @@ const VeracityPanel = () => {
 
       {error && <div style={{ color: 'var(--pastel-red-text)', marginTop: '16px', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)' }}>Error: {error}</div>}
 
-      {result && (
-        <div style={{ marginTop: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', padding: '1rem', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
-            <div style={{
-              width: '80px', height: '80px', border: `2px solid ${scoreColor(result.veracityScore)}`,
-              borderRadius: 'var(--radius-full)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '1.25rem',
-              color: scoreColor(result.veracityScore)
-            }}>
-              {Math.round(result.veracityScore * 100)}%
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', marginBottom: '4px' }}>Veracity Score</div>
-              <PanelBadge status={scoreStatus(result.veracityScore)} label={result.veracityScore >= 0.7 ? 'GENUINE' : result.veracityScore >= 0.4 ? 'NEEDS REVIEW' : 'FABRICATED'} />
-            </div>
-          </div>
-
-          {result.flags.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: 'var(--size-caption)', fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--accent)', marginBottom: '8px' }}>
-                Flags ({result.flags.length})
+      {result && (() => {
+        const finalScore = result.veracityScore !== undefined ? result.veracityScore : result.score || 0;
+        return (
+          <div style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', padding: '1rem', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+              <div style={{
+                width: '80px', height: '80px', border: `2px solid ${scoreColor(finalScore)}`,
+                borderRadius: 'var(--radius-full)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '1.25rem',
+                color: scoreColor(finalScore)
+              }}>
+                {Math.round(finalScore * 100)}%
               </div>
-              {result.flags.map((f, i) => (
-                <div key={i} style={{ padding: '6px 12px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', marginBottom: '4px', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)' }}>
-                  {f}
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', marginBottom: '4px' }}>Veracity Score</div>
+                <PanelBadge status={scoreStatus(finalScore)} label={finalScore >= 0.7 ? 'GENUINE' : finalScore >= 0.45 ? 'NEEDS REVIEW' : 'FABRICATED'} />
+              </div>
+            </div>
+
+            {result.flags && result.flags.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: 'var(--size-caption)', fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--accent)', marginBottom: '8px' }}>
+                  Flags ({result.flags.length})
                 </div>
-              ))}
-            </div>
-          )}
+                {result.flags.map((f, i) => (
+                  <div key={i} style={{ padding: '6px 12px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', marginBottom: '4px', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)' }}>
+                    {typeof f === 'object' ? f.description : f}
+                  </div>
+                ))}
+              </div>
+            )}
 
-          <details>
-            <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              LINGUISTIC DETAILS
-            </summary>
-            <PanelTable
-              columns={[
-                { key: 'metric', label: 'METRIC' },
-                { key: 'value', label: 'VALUE' }
-              ]}
-              rows={Object.entries(result.details || {}).map(([k, v]) => ({
-                id: k,
-                metric: k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()),
-                value: typeof v === 'number' ? v.toFixed(3) : v
-              }))}
-            />
-          </details>
+            <details style={{ marginBottom: '16px' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                LINGUISTIC DETAILS
+              </summary>
+              <PanelTable headers={['Metric', 'Value']}>
+                {Object.entries(result.details || {}).map(([k, v]) => (
+                  <tr key={k} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td style={{ padding: '10px 14px', color: 'var(--text)' }}>
+                      {k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}
+                    </td>
+                    <td style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                      {typeof v === 'number' ? v.toFixed(3) : v}
+                    </td>
+                  </tr>
+                ))}
+              </PanelTable>
+            </details>
 
-          {result.ziaAssessment && (
-            <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)' }}>
-              ZIA ASSESSMENT: {result.ziaAssessment}
-            </div>
-          )}
-        </div>
-      )}
+            {result.ziaAssessment && (
+              <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)' }}>
+                ZIA ASSESSMENT: {result.ziaAssessment}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </PanelCard>
   );
 };

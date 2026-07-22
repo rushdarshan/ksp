@@ -1,0 +1,105 @@
+.commandOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 18px 24px;
+  background: rgba(27, 26, 24, 0.42);
+  backdrop-filter: blur(5px);
+  animation: command-overlay-in 140ms ease-out both;
+}
+
+.commandPalette {
+  width: min(610px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--dashboard-border, var(--border));
+  border-radius: 12px;
+  background: var(--dashboard-surface, var(--surface));
+  box-shadow: 0 28px 80px rgba(27, 26, 24, 0.24);
+  animation: command-palette-in 180ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.commandSearch {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 14px 10px 17px;
+  border-bottom: 1px solid var(--dashboard-border, var(--border));
+}
+
+.commandSearch > svg { width: 20px; height: 20px; color: var(--muted, var(--text-secondary)); }
+.commandSearch input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.commandSearch kbd,
+.commandResult > kbd,
+.commandFooter kbd {
+  padding: 3px 6px;
+  border: 1px solid var(--dashboard-border, var(--border));
+  border-radius: 5px;
+  background: var(--dashboard-canvas, var(--surface-alt));
+  color: var(--muted, var(--text-secondary));
+  font: 11px var(--font-mono);
+}
+
+.commandResults { max-height: min(430px, 58vh); overflow-y: auto; padding: 8px; }
+.commandResult {
+  width: 100%;
+  min-height: 57px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.commandResult.is-selected { background: var(--dashboard-canvas, var(--surface-alt)); }
+.commandResultIcon { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: var(--dashboard-blue, var(--status-info-bg)); color: var(--dashboard-ink, var(--status-info-text)); }
+.commandResultIcon svg { width: 18px; height: 18px; }
+.commandResultIcon--case { background: var(--dashboard-peach, var(--status-critical-bg)); }
+.commandResultIcon--intelligence { background: var(--dashboard-plum, var(--status-info-bg)); }
+.commandResultIcon--person { background: var(--dashboard-mint, var(--status-clear-bg)); }
+.commandResultIcon--action { background: var(--dashboard-yellow, var(--status-warning-bg)); }
+.commandResultCopy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.commandResultCopy > span:last-child { overflow: hidden; color: var(--muted, var(--text-secondary)); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.commandResultTitle { display: flex; align-items: center; gap: 8px; }
+.commandResultTitle strong { overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.commandResultTitle small { padding: 2px 5px; border-radius: 4px; background: rgba(27, 26, 24, .07); color: var(--muted, var(--text-secondary)); font-size: 11px; text-transform: uppercase; }
+
+.commandEmpty { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--muted, var(--text-secondary)); text-align: center; }
+.commandEmpty svg { width: 24px; height: 24px; }
+.commandEmpty strong { color: var(--text); font-size: 14px; }
+.commandEmpty span { font-size: 12px; }
+.commandFooter { min-height: 40px; display: flex; align-items: center; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--dashboard-border, var(--border)); color: var(--muted, var(--text-secondary)); font-size: 11px; }
+.commandFooter span { display: inline-flex; align-items: center; gap: 5px; }
+.commandFooter strong { margin-left: auto; color: var(--text); font-size: 11px; }
+
+@keyframes command-overlay-in { from { opacity: 0; } }
+@keyframes command-palette-in { from { opacity: 0; transform: translateY(-8px) scale(.985); } }
+
+@media (max-width: 600px) {
+  .commandOverlay { padding-top: 8vh; }
+  .commandResults { max-height: 64vh; }
+  .commandFooter span { display: none; }
+  .commandFooter strong { margin: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commandOverlay, .commandPalette { animation: none; }
+}

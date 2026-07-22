@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -8,7 +8,7 @@ L.Icon.Default.mergeOptions({ iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/di
 
 const stationIcon = new L.Icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', iconSize: [20, 28], iconAnchor: [10, 28] })
 
-const TIER_COLORS = { on_scene: '#22c55e', short: '#d97706', cross_district: '#dc2626' }
+const TIER_COLORS = { on_scene: 'var(--color-green)', short: '#d97706', cross_district: 'var(--color-red)' }
 const GRAVITY_OPACITY = { felony: 0.9, misdemeanour: 0.6, petty: 0.4 }
 
 function MapBounds({ vectors, stations }) {
@@ -55,23 +55,23 @@ export default function ArrestVectorPanel() {
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>TOTAL ARRESTS</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>TOTAL ARRESTS</div>
             <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{summary.total}</div>
           </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #22c55e40', background: '#22c55e08', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ON SCENE</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-mono)' }}>{summary.onScenePct}%</div>
+          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #22c55e40', background: 'var(--color-green)08', minWidth: 100 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>ON SCENE</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-green)', fontFamily: 'var(--font-mono)' }}>{summary.onScenePct}%</div>
           </div>
-          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: '#dc262608', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>CROSS-DISTRICT</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{summary.crossDistrict}</div>
+          <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid #dc262640', background: 'var(--color-red)08', minWidth: 100 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>CROSS-DISTRICT</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-red)', fontFamily: 'var(--font-mono)' }}>{summary.crossDistrict}</div>
           </div>
           <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>AVG VECTOR</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>AVG VECTOR</div>
             <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{summary.avgDistanceKm}km</div>
           </div>
           <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>MAX VECTOR</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>MAX VECTOR</div>
             <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{summary.maxDistanceKm}km</div>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function ArrestVectorPanel() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+        <div className="arrest-vector-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
           <div style={{ height: 450, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
             <MapContainer center={[12.97, 77.59]} zoom={10} style={{ height: '100%', width: '100%' }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -125,13 +125,13 @@ export default function ArrestVectorPanel() {
               <div key={v.caseId} onClick={() => setSelectedFir(v)}
                 style={{
                   padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: `1px solid ${selectedFir?.caseId === v.caseId ? 'var(--accent)' : 'var(--border-light)'}`,
-                  background: selectedFir?.caseId === v.caseId ? 'var(--accent)08' : 'var(--surface)', cursor: 'pointer',
+                  background: selectedFir?.caseId === v.caseId ? '#1a3a5c08' : 'var(--surface)', cursor: 'pointer',
                 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                   <span style={{ fontSize: 'var(--size-caption)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{v.firNo}</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: TIER_COLORS[v.tier] }}>{v.vectorKm}km</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: TIER_COLORS[v.tier] }}>{v.vectorKm}km</span>
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                   {v.arrestStation} · {v.officer} · {v.date}
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function ArrestVectorPanel() {
         {selectedFir && (
           <div style={{ padding: 14, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', background: 'var(--surface)', marginBottom: 16 }}>
             <div style={{ fontSize: 'var(--size-caption)', fontWeight: 600, marginBottom: 8 }}>{selectedFir.firNo} — Vector Detail</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, fontSize: 'var(--size-caption)' }}>
+            <div className="arrest-vector-detail" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, fontSize: 'var(--size-caption)' }}>
               <div><span style={{ color: 'var(--text-secondary)' }}>Crime GPS:</span> {selectedFir.incident.lat}, {selectedFir.incident.lng}</div>
               <div><span style={{ color: 'var(--text-secondary)' }}>Arrest at:</span> {selectedFir.arrestStation}</div>
               <div><span style={{ color: 'var(--text-secondary)' }}>Distance:</span> {selectedFir.vectorKm} km</div>

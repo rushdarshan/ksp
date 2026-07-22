@@ -9,7 +9,7 @@ const options = {
     colors: ["white"],
   },
   chart: {
-    fontFamily: "Satoshi, sans-serif",
+    fontFamily: "IBM Plex Sans, -apple-system, BlinkMacSystemFont, sans-serif",
     type: "donut",
   },
   colors: getRandomColor(4),

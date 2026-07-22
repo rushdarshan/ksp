@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const CRIME_COLORS = {
     theft: '#f59e0b', burglary: '#f97316', robbery: '#ef4444',
-    assault: '#dc2626', murder: '#7f1d1d', sexual: '#be185d',
-    fraud: '#d97706', cyber: '#7c3aed', drugs: '#059669',
+    assault: 'var(--color-red)', murder: '#7f1d1d', sexual: '#be185d',
+    fraud: 'var(--color-amber)', cyber: '#7c3aed', drugs: '#059669',
     property: '#0891b2', extortion: '#e11d48', publicorder: '#6366f1'
 };
 
@@ -89,7 +89,7 @@ const TopologyPanel = () => {
                         edgeColor = e.weight > baselineEdge.weight ? '#ef4444' : '#3b82f6';
                     }
                 } else if (isHighlighted) {
-                    edgeColor = '#60a5fa';
+                    edgeColor = 'var(--color-blue-400)';
                 }
                 ctx.beginPath();
                 ctx.moveTo(src.x, src.y);
@@ -102,7 +102,7 @@ const TopologyPanel = () => {
 
                 if (isHighlighted) {
                     const mx = (src.x + dst.x) / 2, my = (src.y + dst.y) / 2;
-                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillStyle = 'var(--color-gray-400)';
                     ctx.font = '11px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText(e.label, mx, my - 4);
@@ -129,13 +129,13 @@ const TopologyPanel = () => {
                 ctx.lineWidth = selectedNode === n.id ? 3 : 1;
                 ctx.stroke();
 
-                ctx.fillStyle = '#f8fafc';
+                ctx.fillStyle = 'var(--color-surface-50)';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(n.label, pos.x, pos.y + r + 14);
 
                 if (n.fsc !== undefined) {
-                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillStyle = 'var(--color-gray-400)';
                     ctx.font = '9px sans-serif';
                     ctx.fillText(`FSC: ${n.fsc.toFixed(2)}`, pos.x, pos.y + r + 26);
                 }
@@ -149,7 +149,7 @@ const TopologyPanel = () => {
     }, [data, selectedNode]);
 
     if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>⏳ Loading topology...</div>;
-    if (error) return <div style={{ padding: '40px', color: '#dc2626' }}>Error: {error}</div>;
+    if (error) return <div style={{ padding: '40px', color: 'var(--color-red)' }}>Error: {error}</div>;
     if (!data) return null;
 
     return (
@@ -161,10 +161,10 @@ const TopologyPanel = () => {
             </p>
 
             {months.length > 0 && (
-                <div style={{ marginBottom: '16px', padding: '12px', background: '#1e293b', borderRadius: '8px', color: '#f8fafc' }}>
+                <div style={{ marginBottom: '16px', padding: '12px', background: '#1e293b', borderRadius: '8px', color: 'var(--color-surface-50)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <span style={{ fontSize: '13px', fontWeight: 500 }}>Temporal Mode</span>
-                        <span style={{ fontSize: '13px', color: '#60a5fa' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--color-blue-400)' }}>
                             {currentMonthIndex >= 0 ? months[currentMonthIndex] : 'Baseline (full year)'}
                         </span>
                     </div>
@@ -197,7 +197,7 @@ const TopologyPanel = () => {
                     District: <strong>{data.metadata?.districtId || 1}</strong>
                 </div>
                 {data.metadata?.temporalMode && (
-                    <div style={{ fontSize: '13px', color: '#60a5fa', fontWeight: 500 }}>
+                    <div style={{ fontSize: '13px', color: 'var(--color-blue-400)', fontWeight: 500 }}>
                         Month: <strong>{data.metadata?.month || 'N/A'}</strong>
                     </div>
                 )}
@@ -229,7 +229,7 @@ const TopologyPanel = () => {
                     const node = data.nodes.find(n => n.id === selectedNode);
                     const edges = data.edges.filter(e => e.source === selectedNode || e.target === selectedNode);
                     return (
-                        <div style={{ width: '280px', background: '#1e293b', borderRadius: '12px', padding: '16px', color: '#f8fafc', fontSize: '13px', height: 'fit-content' }}>
+                        <div style={{ width: '280px', background: '#1e293b', borderRadius: '12px', padding: '16px', color: 'var(--color-surface-50)', fontSize: '13px', height: 'fit-content' }}>
                             <h3 style={{ margin: '0 0 8px', color: CRIME_COLORS[selectedNode] || '#6366f1' }}>
                                 {node?.label || selectedNode}
                             </h3>
@@ -239,7 +239,7 @@ const TopologyPanel = () => {
                                     <div style={{ marginBottom: '12px' }}>FIRs: <strong>{node.crimeCount || 0}</strong></div>
                                 </>
                             )}
-                            <div style={{ fontWeight: 600, marginBottom: '6px', color: '#94a3b8' }}>Transitions</div>
+                            <div style={{ fontWeight: 600, marginBottom: '6px', color: 'var(--color-gray-400)' }}>Transitions</div>
                             {edges.sort((a, b) => b.weight - a.weight).map((e, i) => (
                                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #334155' }}>
                                     <span>{e.source === selectedNode ? '→ ' : '← '}{e.source === selectedNode ? e.target : e.source}</span>

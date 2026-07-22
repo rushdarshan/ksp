@@ -1,0 +1,113 @@
+.station-overview {
+  &__header {
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+    }
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  &__empty {
+    padding: 64px 24px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    transition: border-color 0.15s;
+
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  &__card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__fir {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  &__flag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-red-soft);
+    background: #f8717118;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  &__card-mid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__crime {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  &__stage {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg, #f5f5f7);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  &__card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  &__csm {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  &__date {
+    font-size: 12px;
+    color: var(--muted);
+  }
+}

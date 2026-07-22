@@ -7,7 +7,7 @@ Platform for KSP Datathon 2026 Challenge 2. Deployed on Zoho Catalyst (India DC)
 
 ### Layer 1: Data Ingestion
 - **CCTNS/FIR Data Store** (Catalyst Data Store): 500K synthetic FIRs, 26 CSV tables, 10 Karnataka districts
-- **Zia Voice Pipeline**: Kannada STT → Translate → Query → TTS (existing, working)
+- **Kannada Voice Pipeline**: browser speech APIs first, with explicit external STT/TTS adapters when configured
 - **Synthetic Data Generator**: Python script produces realistic FIR data
 
 ### Layer 2: Orchestration
@@ -43,13 +43,13 @@ Platform for KSP Datathon 2026 Challenge 2. Deployed on Zoho Catalyst (India DC)
 - React frontend on Vite (402 components, Leaflet maps, ApexCharts, ForceGraph2D)
 - 500 synthetic FIRs across 10 Karnataka districts
 - Role-based auth via JWT
-- Kannada voice pipeline (Zia STT→translate→query→translate→TTS)
+- Kannada query and response translation through Zia generative AI; voice capture/playback uses browser APIs or configured providers
 
 ### P0/P1 Fixes (July 1)
 | Blocker | Fix |
 |---------|-----|
 | quickml_predict: spawnSync('python') crashes in Catalyst sandbox | Replaced with `catalystApp.quickML().predict()` SDK call |
-| legal_rag: hardcoded mock response | Replaced with 40+ BNS sections, keyword-based TF scoring, Zia fallback |
+| legal_rag: hardcoded mock response | Replaced with a narrow, verified BNS knowledge set, evidence citations, and Zia fallback |
 | alert_job: hardcoded synthetic alerts | Replaced with Z-score outlier detection per district + repeat victim alerts |
 | fir_api /alerts: duplicate mock | Now reads from Alerts Data Store table |
 
