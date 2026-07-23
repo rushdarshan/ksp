@@ -46,6 +46,7 @@ const Login = () => {
       if (demoUser && loginPassword === '123') {
         authenticate(`mock-jwt-${username}`, demoUser);
         toast.success('Demo session started', { id: loadingToastId });
+        navigate(getRoleHome(demoUser), { replace: true });
         return;
       }
 
