@@ -42,7 +42,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const demoUser = import.meta.env.DEV ? DEMO_USERS[username] : null;
+      const demoUser = DEMO_USERS[username];
       if (demoUser && loginPassword === '123') {
         authenticate(`mock-jwt-${username}`, demoUser);
         toast.success('Demo session started', { id: loadingToastId });
