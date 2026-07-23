@@ -62,7 +62,7 @@ async function generateAndStoreBrief(catalystApp, districtId) {
         Severity: zScore > 3 ? 'High' : zScore > 1.5 ? 'Medium' : 'Low',
         CreatedAt: new Date().toISOString(),
         Type: 'DAILY_BRIEF',
-        Recommendation: zScore > 3 ? `Consider deploying additional patrols in District ${districtId}` : ''
+        Recommendation: zScore > 3 ? `Supervisor review recommended before changing patrol coverage in District ${districtId}` : ''
     };
     await table.insertRows([alertRow]);
     return alertRow;

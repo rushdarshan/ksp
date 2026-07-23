@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Sidebar from './Sidebar'
 import Top from './Top'
 import ErrorBoundary from './ErrorBoundary'
@@ -12,6 +12,7 @@ const Shell = ({ basePath = '/dashboard' }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+  const showRightRail = /\/(dashboard|inspector|subinspector|supervisor)\/?(home)?$/.test(location.pathname);
 
   return (
     <div className='dashboard flex'>
@@ -25,7 +26,7 @@ const Shell = ({ basePath = '/dashboard' }) => {
           isCollapsed={sidebarCollapsed}
           setIsCollapsed={setSidebarCollapsed}
         />
-        <div className='mainContent'>
+        <div className={`mainContent ${showRightRail ? '' : 'mainContent--focused'}`}>
           <Top setSidebarOpen={setSidebarOpen} />
           <div className="mainScroll">
             <div className="page-enter">
@@ -37,9 +38,7 @@ const Shell = ({ basePath = '/dashboard' }) => {
               KSP Crime Genome &middot; Powered by Zoho Catalyst
             </footer>
           </div>
-          <div className="mainRight">
-            <RightSidebar />
-          </div>
+          {showRightRail && <div className="mainRight"><RightSidebar /></div>}
         </div>
       </div>
     </div>

@@ -8,8 +8,10 @@
   z-index: 9000;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 22px;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
   background: var(--accent);
   color: var(--text-inverse);
   border: none;
@@ -270,6 +272,11 @@
   background: var(--status-info-bg);
   color: var(--status-info-text);
   border-radius: var(--radius-sm);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .cp__msg-time {

@@ -1,170 +1,214 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import ForceGraph2D from 'react-force-graph-2d';
+import { PiArrowSquareOut, PiCursorClick } from 'react-icons/pi';
+import { ACTIVE_CASE_FACTS } from './caseFacts';
 
+// Canvas APIs cannot resolve CSS custom properties, so graph colors are explicit.
 const ENTITY_COLORS = {
-  person: 'var(--color-blue-400)',
-  phone: '#a78bfa',
-  vehicle: '#f59e0b',
-  location: 'var(--color-green-alt)',
+  case: '#26231f',
+  person: '#315f91',
+  evidence: '#8a5d13',
+  location: '#397159',
+  status: '#a34545',
 };
 
 const ENTITY_LABELS = {
+  case: 'Case',
   person: 'Person',
-  phone: 'Phone',
-  vehicle: 'Vehicle',
+  evidence: 'Evidence source',
   location: 'Location',
+  status: 'Operational status',
 };
 
-// ponytail: hardcoded mock, swap for API when backend is ready
-const MOCK_DATA = {
+const GRAPH_DATA = {
   nodes: [
-    { id: 'p1', label: 'Ravi Kumar', type: 'person', firId: 'KSP-2026-0142', personId: 'ravi-kumar' },
-    { id: 'ph1', label: '98450XXXXX', type: 'phone', firId: 'KSP-2026-0142' },
-    { id: 'v1', label: 'KA-01-AB-1234', type: 'vehicle', firId: 'KSP-2026-0142' },
-    { id: 'l1', label: 'SH-9 Junction', type: 'location', firId: 'KSP-2026-0142' },
-    { id: 'p2', label: 'Arun Nair', type: 'person', firId: 'KSP-2026-0142', personId: 'arun-nair' },
-    { id: 'p3', label: 'Lakshmi Devi', type: 'person', firId: 'KSP-2026-0142', personId: 'lakshmi-devi' },
+    { id: 'fir', label: ACTIVE_CASE_FACTS.firId, type: 'case', firId: ACTIVE_CASE_FACTS.firId, fx: 0, fy: 0 },
+    { id: 'mohan', label: 'Mohan Kumar', type: 'person', firId: ACTIVE_CASE_FACTS.firId, personId: 'mohan-kumar', fx: -145, fy: -105 },
+    { id: 'kiran', label: 'Kiran Joseph', type: 'person', firId: ACTIVE_CASE_FACTS.firId, personId: 'kiran-joseph', fx: 135, fy: -105 },
+    { id: 'location', label: 'Brigade Road / SH-9', type: 'location', firId: ACTIVE_CASE_FACTS.firId, fx: 0, fy: 135 },
+    { id: 'cctv', label: 'SH-9 CCTV source', type: 'evidence', firId: ACTIVE_CASE_FACTS.firId, fx: -165, fy: 220 },
+    { id: 'at-large', label: 'At large', type: 'status', firId: ACTIVE_CASE_FACTS.firId, fx: 250, fy: -105 },
   ],
   links: [
-    { source: 'p1', target: 'ph1', label: 'owns', crossCase: false },
-    { source: 'p1', target: 'v1', label: 'drives', crossCase: false },
-    { source: 'p1', target: 'l1', label: 'present_at', crossCase: false },
-    { source: 'p1', target: 'p2', label: 'co_accused', crossCase: false },
-    { source: 'p2', target: 'ph1', label: 'contacts', crossCase: false },
-    { source: 'p3', target: 'l1', label: 'victim_at', crossCase: false },
-    { source: 'p1', target: 'p3', label: 'accused_of', crossCase: false },
-    // cross-case example
-    { source: 'p1', target: 'p-cross-1', label: 'linked_via_phone', crossCase: true, crossCaseId: 'KSP-2025-0098' },
-  ],
-  extraNodes: [
-    { id: 'p-cross-1', label: 'Deepak S.', type: 'person', firId: 'KSP-2025-0098', personId: 'deepak-s' },
+    { source: 'fir', target: 'mohan', label: 'lists accused' },
+    { source: 'fir', target: 'kiran', label: 'lists accused' },
+    { source: 'fir', target: 'location', label: 'occurred at' },
+    { source: 'cctv', target: 'location', label: 'source identified at' },
+    { source: 'kiran', target: 'at-large', label: 'current status' },
+    { source: 'mohan', target: 'kiran', label: 'co-accused' },
   ],
 };
 
-const NODE_R = { person: 10, phone: 7, vehicle: 7, location: 7 };
+const NODE_RADIUS = { case: 13, person: 11, evidence: 9, location: 9, status: 8 };
 
-export default function EntityGraphPanel({ firId = 'KSP-2026-0142' }) {
+function drawNode(node, ctx, selected, globalScale) {
+  const radius = NODE_RADIUS[node.type] || 8;
+  const color = ENTITY_COLORS[node.type] || '#6f6b63';
+  const isSelected = selected?.id === node.id;
+  const unit = 1 / globalScale;
+
+  if (isSelected) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius + (5 * unit), 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(190, 135, 38, 0.18)';
+    ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = '#fffdf8';
+  ctx.lineWidth = 2 * unit;
+  ctx.stroke();
+
+  const fontSize = 11 * unit;
+  ctx.font = `${isSelected ? 700 : 600} ${fontSize}px Inter, Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const textWidth = ctx.measureText(node.label).width;
+  const labelY = node.y + radius + (14 * unit);
+  ctx.fillStyle = 'rgba(255, 253, 248, 0.94)';
+  ctx.fillRect(node.x - textWidth / 2 - (5 * unit), labelY - (8 * unit), textWidth + (10 * unit), 16 * unit);
+  ctx.fillStyle = '#26231f';
+  ctx.fillText(node.label, node.x, labelY);
+}
+
+export default function EntityGraphPanel({ firId = ACTIVE_CASE_FACTS.firId }) {
   const navigate = useNavigate();
+  const graphRef = useRef(null);
+  const viewportRef = useRef(null);
   const [selected, setSelected] = useState(null);
+  const [graphSize, setGraphSize] = useState({ width: 640, height: 500 });
 
   const graphData = useMemo(() => ({
-    nodes: [...MOCK_DATA.nodes, ...MOCK_DATA.extraNodes],
-    links: MOCK_DATA.links,
-  }), []);
+    nodes: GRAPH_DATA.nodes.map(node => ({ ...node, firId })),
+    links: GRAPH_DATA.links.map(link => ({ ...link })),
+  }), [firId]);
 
-  const onNodeClick = useCallback((node) => {
-    if (node.type === 'person' && node.personId) {
-      navigate(`/dashboard/person/${node.personId}`);
-    } else {
-      setSelected(prev => prev?.id === node.id ? null : node);
-    }
-  }, [navigate]);
+  const fitGraph = useCallback(() => {
+    graphRef.current?.zoomToFit(260, 64);
+  }, []);
 
-  const onLinkClick = useCallback((link) => {
-    if (link.crossCaseId) {
-      navigate(`/dashboard/case/${link.crossCaseId}`);
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return undefined;
+
+    const measure = () => {
+      const width = Math.max(300, Math.floor(viewport.getBoundingClientRect().width));
+      const height = Math.max(420, Math.min(540, Math.floor(window.innerHeight * 0.58)));
+      setGraphSize(current => current.width === width && current.height === height ? current : { width, height });
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(fitGraph, 80);
+    return () => window.clearTimeout(timer);
+  }, [fitGraph, graphSize]);
+
+  const openProfile = () => {
+    if (selected?.type === 'person' && selected.personId) {
+      navigate(`/dashboard/person/${selected.personId}`);
     }
-  }, [navigate]);
+  };
 
   return (
-    <div className="panel" style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16, alignItems: 'start' }}>
-      <div>
-        {/* Legend */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-          {Object.entries(ENTITY_COLORS).map(([k, c]) => (
-            <span key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-secondary)' }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />
-              {ENTITY_LABELS[k]}
-            </span>
-          ))}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-secondary)' }}>
-            <span style={{ width: 16, height: 0, borderTop: '2px dashed var(--color-red-soft)' }} />
-            Cross-case
-          </span>
+    <section className="entity-graph" aria-labelledby="entity-graph-title">
+      <div className="entity-graph__main">
+        <div className="entity-graph__toolbar">
+          <div>
+            <h3 id="entity-graph-title">Case entity graph</h3>
+            <p>Verified record links and operational status for {firId}</p>
+          </div>
+          <div className="entity-graph__legend" aria-label="Entity types">
+            {Object.entries(ENTITY_COLORS).map(([type, color]) => (
+              <span key={type}><i style={{ background: color }} />{ENTITY_LABELS[type]}</span>
+            ))}
+          </div>
         </div>
 
-        {/* Graph */}
-        <div style={{ height: 480, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+        <div className="entity-graph__viewport" ref={viewportRef}>
           <ForceGraph2D
+            ref={graphRef}
             graphData={graphData}
-            nodeCanvasObject={(node, ctx) => {
-              const r = NODE_R[node.type] || 6;
-              const color = ENTITY_COLORS[node.type] || 'var(--color-gray-500)';
-              const isSelected = selected?.id === node.id;
+            width={graphSize.width}
+            height={graphSize.height}
+            backgroundColor="#fffdf8"
+            nodeCanvasObject={(node, ctx, globalScale) => drawNode(node, ctx, selected, globalScale)}
+            nodePointerAreaPaint={(node, color, ctx) => {
+              const radius = (NODE_RADIUS[node.type] || 8) + 8;
+              ctx.fillStyle = color;
               ctx.beginPath();
-              ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-              ctx.fillStyle = isSelected ? '#fff' : color;
+              ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
               ctx.fill();
-              ctx.strokeStyle = isSelected ? 'var(--accent)' : color;
-              ctx.lineWidth = isSelected ? 2.5 : 1;
-              ctx.stroke();
-              ctx.fillStyle = '#fff';
-              ctx.font = 'bold 9px sans-serif';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(node.label.length > 12 ? node.label.slice(0, 11) + '…' : node.label, node.x, node.y + r + 11);
             }}
-            linkCanvasObject={(link, ctx) => {
-              const sx = link.source.x, sy = link.source.y;
-              const tx = link.target.x, ty = link.target.y;
-              ctx.beginPath();
-              ctx.setLineDash(link.crossCase ? [4, 3] : []);
-              ctx.moveTo(sx, sy);
-              ctx.lineTo(tx, ty);
-              ctx.strokeStyle = link.crossCase ? 'var(--color-red-soft)' : '#d2d2d7';
-              ctx.lineWidth = link.crossCase ? 1.5 : 1;
-              ctx.stroke();
-              ctx.setLineDash([]);
-              // edge label at midpoint
-              const mx = (sx + tx) / 2, my = (sy + ty) / 2;
-              ctx.fillStyle = 'var(--text-secondary)';
-              ctx.font = '8px sans-serif';
+            linkColor={() => '#b9b4aa'}
+            linkWidth={1.3}
+            linkDirectionalArrowLength={5}
+            linkDirectionalArrowRelPos={0.92}
+            linkCanvasObjectMode={() => 'after'}
+            linkCanvasObject={(link, ctx, globalScale) => {
+              if (![link.source?.x, link.source?.y, link.target?.x, link.target?.y].every(Number.isFinite)) return;
+              const x = (link.source.x + link.target.x) / 2;
+              const y = (link.source.y + link.target.y) / 2;
+              const unit = 1 / globalScale;
+              ctx.font = `500 ${9 * unit}px Inter, Arial, sans-serif`;
               ctx.textAlign = 'center';
-              ctx.fillText(link.label, mx, my - 4);
+              const labelWidth = ctx.measureText(link.label).width;
+              ctx.fillStyle = 'rgba(255, 253, 248, 0.92)';
+              ctx.fillRect(x - labelWidth / 2 - (3 * unit), y - (12 * unit), labelWidth + (6 * unit), 13 * unit);
+              ctx.fillStyle = '#6f6b63';
+              ctx.fillText(link.label, x, y - (5 * unit));
             }}
-            linkDirectionalArrowLength={4}
-            linkDirectionalArrowRelPos={0.9}
-            backgroundColor="var(--surface)"
-            onNodeClick={onNodeClick}
-            onLinkClick={onLinkClick}
-            width={undefined}
-            height={480}
+            onNodeClick={setSelected}
+            onEngineStop={fitGraph}
+            cooldownTicks={1}
+            d3VelocityDecay={0.28}
+            minZoom={0.6}
+            maxZoom={4}
           />
         </div>
       </div>
 
-      {/* Detail sidebar */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'sticky', top: 16 }}>
+      <aside className="entity-graph__details" aria-live="polite">
         {selected ? (
-          <div style={{ padding: 14, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', background: 'var(--surface)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: ENTITY_COLORS[selected.type] }} />
-              <span style={{ fontSize: 14, fontWeight: 700 }}>{selected.label}</span>
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>
-              Type: {ENTITY_LABELS[selected.type]}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>
-              FIR: {selected.firId}
-            </div>
+          <>
+            <span className="entity-graph__type"><i style={{ background: ENTITY_COLORS[selected.type] }} />{ENTITY_LABELS[selected.type]}</span>
+            <h4>{selected.label}</h4>
+            <dl>
+              <div><dt>FIR</dt><dd>{selected.firId}</dd></div>
+              {selected.id === 'kiran' && <div><dt>Status</dt><dd>At large</dd></div>}
+              {selected.id === 'cctv' && <div><dt>Status</dt><dd>Acquisition pending</dd></div>}
+            </dl>
             {selected.type === 'person' && (
-              <button
-                onClick={() => navigate(`/dashboard/person/${selected.personId}`)}
-                style={{
-                  marginTop: 8, width: '100%', padding: '6px 0', fontSize: 12, fontWeight: 600,
-                  background: 'var(--accent)', color: '#fff', border: 'none',
-                  borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-                }}
-              >View Full Profile →</button>
+              <button type="button" onClick={openProfile}>
+                Open person record <PiArrowSquareOut aria-hidden="true" />
+              </button>
             )}
-          </div>
+          </>
         ) : (
-          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-secondary)', fontSize: 12 }}>
-            Click a node to see details
+          <div className="entity-graph__empty">
+            <PiCursorClick aria-hidden="true" />
+            <strong>Select an entity</strong>
+            <span>Inspect a node without leaving the case workspace.</span>
           </div>
         )}
-      </div>
-    </div>
+      </aside>
+    </section>
   );
 }
+
+EntityGraphPanel.propTypes = {
+  firId: PropTypes.string,
+};

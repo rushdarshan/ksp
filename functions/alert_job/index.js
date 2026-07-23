@@ -29,14 +29,15 @@ module.exports = async (req, res) => {
             const zScore = (count - baseline.mean) / baseline.stddev;
             if (zScore > 2.0) {
                 const severity = zScore > 4.0 ? 'High' : 'Medium';
+                const percentAboveBaseline = Math.round(((count - baseline.mean) / baseline.mean) * 100);
                 alerts.push({
-                    Title: `${severity === 'High' ? '⚠️' : '⚡'} ${Math.round(zScore * 100)}% crime surge in District ${districtId}`,
+                    Title: `${percentAboveBaseline}% above baseline in District ${districtId}`,
                     Description: `Detected ${severity.toLowerCase()} surge over 7 days. Historical avg: ${baseline.mean}, Current: ${count}. Z-score: ${zScore.toFixed(2)}.`,
                     DistrictID: districtId,
                     Severity: severity,
                     CreatedAt: new Date().toISOString(),
                     Type: 'CRIME_SURGE',
-                    Recommendation: zScore > 4 ? `Consider deploying ${Math.ceil((count - baseline.mean) / 2)} additional patrols in District ${districtId}` : 'Monitor situation'
+                    Recommendation: zScore > 4 ? `Supervisor review recommended for District ${districtId} patrol coverage` : 'Monitor the pattern and verify source records'
                 });
             }
         }
@@ -49,13 +50,13 @@ module.exports = async (req, res) => {
             const victimId = row.Victim?.VictimID || row.VictimID;
             const count = parseInt(row.Victim?.cnt || row.cnt || 0);
             alerts.push({
-                Title: `🛡️ Repeat victimization risk: ${count} FIRs`,
-                Description: `VictimID ${victimId} has been named in ${count} separate FIRs — elevated revictimization risk. Recommend proactive outreach.`,
+                Title: `Repeat-victimization review: ${count} FIRs`,
+                Description: `VictimID ${victimId} has been named in ${count} separate FIRs. This is a support-review flag, not a prediction of future harm.`,
                 DistrictID: 0,
                 Severity: count > 5 ? 'High' : 'Medium',
                 CreatedAt: new Date().toISOString(),
                 Type: 'VICTIM_RISK',
-                Recommendation: `Assign victim liaison officer for VictimID ${victimId}`
+                Recommendation: `Have an authorized officer review whether VictimID ${victimId} should be offered liaison support`
             });
         }
 
@@ -87,19 +88,19 @@ module.exports = async (req, res) => {
 
                 alerts.push({
                     Title: `Case Starter: Crime cluster in District ${districtId} (Z-score: ${zScore.toFixed(1)})`,
-                    Description: `${crimeTypeDominance}. Historical avg: ${baseline.mean}, Current: ${count}. Recommended action: Prioritize investigation in District ${districtId}.`,
+                    Description: `${crimeTypeDominance}. Historical avg: ${baseline.mean}, Current: ${count}. Treat this as a review signal and verify the linked records.`,
                     DistrictID: districtId,
                     Severity: 'High',
                     CreatedAt: new Date().toISOString(),
                     Type: 'CASE_STARTER',
-                    Recommendation: `Deploy ${Math.ceil((count - baseline.mean) / 2)} additional resources to District ${districtId}`
+                    Recommendation: `Supervisor review recommended before changing resources in District ${districtId}`
                 });
             }
         }
 
         if (alerts.length === 0) {
             alerts.push({
-                Title: '✅ No anomalies detected',
+                Title: 'No statistical anomalies detected',
                 Description: 'All districts within normal crime ranges for the past 7 days.',
                 DistrictID: 0,
                 Severity: 'Low',

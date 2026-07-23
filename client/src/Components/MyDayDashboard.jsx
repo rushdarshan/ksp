@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { PiArrowUpRight, PiCaretRight, PiClock, PiShieldCheck, PiSiren, PiTimer } from 'react-icons/pi';
 import DailyBrief from './MyDay/DailyBrief';
 import AlertsFeed from './MyDay/AlertsFeed';
+import { ACTIVE_CASE_FACTS } from './CaseWorkspace/caseFacts';
 import PanelCard from './panels/PanelCard';
 import PanelBadge from './panels/PanelBadge';
 import './MyDay/myday.scss';
 
 // ponytail: mock data for priority queue — replace with fetch(`${apiUrl}/my-day/queue`)
 const PRIORITY_MOCK = [
-  { firNo: 'KSP-2026-0142', crimeType: 'Robbery', status: 'investigation', priority: 'critical', updatedAt: '02:15 AM', location: 'Jayanagar 4th Block' },
+  { firNo: ACTIVE_CASE_FACTS.firId, crimeType: ACTIVE_CASE_FACTS.crimeType, status: 'investigation', priority: 'critical', updatedAt: '02:15 AM', location: ACTIVE_CASE_FACTS.location },
   { firNo: 'KSP-2026-0234', crimeType: 'Theft', status: 'investigation', priority: 'high', updatedAt: '04:00 AM', location: 'Koramangala 1st Block' },
   { firNo: 'KSP-2026-0089', crimeType: 'Burglary', status: 'court', priority: 'medium', updatedAt: '03:00 AM', location: 'HSR Layout Sector 2' },
   { firNo: 'KSP-2026-0301', crimeType: 'Cyber Fraud', status: 'urgent', priority: 'critical', updatedAt: '05:10 AM', location: 'Whitefield Main Road' },
@@ -51,8 +52,8 @@ WelcomeWidget.propTypes = {
 
 const SUMMARY = [
   { label: 'Priority cases', value: '05', note: '+2 since yesterday', icon: PiSiren, tone: 'plum', to: '/dashboard/firdetails' },
-  { label: 'Case readiness', value: '86%', note: '+6% this week', icon: PiShieldCheck, tone: 'peach', to: '/dashboard/case/KSP-2026-0142' },
-  { label: 'SLA coverage', value: '74%', note: '2 deadlines at risk', icon: PiTimer, tone: 'blue', to: '/dashboard/chargesheet-clock' },
+  { label: 'Case readiness', value: `${ACTIVE_CASE_FACTS.readiness}%`, note: '3 CCTV tasks open', icon: PiShieldCheck, tone: 'peach', to: `/dashboard/case/${ACTIVE_CASE_FACTS.firId}` },
+  { label: 'Filing window', value: `${ACTIVE_CASE_FACTS.filingDueDays}d`, note: 'Active case is not overdue', icon: PiTimer, tone: 'blue', to: '/dashboard/chargesheet-clock' },
 ];
 
 export default function MyDayDashboard() {
@@ -78,10 +79,10 @@ export default function MyDayDashboard() {
         error: false,
         data: {
           timestamp: 'COMPLETED OVERNIGHT RUN · 05:30 AM',
-          message: "Good morning, Officer. ZIA has analyzed the district active queue. \u200b**3 cases need attention today.**\u200b FIR \u200b**KSP-2026-0142**\u200b has a critical development: the suspect's phone number was matched in 2 other active robbery cases. We recommend requesting immediate CDR logs and assigning a warrant officer to track \u0905\u0930\u0941\u0923 \u0928\u093e\u092f\u0930 (Arun Nair) who remains at large.",
+          message: `Good morning, Officer. ZIA has analysed the district active queue. \u200b**3 cases need attention today.**\u200b FIR \u200b**${ACTIVE_CASE_FACTS.firId}**\u200b is ${ACTIVE_CASE_FACTS.readiness}% ready. The SH-9 CCTV source is identified, but acquisition, hash verification, and the BSA Section 63 certificate remain pending. Kiran Joseph remains at large, and statutory filing is due in ${ACTIVE_CASE_FACTS.filingDueDays} days.`,
           tags: [
-            { label: '1 critical match', color: 'red' },
-            { label: '2 SLA breaches', color: 'amber' },
+            { label: '3 CCTV tasks open', color: 'red' },
+            { label: 'Filing due in 18 days', color: 'amber' },
           ],
         },
       });
@@ -96,9 +97,9 @@ export default function MyDayDashboard() {
         loading: false,
         error: false,
         data: [
-          { id: 1, type: 'match', title: 'Cross-Case Entity Match', desc: 'Phone 98450XXXXX matched in 2 other robberies', time: '02:15 AM' },
-          { id: 2, type: 'breach', title: 'Chargesheet Deadline Approaching', desc: 'FIR KSP-2026-0089 expires in 6 days', time: '03:00 AM' },
-          { id: 3, type: 'new', title: 'New Warrant Appended', desc: 'Arrest vector issued for Arun Nair', time: '04:10 AM' },
+          { id: 1, type: 'match', title: 'CCTV acquisition pending', desc: `${ACTIVE_CASE_FACTS.firId} source identified; footage and hash not recorded`, time: '02:15 AM' },
+          { id: 2, type: 'breach', title: 'Statutory filing approaching', desc: `${ACTIVE_CASE_FACTS.firId} is due in ${ACTIVE_CASE_FACTS.filingDueDays} days`, time: '03:00 AM' },
+          { id: 3, type: 'new', title: 'At-large follow-up active', desc: 'Kiran Joseph remains at large', time: '04:10 AM' },
         ],
       });
     }, 500);
@@ -112,7 +113,7 @@ export default function MyDayDashboard() {
       assign: 'tab=notes&copilot=next_lead',
       predict: 'tab=brief&copilot=outcome',
     };
-    navigate(`/dashboard/case/KSP-2026-0142?${destinations[action] || destinations.explain}`);
+    navigate(`/dashboard/case/${ACTIVE_CASE_FACTS.firId}?${destinations[action] || destinations.explain}`);
   };
 
   useEffect(() => {

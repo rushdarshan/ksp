@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { PiSiren } from 'react-icons/pi';
 import styles from './AlertsFeed.module.css';
 
 const AlertsFeed = () => {
@@ -30,7 +31,7 @@ const AlertsFeed = () => {
 
     return (
         <div className={styles.alertsContainer}>
-            <h3 className={styles.alertsTitle}>🚨 Proactive Alerts</h3>
+            <h3 className={styles.alertsTitle}><PiSiren aria-hidden="true" /> Proactive Alerts</h3>
             <ul className={styles.alertsList}>
                 {alerts.map((alert, index) => (
                     <li key={index} className={styles.alertItem}>

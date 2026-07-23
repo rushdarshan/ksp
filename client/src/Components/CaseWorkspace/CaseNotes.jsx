@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useCaseContext } from './caseContext';
 
 const MOCK_NOTES = [
-  { id: 'n1', author: 'PI Dharmendra', timestamp: '2026-07-09T14:30:00', text: 'CDR analysis initiated for suspect phone 98450XXXXX. Awaiting Telecom Nodal response.', linkedEntity: 'E6' },
-  { id: 'n2', author: 'SI Ramesh', timestamp: '2026-07-08T11:15:00', text: 'FSL confirmed fingerprint match with Ravi Kumar. 10-point match. Formal certification pending.', linkedEntity: 'E2' },
-  { id: 'n3', author: 'PI Dharmendra', timestamp: '2026-07-07T16:45:00', text: 'Vehicle KA-01-AB-1234 registered to Ravi Kumar, S/O Rajesh Kumar, 4th Cross, Indiranagar.', linkedEntity: null },
+  { id: 'n1', author: 'PI Dharmendra', timestamp: '2026-03-18T10:00:00', text: 'SH-9 junction CCTV source is identified. Acquisition, file hash, and BSA Section 63 certificate are still pending.', linkedEntity: 'E3' },
+  { id: 'n2', author: 'PI Dharmendra', timestamp: '2026-03-17T14:10:00', text: 'Kiran Joseph remains at large. Continue location and arrest follow-up and record each operational action.', linkedEntity: 'E2' },
+  { id: 'n3', author: 'PI Dharmendra', timestamp: '2026-03-16T09:30:00', text: 'Mohan Kumar and Kiran Joseph linked to the investigation record. Officer verification remains ongoing.', linkedEntity: 'E2' },
 ];
 
 export default function CaseNotes() {

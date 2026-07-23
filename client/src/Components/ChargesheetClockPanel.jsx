@@ -56,7 +56,6 @@ export default function ChargesheetClockPanel() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {filtered.map(c => {
-            const pct = c.status === 'overdue' ? 100 : Math.round((1 - c.daysRemaining / c.cpcLimitDays) * 100)
             return (
               <div key={c.caseId} style={{
                 padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)',

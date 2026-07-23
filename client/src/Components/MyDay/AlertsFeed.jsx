@@ -1,4 +1,3 @@
-import React from 'react';
 import { PiBellSimpleRinging, PiWarningCircle } from 'react-icons/pi';
 
 function AlertsFeedSkeleton() {
@@ -49,7 +48,7 @@ function AlertsFeedEmpty() {
     }}>
       <PiWarningCircle size={24} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
       <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>No overnight alerts</div>
-      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.7 }}>You're all caught up</div>
+      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', opacity: 0.7 }}>No unread alerts</div>
     </div>
   );
 }

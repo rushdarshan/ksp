@@ -4,42 +4,42 @@ import { PanelCard, PanelHeader, PanelBadge, PanelTable, PanelChart } from './pa
 // ponytail: mock data matching POST /fairness/predictions/:model response schema
 const MOCK_MODELS = [
   {
-    model: 'arrest_prediction_v1',
+    model: 'patrol_demand_forecast_demo',
     overallFairnessScore: 0.82,
     demographicParity: {
-      'Urban': { positiveRate: 0.45, falsePositiveRate: 0.12, falseNegativeRate: 0.08, sampleSize: 4200 },
-      'Rural': { positiveRate: 0.38, falsePositiveRate: 0.18, falseNegativeRate: 0.11, sampleSize: 2800 },
-      'Semi-Urban': { positiveRate: 0.41, falsePositiveRate: 0.14, falseNegativeRate: 0.09, sampleSize: 1900 },
-      'Tribal': { positiveRate: 0.33, falsePositiveRate: 0.22, falseNegativeRate: 0.15, sampleSize: 850 },
+      'Bengaluru core': { positiveRate: 0.45, falsePositiveRate: 0.12, falseNegativeRate: 0.08, sampleSize: 4200 },
+      'Bengaluru periphery': { positiveRate: 0.38, falsePositiveRate: 0.18, falseNegativeRate: 0.11, sampleSize: 2800 },
+      'Tier-2 cities': { positiveRate: 0.41, falsePositiveRate: 0.14, falseNegativeRate: 0.09, sampleSize: 1900 },
+      'Rural stations': { positiveRate: 0.33, falsePositiveRate: 0.22, falseNegativeRate: 0.15, sampleSize: 850 },
     },
     disparateImpactRatios: [
-      { group: 'Urban vs Rural', ratio: 1.18, threshold: 0.8, status: 'pass' },
-      { group: 'Urban vs Tribal', ratio: 1.36, threshold: 0.8, status: 'pass' },
-      { group: 'Rural vs Tribal', ratio: 1.15, threshold: 0.8, status: 'pass' },
+      { group: 'Periphery vs core', ratio: 0.84, threshold: 0.8, status: 'pass' },
+      { group: 'Rural stations vs core', ratio: 0.73, threshold: 0.8, status: 'fail' },
+      { group: 'Rural stations vs periphery', ratio: 0.87, threshold: 0.8, status: 'pass' },
     ],
     flags: [
-      'Tribal group shows elevated false negative rate (15%) — model may under-predict risk',
-      'Rural false positive rate (18%) above Urban (12%) — investigate feature distribution',
+      'Rural-station holdout shows elevated miss rate (15%); deployment threshold requires review',
+      'Periphery false-alert rate (18%) exceeds the core holdout (12%); inspect reporting-volume features',
     ],
   },
   {
-    model: 'bail_recommendation_v2',
+    model: 'case_readiness_triage_demo',
     overallFairnessScore: 0.68,
     demographicParity: {
-      'General': { positiveRate: 0.62, falsePositiveRate: 0.09, falseNegativeRate: 0.06, sampleSize: 3500 },
-      'SC/ST': { positiveRate: 0.48, falsePositiveRate: 0.16, falseNegativeRate: 0.14, sampleSize: 1200 },
-      'OBC': { positiveRate: 0.55, falsePositiveRate: 0.11, falseNegativeRate: 0.10, sampleSize: 1800 },
-      'Minority': { positiveRate: 0.51, falsePositiveRate: 0.13, falseNegativeRate: 0.12, sampleSize: 950 },
+      'Kannada records': { positiveRate: 0.62, falsePositiveRate: 0.09, falseNegativeRate: 0.06, sampleSize: 3500 },
+      'English records': { positiveRate: 0.48, falsePositiveRate: 0.16, falseNegativeRate: 0.14, sampleSize: 1200 },
+      'Bilingual records': { positiveRate: 0.55, falsePositiveRate: 0.11, falseNegativeRate: 0.10, sampleSize: 1800 },
+      'Translated records': { positiveRate: 0.51, falsePositiveRate: 0.13, falseNegativeRate: 0.12, sampleSize: 950 },
     },
     disparateImpactRatios: [
-      { group: 'General vs SC/ST', ratio: 0.77, threshold: 0.8, status: 'fail' },
-      { group: 'General vs Minority', ratio: 0.82, threshold: 0.8, status: 'pass' },
-      { group: 'OBC vs SC/ST', ratio: 0.88, threshold: 0.8, status: 'pass' },
+      { group: 'Kannada vs English', ratio: 0.77, threshold: 0.8, status: 'fail' },
+      { group: 'Kannada vs translated', ratio: 0.82, threshold: 0.8, status: 'pass' },
+      { group: 'Bilingual vs English', ratio: 0.88, threshold: 0.8, status: 'pass' },
     ],
     flags: [
-      'CRITICAL: General vs SC/ST ratio (0.77) below 0.8 threshold — potential disparate impact',
-      'SC/ST false negative rate (14%) nearly double the General rate (6%)',
-      'Model requires retraining with balanced class weights',
+      'English-record flag ratio (0.77) is below the demonstration threshold',
+      'English-record miss rate (14%) is materially above the Kannada holdout (6%)',
+      'Do not deploy until language-balanced validation and error review are complete',
     ],
   },
 ];
@@ -51,7 +51,7 @@ const FairnessAuditPanel = () => {
   const overallStatus = data.overallFairnessScore >= 0.8 ? 'low' : data.overallFairnessScore >= 0.7 ? 'medium' : 'high';
 
   const chartSeries = [
-    { name: 'Positive Rate', data: groups.map(([, g]) => +(g.positiveRate * 100).toFixed(1)) },
+    { name: 'Flag Rate', data: groups.map(([, g]) => +(g.positiveRate * 100).toFixed(1)) },
     { name: 'False Positive Rate', data: groups.map(([, g]) => +(g.falsePositiveRate * 100).toFixed(1)) },
     { name: 'False Negative Rate', data: groups.map(([, g]) => +(g.falseNegativeRate * 100).toFixed(1)) },
   ];
@@ -64,9 +64,9 @@ const FairnessAuditPanel = () => {
   };
 
   return (
-    <PanelCard title="Fairness Audit Dashboard" badge="ALGO TRANSPARENCY">
+    <PanelCard title="Model Parity Review" badge="SYNTHETIC HOLDOUT">
       <PanelHeader
-        subtitle="Demographic parity analysis across prediction models — identifies disparate impact and bias signals"
+        subtitle="Post-hoc error analysis across geography and language cohorts. Cohort labels are audit attributes, not model inputs."
         action={
           <select
             value={modelIndex}
@@ -91,8 +91,9 @@ const FairnessAuditPanel = () => {
           {Math.round(data.overallFairnessScore * 100)}%
         </div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Overall Fairness Score</div>
-          <PanelBadge status={overallStatus} label={data.model} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Parity review score</div>
+          <PanelBadge status={overallStatus} label="REVIEW REQUIRED" />
+          <div style={{ marginTop: 4, fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>{data.model}</div>
         </div>
       </div>
 
@@ -109,7 +110,7 @@ const FairnessAuditPanel = () => {
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>
           Demographic Parity Metrics
         </div>
-        <PanelTable headers={['Group', 'Positive Rate', 'FP Rate', 'FN Rate', 'Sample Size']}>
+        <PanelTable headers={['Audit cohort', 'Flag Rate', 'False Alert', 'Miss Rate', 'Sample Size']}>
           {groups.map(([name, g]) => (
             <tr key={name}>
               <td style={{ padding: '8px 14px', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{name}</td>
@@ -156,7 +157,7 @@ const FairnessAuditPanel = () => {
       )}
 
       <div style={{ marginTop: 14, fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>
-        Fairness analysis based on 30-day prediction logs · Disparate impact threshold: 0.8 (80% rule) · Audit generated {new Date().toLocaleDateString()}.
+        Synthetic 30-day holdout · Thresholds are demonstration controls, not proof of fairness · Audit snapshot 22 Jul 2026.
       </div>
     </PanelCard>
   );

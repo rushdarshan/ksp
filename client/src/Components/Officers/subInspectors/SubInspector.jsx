@@ -1,52 +1,9 @@
-import React from "react";
 import "../Inspectors/inspect.scss";
 import inspector from "../../Details/Inspector.png";
 import { Link } from "react-router-dom";
 // import Top from './Top Section/Top'
 // import Listing from './Listing Section/Listing'
 // import Activity from './Activity Section/Activity'
-const subInspectorData = [
-  {
-    logo: inspector,
-    name: "ABC",
-    visitors: 3.5,
-    rank: "PSI",
-    sales: 590,
-    conversion: 4.8,
-  },
-  {
-    logo: inspector,
-    name: "PQR",
-    visitors: 2.2,
-    rank: "PSI",
-    sales: 467,
-    conversion: 4.3,
-  },
-  {
-    logo: inspector,
-    name: "MNO",
-    visitors: 2.1,
-    rank: "PSI",
-    sales: 420,
-    conversion: 3.7,
-  },
-  {
-    logo: inspector,
-    name: "XYZ",
-    visitors: 1.5,
-    rank: "PSI",
-    sales: 389,
-    conversion: 2.5,
-  },
-  {
-    logo: inspector,
-    name: "STR",
-    visitors: 3.5,
-    rank: "PSI",
-    sales: 390,
-    conversion: 4.2,
-  },
-];
 const Inspectors = ({asiArray}) => {
   return (
     <>

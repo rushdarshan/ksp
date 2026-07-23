@@ -12,8 +12,7 @@ function maskPhone(phone) {
     return clean.slice(0, 2) + 'X'.repeat(clean.length - 4) + clean.slice(-2);
 }
 
-function revealPii(value, type) {
-    console.warn(`PII reveal: ${type} accessed`);
+function revealPii(value) {
     return value;
 }
 

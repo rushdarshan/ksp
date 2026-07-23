@@ -41,10 +41,13 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
         if (person) {
           const match = d.nodes.find(n => n.id.toLowerCase() === person.toLowerCase())
           if (match) setSelected(match)
+        } else if (limitToFirNo) {
+          const match = d.nodes.find(node => node.firNos?.includes(limitToFirNo) && node.personId === 'A1')
+          if (match) setSelected(match)
         }
       })
       .catch(() => {})
-  }, [searchParams, focusPersonName])
+  }, [searchParams, focusPersonName, limitToFirNo])
 
   const filtered = useMemo(() => {
     if (!data) return null;
@@ -61,15 +64,16 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
     }
 
     if (limitToFirNo) {
-      // Normalize FIR Numbers, e.g. "KSP-2026-0142" vs "142/2026"
-      const cleanFir = limitToFirNo.replace('KSP-', '').replace('/', '-'); // e.g. "142-2026" or "2026-142"
-      const matchKey = cleanFir.split('-')[0]; // e.g. "142" or "2026"
+      const normalizeFir = (value) => {
+        const text = String(value || '')
+        const parts = text.match(/\d+/g) || []
+        const number = text.startsWith('KSP-') ? parts.at(-1) : parts[0]
+        return number ? String(Number(number)) : text.toLowerCase()
+      }
+      const matchKey = normalizeFir(limitToFirNo)
       const isMatch = (firList) => {
         if (!firList) return false;
-        return firList.some(f => {
-          const cleanF = f.replace('KSP-', '').replace('/', '-');
-          return cleanF.includes(matchKey) || limitToFirNo.includes(cleanF) || cleanF.includes(limitToFirNo);
-        });
+        return firList.some(f => normalizeFir(f) === matchKey)
       };
       
       n = n.filter(node => isMatch(node.firNos));
@@ -86,10 +90,10 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
       <div className="panel-box" style={hideHeader ? { border: 'none', background: 'transparent', padding: 0 } : {}}>
         {!hideHeader && (
           <>
-            <h2 style={{ marginBottom: 4 }}>Co-Accused Network</h2>
+            <h2 style={{ marginBottom: 4 }}>Shared-FIR Association Graph</h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-sub)', marginBottom: 20, maxWidth: 600 }}>
-              Force-directed graph of accused linked by shared FIRs. A1 nodes (red) = primary accused.
-              Red edges = A1-A1 links — the strongest gang signal.
+              Force-directed graph of people named as accused in the same FIR records. A1 nodes are marked primary in the source data.
+              Co-occurrence is a review lead and does not establish association, coordination, or guilt.
             </p>
 
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -102,8 +106,8 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
                 <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-red)', fontFamily: 'var(--font-mono)' }}>{data.summary.A1Count}</div>
               </div>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>GANGS</div>
-                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.gangs}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>CONNECTED GROUPS</div>
+                <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{data.summary.communities ?? data.summary.gangs}</div>
               </div>
               <div style={{ padding: '12px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', minWidth: 100 }}>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.5px' }}>LINKS</div>
@@ -114,7 +118,7 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
         )}
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-          {[{ k: 0, l: 'All Networks' }, { k: 1, l: 'Gang 1' }, { k: 2, l: 'Gang 2' }].map(({ k, l }) => (
+          {[{ k: 0, l: 'All groups' }, { k: 1, l: 'Connected group 1' }, { k: 2, l: 'Connected group 2' }].map(({ k, l }) => (
             <button key={k} onClick={() => setGangFilter(k)}
               style={{
                 padding: '6px 14px', borderRadius: 'var(--radius-full)', border: `1px solid ${gangFilter === k ? 'var(--accent)' : 'var(--border)'}`,
@@ -131,7 +135,7 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
             <ForceGraph2D
               ref={graphRef}
               graphData={filtered}
-              nodeCanvasObject={(node, ctx) => {
+              nodeCanvasObject={(node, ctx, globalScale) => {
                 const r = node.personId === 'A1' ? 8 : node.personId === 'A2' ? 5 : 3
                 const color = PERSON_COLORS[node.personId] || '#667085'
                 ctx.beginPath()
@@ -141,12 +145,11 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
                 ctx.strokeStyle = selected?.id === node.id ? '#1b1a18' : color
                 ctx.lineWidth = selected?.id === node.id ? 3 : 1
                 ctx.stroke()
-                if (node.personId === 'A1') {
-                  ctx.fillStyle = '#000'
-                  ctx.font = '6px sans-serif'
-                  ctx.textAlign = 'center'
-                  ctx.fillText(node.id[0], node.x, node.y + 2)
-                }
+                const fontSize = Math.max(3, 11 / globalScale)
+                ctx.fillStyle = '#171717'
+                ctx.font = `600 ${fontSize}px Inter, sans-serif`
+                ctx.textAlign = 'center'
+                ctx.fillText(node.id, node.x, node.y + r + fontSize)
               }}
               linkColor={l => LINK_COLORS[l.role] || '#d2d2d7'}
               linkWidth={l => Math.min(l.cases, 3)}

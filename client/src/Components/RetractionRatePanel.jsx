@@ -28,17 +28,16 @@ export default function RetractionRatePanel() {
   return (
     <div className="panel">
       <div className="panel-box">
-        <h2 style={{ marginBottom: 4 }}>Retraction Rate</h2>
+        <h2 style={{ marginBottom: 4 }}>Chargesheet Disposition Review</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-sub)', marginBottom: 20, maxWidth: 600 }}>
-          Chargesheet cstype classification — Type A (normal), Type B (mistake of fact), Type C (false case).
-          Higher retraction rates signal investigation quality issues.
+          Source-system Type A, B, and C dispositions shown as quality-review signals. A Type C label does not by itself prove a false complaint, officer error, or misconduct.
         </p>
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <KpiBox label="Total Chargesheets" value={summary.totalChargesheets} />
           <KpiBox label="Retraction Rate" value={`${retractionRate}%`} color={retractionRate > 25 ? 'var(--color-red)' : retractionRate > 15 ? '#d97706' : 'var(--color-green)'} />
           <KpiBox label="Type B (Mistake)" value={summary.typeB} color="var(--color-amber)" />
-          <KpiBox label="Type C (False)" value={summary.typeC} color="var(--color-red)" />
+          <KpiBox label="Type C (Review)" value={summary.typeC} color="var(--color-red)" />
           <KpiBox label="Normal (Type A)" value={summary.typeA} color="var(--color-green)" />
         </div>
 

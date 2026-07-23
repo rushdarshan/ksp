@@ -1,5 +1,14 @@
+const CHART_COLORS = ['#171717', '#c45f3b', '#4b79a8', '#7a8f63', '#b58b35', '#8a6f9e'];
+
+function asArray(value) {
+    if (Array.isArray(value)) return value;
+    if (!value || typeof value !== 'object') return [];
+    const candidates = [value.data, value.items, value.records, value.results, value.cases, value.officers];
+    return candidates.find(Array.isArray) || [];
+}
+
 function getRandomColor(count) {
-    return Array.from({ length: count }, () => `rgb(${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)})`);
+    return Array.from({ length: count }, (_, index) => CHART_COLORS[index % CHART_COLORS.length]);
 }
 
 function countElements(array) {
@@ -7,7 +16,7 @@ function countElements(array) {
     const counts = {};
 
     // Loop through the array
-    array.forEach(item => {
+    asArray(array).forEach(item => {
         // If the item is not in the counts object, initialize its count to 1
         // Otherwise, increment its count by 1
         counts[item.fir_stage] = (counts[item.fir_stage] || 0) + 1;
@@ -22,7 +31,7 @@ function getClearanceRate(array) {
     let closedCaseCount=0;
     const activeCase= ["Under Investigation"]
     // Loop through the array
-    array.forEach(item => {
+    asArray(array).forEach(item => {
         // If the item is not in the counts object, initialize its count to 1
         // Otherwise, increment its count by 1
         if(activeCase.includes(item.fir_stage)){
@@ -31,22 +40,24 @@ function getClearanceRate(array) {
             closedCaseCount = closedCaseCount  + 1;
         }
     });
-    const clearanceRate =Math.round((closedCaseCount / (activeCaseCount + closedCaseCount )) * 100)
+    const total = activeCaseCount + closedCaseCount;
+    const clearanceRate = total ? Math.round((closedCaseCount / total) * 100) : 0;
     // Return the counts object
     return {activeCaseCount,closedCaseCount, clearanceRate}
 }
 
 function getconvictionRate(data){
-    if(!data)
-        return 0
-    if (data.length < 1)
-        return 0
-    const dataLength = data.length
-    const sum = data.reduce(
-        (accumulator, currentValue) => accumulator + (currentValue.conviction_count/currentValue.accused_chargesheeted_count),
+    const records = asArray(data);
+    if (records.length < 1) return 0;
+    const sum = records.reduce(
+        (accumulator, currentValue) => {
+          const charged = Number(currentValue.accused_chargesheeted_count) || 0;
+          const convicted = Number(currentValue.conviction_count) || 0;
+          return accumulator + (charged ? convicted / charged : 0);
+        },
         0
       );
-    const convictionRate = Math.round((sum/dataLength) * 100)
+    const convictionRate = Math.round((sum/records.length) * 100)
     return convictionRate > 100 ? 100 : convictionRate
 }
 const policeRanks = {
@@ -57,8 +68,9 @@ const policeRanks = {
     "HC" : "Head Constable"
 };
 function formatString(str) {
+    if (str === null || str === undefined) return '';
     // Remove underscores and replace them with spaces
-    let result = str.split('_').join(' ');
+    let result = String(str).split('_').join(' ');
     result = result.charAt(0).toUpperCase() + result.slice(1);
 
     // Add spaces before uppercase letters (not preceded by a space)
@@ -70,7 +82,8 @@ function formatString(str) {
 function getCrimeHotspots(data){
     const clean = s => ['Dist','Sub-Dist','Region','TOWN','City','PS'].reduce((r,sub) => r.replace(new RegExp(sub,'g'),''), s).trim();
     let newobj={}
-        Object.values(data).forEach(item=>{
+        asArray(data).forEach(item=>{
+            if (!item?.beat_name) return;
             if(!newobj[item.beat_name]?.crimeCount){
                 newobj[item.beat_name]={...item,
                     crimeCount : (newobj[item.beat_name]?.crimeCount || 0)+ 1,
@@ -85,24 +98,24 @@ function getCrimeHotspots(data){
 }
 const smapleFirValues = {
     district: 'Bengaluru City',
-    UnitName: 'East Zone Women PS',
-    FirNo: '0001/2016',
+    UnitName: 'Brigade Road PS',
+    FirNo: 'KSP-2026-0142',
     RI: '1',
-    year: '2016',
-    Month: '1',
-    Offence_From_Date: '00:00.0',
-    Offence_To_Date: '00:00.0',
-    FIR_Reg_DateTime: '10:00.0',
-    Fir_Date: '07-13-2004',
-    FIR_Type: 'Non Heinous',
-    fir_stage: 'Pending Trial',
-    Complaint_Mode: 'Written',
-    CrimeGroup_Name: 'CRUELTY BY HUSBAND',
-    CrimeHead_Name: 'CRUELTY BY HUSBAND',
-    Latitude: '13.01528',
-    Longitude: '77.390757',
-    ActSection: 'IPC 1860 U/s: 498A,506',
-    IOName: 'ANJUMALA T NAYAK (Dy.SP)',
+    year: '2026',
+    Month: '3',
+    Offence_From_Date: '2026-03-15T20:25:00+05:30',
+    Offence_To_Date: '2026-03-15T20:35:00+05:30',
+    FIR_Reg_DateTime: '2026-03-15T23:58:00+05:30',
+    Fir_Date: '2026-03-15',
+    FIR_Type: 'Heinous',
+    fir_stage: 'Under Investigation',
+    Complaint_Mode: 'Online',
+    CrimeGroup_Name: 'Robbery',
+    CrimeHead_Name: 'Robbery',
+    Latitude: '12.9762',
+    Longitude: '77.6033',
+    ActSection: 'BNS 2023: Sections 304, 309 and 3(5) pending legal review',
+    IOName: 'PI DHARMENDRA',
     KGID: '1841136',
     IOAssignment: 'NaN',
     Internal_IO: '200045',
@@ -131,4 +144,4 @@ const config = () => ({
     headers: { jwt_token: localStorage.getItem("token") }
 })
 
-export {getRandomColor,countElements,policeRanks,formatString,smapleFirValues,getClearanceRate,getconvictionRate,config,getCrimeHotspots}
+export {asArray,getRandomColor,countElements,policeRanks,formatString,smapleFirValues,getClearanceRate,getconvictionRate,config,getCrimeHotspots}

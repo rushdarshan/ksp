@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   PiBell,
   PiBrain,
@@ -33,11 +33,11 @@ const STATIC_ITEMS = [
   { id: 'nav-voice', type: 'workspace', label: 'ZIA voice query', icon: PiMicrophone, path: '/dashboard/voice', desc: 'Query legal intelligence in natural language' },
   { id: 'nav-map', type: 'workspace', label: 'Command map', icon: PiMapTrifold, path: '/dashboard/location', desc: 'Live district hotspots and navigation' },
   { id: 'nav-officers', type: 'workspace', label: 'Officer roster', icon: PiIdentificationCard, path: '/dashboard/officers', desc: 'Personnel and assignment directory' },
-  { id: 'nav-veracity', type: 'intelligence', label: 'FIR veracity', icon: PiShieldCheck, path: '/dashboard/veracity', desc: 'Narrative quality assessment' },
+  { id: 'nav-veracity', type: 'intelligence', label: 'Narrative quality', icon: PiShieldCheck, path: '/dashboard/veracity', desc: 'Documentation completeness review' },
   { id: 'nav-chargesheet', type: 'intelligence', label: 'Chargesheet clock', icon: PiTimer, path: '/dashboard/chargesheet-clock', desc: 'Statutory deadline control' },
   { id: 'nav-accused', type: 'intelligence', label: 'Accused at large', icon: PiUserFocus, path: '/dashboard/accused-at-large', desc: 'Warrant and fugitive ledger' },
   { id: 'nav-arrest', type: 'intelligence', label: 'Arrest vector', icon: PiLightning, path: '/dashboard/arrest-vector', desc: 'Cross-district arrest intelligence' },
-  { id: 'nav-predictive', type: 'intelligence', label: 'Predictive intelligence', icon: PiBrain, path: '/dashboard/predictive', desc: 'Pattern-led deployment signals' },
+  { id: 'nav-predictive', type: 'intelligence', label: 'Predictive intelligence', icon: PiBrain, path: '/dashboard/predictive', desc: 'Pattern-led planning signals' },
   { id: 'nav-beat', type: 'intelligence', label: 'Beat optimizer', icon: PiCrosshair, path: '/dashboard/beat-optimizer', desc: 'Patrol coverage planning' },
   { id: 'nav-gbv', type: 'intelligence', label: 'Gender violence', icon: PiGenderIntersex, path: '/dashboard/gbv', desc: 'Protection and response analytics' },
   { id: 'nav-victim', type: 'intelligence', label: 'Victim risk', icon: PiHeartbeat, path: '/dashboard/victim-risk', desc: 'Repeat harm prevention' },
@@ -46,8 +46,8 @@ const STATIC_ITEMS = [
   { id: 'nav-addfir', type: 'action', label: 'Register new FIR', icon: PiFilePlus, path: '/dashboard/addfir', desc: 'Open a new FIR registration form' },
   { id: 'case-142', type: 'case', label: 'FIR KSP-2026-0142', icon: PiFolderOpen, path: '/dashboard/case/KSP-2026-0142', desc: 'Robbery, Brigade Road, under investigation' },
   { id: 'case-089', type: 'case', label: 'FIR KSP-2026-0089', icon: PiFolderOpen, path: '/dashboard/case/KSP-2026-0089', desc: 'Burglary, chargesheet review' },
-  { id: 'person-mohan', type: 'person', label: 'Mohan Kumar', icon: PiUser, path: '/dashboard/person/Mohan_Kumar', desc: 'Accused linked to FIR-0142 and FIR-0330' },
-  { id: 'person-arun', type: 'person', label: 'Arun Nair', icon: PiUser, path: '/dashboard/person/Arun_Nair', desc: 'Accused at large, high risk' },
+  { id: 'person-mohan', type: 'person', label: 'Mohan Kumar', icon: PiUser, path: '/dashboard/person/Mohan_Kumar', desc: 'Accused linked to FIR-0142 and FIR-0301; in custody' },
+  { id: 'person-kiran', type: 'person', label: 'Kiran Joseph', icon: PiUser, path: '/dashboard/person/Kiran_Joseph', desc: 'FIR-0142 accused; warrant status requires verification' },
 ];
 
 const TYPE_LABELS = {
@@ -65,6 +65,9 @@ export default function CommandPalette() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const basePath = ['inspector', 'subinspector', 'supervisor'].find((area) => location.pathname.startsWith(`/${area}`));
+  const workspaceBase = basePath ? `/${basePath}` : '/dashboard';
 
   useEffect(() => {
     const handleShortcut = (event) => {
@@ -87,9 +90,10 @@ export default function CommandPalette() {
 
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const scopedItems = STATIC_ITEMS.map((item) => ({ ...item, path: item.path.replace('/dashboard', workspaceBase) }));
     const matches = normalizedQuery
-      ? STATIC_ITEMS.filter((item) => `${item.label} ${item.desc}`.toLowerCase().includes(normalizedQuery))
-      : STATIC_ITEMS.slice(0, 9);
+      ? scopedItems.filter((item) => `${item.label} ${item.desc}`.toLowerCase().includes(normalizedQuery))
+      : scopedItems.slice(0, 9);
 
     if (/^\d{1,4}$/.test(normalizedQuery)) {
       const firId = normalizedQuery.padStart(4, '0');
@@ -98,13 +102,13 @@ export default function CommandPalette() {
         type: 'case',
         label: `Open FIR KSP-2026-${firId}`,
         icon: PiFolderOpen,
-        path: `/dashboard/case/KSP-2026-${firId}`,
+        path: `${workspaceBase}/case/KSP-2026-${firId}`,
         desc: 'Open case directly by FIR number',
       });
     }
 
     return matches.slice(0, 12);
-  }, [query]);
+  }, [query, workspaceBase]);
 
   useEffect(() => setSelectedIndex(0), [query]);
 

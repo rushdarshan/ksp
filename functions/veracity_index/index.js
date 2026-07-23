@@ -35,31 +35,34 @@ app.post('/analyze', async (req, res) => {
             propertyValue
         });
 
-        let predictedCrimeType = null;
         if (crimetype && CRIME_VOCAB[crimetype]) {
             const expectedWords = CRIME_VOCAB[crimetype];
             const narrativeLower = narrative.toLowerCase();
             const matchCount = expectedWords.filter(w => narrativeLower.includes(w)).length;
             if (matchCount === 0) {
-                result.flags.push(`Narrative missing expected vocabulary for "${crimetype}" — possible type mismatch`);
-                result.veracityScore = Math.max(0, result.veracityScore - 0.1);
+                result.flags.push(`The narrative does not contain common terms for the recorded "${crimetype}" classification; an officer should verify coding.`);
             }
         }
 
         try {
             const zia = catalystApp.zia();
             const ziaResult = await zia.generateContent({
-                prompt: `Analyze this FIR narrative for consistency, coherence, and indicators of truthfulness. Provide a brief assessment: "${narrative.substring(0, 2000)}"`
+                prompt: `Review this FIR narrative only for documentation completeness. Identify missing dates, times, locations, people, event sequence, and evidence references. Do not assess truthfulness, deception, guilt, or legal sufficiency. Return a concise officer review note: "${narrative.substring(0, 2000)}"`
             });
             result.ziaAssessment = ziaResult?.text || ziaResult?.output || null;
         } catch (e) {
             result.ziaAssessment = null;
         }
 
-        res.status(200).json(result);
+        res.status(200).json({
+            ...result,
+            methodology: result.methodology || 'Documentation-completeness review',
+            humanReviewRequired: true,
+            prohibitedUses: ['credibility scoring', 'guilt assessment', 'automated enforcement action']
+        });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Veracity analysis failed', details: err.message });
+        res.status(500).json({ error: 'Narrative quality analysis failed', details: err.message });
     }
 });
 

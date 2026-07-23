@@ -2,6 +2,14 @@ import { defineMockApi } from './mock-api-data.js';
 
 export default function mockServerPlugin() {
   const mockApi = defineMockApi();
+  const sendJson = (res, result) => {
+    const hasStatus = result && !Array.isArray(result) && typeof result === 'object' && '__status' in result;
+    const status = hasStatus ? result.__status : 200;
+    const payload = hasStatus ? Object.fromEntries(Object.entries(result).filter(([key]) => key !== '__status')) : result;
+    res.setHeader('Content-Type', 'application/json');
+    res.statusCode = status;
+    res.end(JSON.stringify(payload));
+  };
 
   // Precompile route patterns for key matching
   const compiledRoutes = Object.keys(mockApi).map(routeKey => {
@@ -54,10 +62,8 @@ export default function mockServerPlugin() {
         const exactHandler = mockApi[key];
         if (exactHandler) {
           try {
-            const result = exactHandler({ query, body, params: {} });
-            res.setHeader('Content-Type', 'application/json');
-            res.statusCode = 200;
-            res.end(JSON.stringify(result));
+            const result = exactHandler({ query, body, params: {}, headers: req.headers });
+            sendJson(res, result);
           } catch (err) {
             res.statusCode = 500;
             res.end(JSON.stringify({ error: err.message }));
@@ -76,10 +82,8 @@ export default function mockServerPlugin() {
               });
               
               try {
-                const result = route.handler({ query, body, params });
-                res.setHeader('Content-Type', 'application/json');
-                res.statusCode = 200;
-                res.end(JSON.stringify(result));
+                const result = route.handler({ query, body, params, headers: req.headers });
+                sendJson(res, result);
               } catch (err) {
                 res.statusCode = 500;
                 res.end(JSON.stringify({ error: err.message }));

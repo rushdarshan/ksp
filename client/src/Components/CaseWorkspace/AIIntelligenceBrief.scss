@@ -55,6 +55,8 @@ $text2: var(--text-secondary);
   &__header-scores {
     margin-left: auto;
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 16px;
   }
 
@@ -480,4 +482,16 @@ $text2: var(--text-secondary);
     &__vflag-type { min-width: 80px; font-size: 11px; }
     &__vflag-desc { display: none; }
   }
+}
+
+@container case-workspace (max-width: 760px) {
+  .aib__header-scores {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .aib__export-btn { margin-left: 0; }
+  .aib__reco { align-items: flex-start; flex-wrap: wrap; }
+  .aib__reco-action { min-width: min(100%, 220px); }
 }

@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiCaretRight } from 'react-icons/pi';
+import { PiCaretRight, PiLightbulb } from 'react-icons/pi';
 
 function CaseCardSkeleton() {
   const pulse = {
@@ -99,10 +98,10 @@ export default function CaseCard({ c }) {
           </div>
         </div>
 
-        {/* Case Strength Meter */}
+        {/* Investigation readiness */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1 }}>Case Strength</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1 }}>Readiness</div>
             <div style={{ fontSize: '13px', fontWeight: 800, color }}>{c.csmScore}/100</div>
           </div>
           <div style={{
@@ -146,7 +145,7 @@ export default function CaseCard({ c }) {
         fontSize: '12.5px', color: 'var(--accent)', fontWeight: 600,
         paddingTop: '8px', borderTop: '1px solid var(--border-light)',
       }}>
-        <span style={{ fontSize: '14px' }}>💡</span>
+        <PiLightbulb size={16} aria-hidden="true" />
         <span style={{ flex: 1 }}>{c.recommendation}</span>
         <PiCaretRight />
       </div>

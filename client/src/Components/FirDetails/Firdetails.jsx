@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import styles from "./firdetails.module.css";
-import inspector from "../Details/Inspector.png";
-import { Link, useNavigation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Loader from "../../ui/Dropdown/Loader";
 import { useFilter } from "../../FilterContext";
+import { asArray } from "../../utils/utility";
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
@@ -28,6 +28,8 @@ export function useFetchData(url, variables, config) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestBody = JSON.stringify(variables ?? {});
+  const requestHeaders = JSON.stringify(config?.headers ?? {});
 
   useEffect(() => {
     let targetUrl = url;
@@ -45,8 +47,8 @@ export function useFetchData(url, variables, config) {
       try {
         const response = await fetch(targetUrl, {
           method: 'POST',
-          headers: { ...config?.headers, 'Content-Type': 'application/json' },
-          body: JSON.stringify(variables)
+          headers: { ...JSON.parse(requestHeaders), 'Content-Type': 'application/json' },
+          body: requestBody,
         }).then(r => r.json());
         setData(response);
       } catch (err) {
@@ -56,13 +58,13 @@ export function useFetchData(url, variables, config) {
       }
     };
     fetchData();
-  }, [url, variables.year]);
+  }, [url, requestBody, requestHeaders]);
 
   return { data, isLoading, error };
 }
 
 const FirTable = () => {
-  const [selectedValue, setSelectedValue] = useState(2016);
+  const [selectedValue, setSelectedValue] = useState(2026);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("date-desc");
@@ -86,8 +88,7 @@ const FirTable = () => {
 
   // Filter and sort fetched data client-side
   const processedData = useMemo(() => {
-    if (!data) return [];
-    let list = [...data];
+    let list = [...asArray(data)];
 
     // Text search filter
     if (searchTerm.trim()) {
@@ -532,7 +533,7 @@ const FirTable = () => {
                   <td>{fir.Complaint_Mode}</td>
                   <td>{getStageBadge(fir.fir_stage)}</td>
                   <td style={{ textAlign: 'right', padding: '16px 24px' }}>
-                    <Link to={`${fir.FirNo}`} className={styles.inspector_details} style={{
+                    <Link to={`${encodeURIComponent(fir.FirNo)}/${fir.year || fir.FirNo?.split('-')[1] || 2026}`} className={styles.inspector_details} style={{
                       borderRadius: 'var(--radius-full)',
                       padding: '6px 14px',
                       fontSize: '12px',

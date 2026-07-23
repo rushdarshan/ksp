@@ -1,4 +1,3 @@
-import React from 'react'
 import './body.scss'
 import MyDayDashboard from '../../../MyDayDashboard'
 import { useNavigation } from 'react-router-dom'

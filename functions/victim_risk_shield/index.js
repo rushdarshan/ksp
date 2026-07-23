@@ -1,7 +1,7 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
-const { VERACITY_CONFIG } = require('../shared/analyzer');
 const { getCached, setCached } = require('../shared/cache-utils');
+const { DEMO_GENERATED_AT, createSeededRandom, intBetween } = require('../shared/deterministic');
 
 const app = express();
 app.use(express.json());
@@ -11,10 +11,11 @@ app.get('/score/:victimId', async (req, res) => {
         const catalystApp = catalyst.initialize(req);
         const zcql = catalystApp.zcql();
         const { victimId } = req.params;
-        const weightByVeracity = req.query.weightByVeracity === 'true';
+        const weightByVeracityRequested = req.query.weightByVeracity === 'true';
 
         let victimFIRs = [];
         let allVictims = [];
+        let synthetic = false;
 
         try {
             const rows = await zcql.executeZCQLQuery(
@@ -33,43 +34,22 @@ app.get('/score/:victimId', async (req, res) => {
                 name: r.v?.VictimName || r.VictimName
             }));
         } catch (e) {
-            console.warn('Data Store query failed, using mock data:', e.message);
-            victimFIRs = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
+            console.warn('Data Store query failed, using deterministic synthetic demo records:', e.message);
+            synthetic = true;
+            const random = createSeededRandom(`victim-support:${victimId}:v2`);
+            const recordCount = intBetween(random, 1, 4);
+            const baseDate = new Date('2026-07-10T09:00:00Z');
+            const demoAge = intBetween(random, 20, 54);
+            victimFIRs = Array.from({ length: recordCount }, (_, i) => ({
                 firNo: `${100 + i}`,
                 year: 2026,
                 crimeHeadId: (i % 12) + 1,
                 districtId: (i % 10) + 1,
-                date: new Date(Date.now() - i * 30 * 86400000).toISOString(),
-                age: Math.floor(Math.random() * 30) + 20,
+                date: new Date(baseDate.getTime() - i * 30 * 86400000).toISOString(),
+                age: demoAge,
                 gender: i % 2 === 0 ? 'Female' : 'Male',
-                name: `Victim_${victimId}`
+                name: `Demo victim ${victimId}`
             }));
-        }
-
-        if (weightByVeracity && victimFIRs.length > 0) {
-            try {
-                const firNos = victimFIRs.map(f => `'${f.firNo}'`).join(',');
-                const verRows = await zcql.executeZCQLQuery(
-                    `SELECT FIRNo, VeracityScore FROM FirVeracity WHERE FIRNo IN (${firNos})`
-                );
-                const veracityMap = {};
-                for (const row of verRows) {
-                    const firNo = row.FirVeracity?.FIRNo || row.FIRNo;
-                    const score = parseFloat(row.FirVeracity?.VeracityScore || row.VeracityScore || 0);
-                    veracityMap[firNo] = score;
-                }
-                const excludedBefore = victimFIRs.length;
-                victimFIRs = victimFIRs.filter(f => {
-                    const score = veracityMap[f.firNo];
-                    return score === undefined || score >= VERACITY_CONFIG.VICTIM_MIN;
-                });
-                const excludedCount = excludedBefore - victimFIRs.length;
-                if (excludedCount > 0) {
-                    console.warn(`Excluded ${excludedCount} FIRs below veracity threshold ${VERACITY_CONFIG.VICTIM_MIN}`);
-                }
-            } catch (e) {
-                console.warn('FirVeracity join failed, using unweighted victim scoring:', e.message);
-            }
         }
 
         try {
@@ -90,9 +70,17 @@ app.get('/score/:victimId', async (req, res) => {
                 riskScore: 5,
                 riskLevel: 'Low',
                 firCount: 0,
-                factors: [weightByVeracity ? 'No verifiable FIRs after veracity filtering' : 'No prior victimization record'],
-                recommendation: 'Standard monitoring',
-                history: []
+                factors: ['No prior victimization record was returned by the available data source'],
+                recommendation: 'No automated action. Confirm data completeness and follow standard support procedures.',
+                history: [],
+                metadata: {
+                    dataSource: 'catalyst_data_store',
+                    synthetic: false,
+                    credibilityWeightingApplied: false,
+                    credibilityWeightingRequestIgnored: weightByVeracityRequested,
+                    note: 'FIR credibility scores never remove a person from victim-support review.',
+                    humanReviewRequired: true
+                }
             });
         }
 
@@ -104,8 +92,8 @@ app.get('/score/:victimId', async (req, res) => {
             return Math.min(min, Math.abs(d2 - d1) / 86400000);
         }, Infinity) : Infinity;
 
-        const hasViolentCrime = victimFIRs.some(f => [3, 4, 5, 6].includes(f.crimeHeadId));
-        const hasSexualCrime = victimFIRs.some(f => f.crimeHeadId === 7);
+        const hasViolentCrime = victimFIRs.some(f => [3, 4, 5, 6].includes(parseInt(f.crimeHeadId)));
+        const hasSexualCrime = victimFIRs.some(f => parseInt(f.crimeHeadId) === 7);
         const timeSpanDays = firCount > 1 ?
             (new Date(victimFIRs[0].date).getTime() - new Date(victimFIRs[firCount - 1].date).getTime()) / 86400000
             : 0;
@@ -129,23 +117,19 @@ app.get('/score/:victimId', async (req, res) => {
         if (hasSexualCrime) { score += 20; factors.push('History of sexual crime victimization'); }
         if (escalationRate > 1) { score += 15; factors.push('Accelerating victimization rate'); }
 
-        if (weightByVeracity) {
-            factors.push('VeriPol-weighted: filtered low-credibility FIRs');
-        }
-
         const riskScore = Math.min(99, score);
         const riskLevel = riskScore >= 50 ? 'High' : riskScore >= 25 ? 'Medium' : 'Low';
 
         let recommendation;
         if (riskLevel === 'High') {
-            recommendation = 'Immediate proactive outreach. Assign victim liaison officer. Consider relocation counseling and safety planning.';
+            recommendation = 'Prompt human support review. Consider liaison outreach and voluntary safety planning under approved procedure.';
         } else if (riskLevel === 'Medium') {
-            recommendation = 'Schedule victim support assessment. Monitor for 90 days with monthly check-ins.';
+            recommendation = 'Consider a human support assessment and confirm whether follow-up is appropriate.';
         } else {
-            recommendation = 'Standard procedure. Inform victim of support services available.';
+            recommendation = 'Follow standard procedure and provide information about available support services.';
         }
 
-        const recalculatedAt = new Date().toISOString();
+        const recalculatedAt = synthetic ? DEMO_GENERATED_AT : new Date().toISOString();
 
         res.status(200).json({
             victimId,
@@ -160,6 +144,16 @@ app.get('/score/:victimId', async (req, res) => {
             factors,
             recommendation,
             recalculatedAt,
+            metadata: {
+                dataSource: synthetic ? 'synthetic_demo' : 'catalyst_data_store',
+                synthetic,
+                credibilityWeightingApplied: false,
+                credibilityWeightingRequestIgnored: weightByVeracityRequested,
+                note: synthetic
+                    ? 'Deterministic synthetic history for interface demonstration. The score is not a protection decision.'
+                    : 'Rule-based review aid from available history. It does not determine credibility, protection, or investigative action.',
+                humanReviewRequired: true
+            },
             history: victimFIRs.map(f => ({
                 firNo: f.firNo,
                 year: f.year,
@@ -178,11 +172,12 @@ app.get('/high-risk', async (req, res) => {
     try {
         const catalystApp = catalyst.initialize(req);
         const zcql = catalystApp.zcql();
-        const cacheKey = 'panel:victim_risk_shield:high_risk';
+        const cacheKey = 'panel:victim_risk_shield:high_risk:v2';
         const cached = await getCached(catalystApp, cacheKey);
         if (cached) return res.status(200).json(cached);
 
         let repeatVictims;
+        let synthetic = false;
         try {
             const rows = await zcql.executeZCQLQuery(
                 `SELECT VictimID, COUNT(*) as cnt FROM Victim GROUP BY VictimID HAVING COUNT(*) >= 2 ORDER BY COUNT(*) DESC LIMIT 20`
@@ -192,14 +187,25 @@ app.get('/high-risk', async (req, res) => {
                 count: parseInt(r.Victim?.cnt || r.cnt || 0)
             }));
         } catch (e) {
+            synthetic = true;
+            const random = createSeededRandom('victim-review-queue:v2');
             repeatVictims = Array.from({ length: 5 }, (_, i) => ({
                 victimId: `V${i + 100}`,
-                count: Math.floor(Math.random() * 5) + 2
+                count: intBetween(random, 2, 6)
             }));
         }
 
-        await setCached(catalystApp, cacheKey, repeatVictims);
-        res.status(200).json(repeatVictims);
+        const response = {
+            victims: repeatVictims,
+            metadata: {
+                dataSource: synthetic ? 'synthetic_demo' : 'catalyst_data_store',
+                synthetic,
+                note: 'Queue is ordered by repeat record count only. It is not a prediction of danger, culpability, or credibility.',
+                humanReviewRequired: true
+            }
+        };
+        await setCached(catalystApp, cacheKey, response);
+        res.status(200).json(response);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch high-risk victims', details: err.message });

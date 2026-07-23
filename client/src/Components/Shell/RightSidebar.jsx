@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { PiArrowRight, PiBellRinging, PiShieldWarning } from 'react-icons/pi';
 
 const LoadingBlock = () => (
@@ -9,9 +9,11 @@ const LoadingBlock = () => (
 );
 
 export default function RightSidebar() {
+  const location = useLocation();
   const [alerts, setAlerts] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const workspaceBase = `/${location.pathname.split('/').filter(Boolean)[0] || 'dashboard'}`;
 
   useEffect(() => {
     let active = true;
@@ -59,7 +61,7 @@ export default function RightSidebar() {
             <time>{notification.notificationCount} dispatches</time>
           </article>
         )) : <div className="railEmpty">No recent dispatches</div>}
-        <Link className="railLink" to="notifications">Open dispatch ledger <PiArrowRight /></Link>
+        <Link className="railLink" to={`${workspaceBase}/notifications`}>Open dispatch ledger <PiArrowRight /></Link>
       </section>
     </aside>
   );

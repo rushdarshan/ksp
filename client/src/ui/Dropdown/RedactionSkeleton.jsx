@@ -1,4 +1,3 @@
-import React from 'react';
 import './redaction-skeleton.css';
 
 const RedactionSkeleton = ({ lines = 6, label = 'Declassifying records' }) => {

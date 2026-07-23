@@ -1,22 +1,13 @@
-import React from 'react';
+import { useState } from 'react';
+import { PiCaretDown, PiCaretUp } from 'react-icons/pi';
 import { useCaseContext } from './caseContext';
-
-const MOCK_EVIDENCE = [
-  { id: 'E1', type: 'Digital', desc: 'CCTV footage — SH-9 junction camera', status: 'intact', date: '2026-07-08', officer: 'PI Dharmendra', aiAnalysis: 'Vehicle KA-01-AB-1234 visible at 14:32. Two individuals exit vehicle. No section 65B certificate filed.' },
-  { id: 'E2', type: 'Forensic', desc: 'Fingerprint lift from suspect vehicle', status: 'pending', date: '2026-07-07', officer: 'FSL Bangalore', aiAnalysis: 'Prints match Ravi Kumar (10-point match). Awaiting formal certification.' },
-  { id: 'E3', type: 'Witness', desc: 'Victim statement — S/O Lakshmi Devi', status: 'intact', date: '2026-07-06', officer: 'PI Dharmendra', aiAnalysis: 'Consistent with CCTV timeline. Suspect description matches Ravi Kumar.' },
-  { id: 'E4', type: 'Witness', desc: 'Bystander witness — auto-driver Raju', status: 'intact', date: '2026-07-06', officer: 'SI Ramesh', aiAnalysis: 'Corroborates victim account. Vehicle plate partially visible — matches KA-01-AB-1234.' },
-  { id: 'E5', type: 'Physical', desc: 'Gold chain (stolen) — not recovered', status: 'gap', date: null, officer: null, aiAnalysis: 'Critical gap. Stolen item not recovered weakens physical evidence chain. Recommend search of suspect premises.' },
-  { id: 'E6', type: 'Digital', desc: 'Mobile CDR — suspect number 98450XXXXX', status: 'pending', date: '2026-07-09', officer: 'Telecom Nodal', aiAnalysis: 'CDR shows location ping near crime scene at time of offence. Awaiting full call detail records.' },
-];
+import { ACTIVE_CASE_EVIDENCE } from './caseFacts';
 
 const statusClass = { intact: 'badge--clear', pending: 'badge--warning', gap: 'badge--critical' };
 const statusLabel = { intact: 'Intact', pending: 'Pending', gap: 'Gap / Missing' };
-const statusBorder = { intact: 'var(--pastel-green-text)', pending: 'var(--pastel-amber-text)', gap: 'var(--pastel-red-text)' };
-
 export default function EvidenceReview() {
   const { firId } = useCaseContext();
-  const [expanded, setExpanded] = React.useState(null);
+  const [expanded, setExpanded] = useState(null);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
@@ -30,23 +21,24 @@ export default function EvidenceReview() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
-        {MOCK_EVIDENCE.map(e => (
+        {ACTIVE_CASE_EVIDENCE.map(e => (
           <div key={e.id}>
-            <div
+            <button
+              type="button"
               onClick={() => setExpanded(expanded === e.id ? null : e.id)}
-              className="panel-shell panel-shell--compact"
-              style={{ border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: 'var(--space-md)', cursor: 'pointer' }}
+              className="panel-shell panel-shell--compact case-evidence__row"
+              aria-expanded={expanded === e.id}
             >
               <span style={{ fontSize: 'var(--size-label)', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', minWidth: 28 }}>{e.id}</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 'var(--size-sub)', fontWeight: 600, color: 'var(--text)' }}>{e.desc}</div>
                 <div style={{ fontSize: 'var(--size-label)', color: 'var(--text-secondary)', marginTop: 3 }}>
-                  {e.type} {e.date ? `· Collected ${e.date}` : ''} {e.officer ? `· ${e.officer}` : ''}
+                  {e.type} {e.date ? `· Recorded ${e.date}` : ''} {e.officer ? `· ${e.officer}` : ''}
                 </div>
               </div>
               <span className={`badge ${statusClass[e.status]}`}>{statusLabel[e.status]}</span>
-              <span style={{ fontSize: 'var(--size-sub)', color: 'var(--text-secondary)' }}>{expanded === e.id ? '▲' : '▼'}</span>
-            </div>
+              <span className="case-evidence__caret" aria-hidden="true">{expanded === e.id ? <PiCaretUp /> : <PiCaretDown />}</span>
+            </button>
             {expanded === e.id && (
               <div style={{
                 padding: 'var(--space-sm) var(--space-md) var(--space-sm) 44px',
@@ -66,7 +58,7 @@ export default function EvidenceReview() {
       </div>
 
       <div className="badge badge--critical" style={{ padding: 'var(--space-sm) var(--space-md)', fontSize: 'var(--size-sub)', lineHeight: 1.5, textAlign: 'left' }}>
-        <strong>ZIA Gap Detection:</strong> No section 65B certificate filed for CCTV evidence (E1). CDR analysis pending for 3 days (E6). Stolen item not recovered — weakens physical evidence chain.
+        <strong>Evidence gap:</strong> The CCTV source is identified, but acquisition, hash verification, and the BSA Section 63 certificate remain pending. These records require officer verification before statutory filing in 18 days.
       </div>
     </div>
   );

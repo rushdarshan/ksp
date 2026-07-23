@@ -1,22 +1,44 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
+const { createSeededRandom, intBetween } = require('../shared/deterministic');
 const app = express();
 app.use(express.json());
 
 const CRIME_TYPES = ['theft', 'assault', 'fraud', 'robbery', 'burglary', 'cyber', 'sexual', 'murder', 'drugs', 'property', 'extortion', 'publicorder'];
 const DISTRICTS = Array.from({ length: 20 }, (_, i) => i + 1);
 
-function generateDailyCounts(days = 180, burstDays = []) {
+function generateDailyCounts(days = 180, burstDays = [], seed = 'transit:v2') {
     const series = [];
-    const now = new Date();
+    const random = createSeededRandom(seed);
+    const endDate = new Date('2026-07-15T00:00:00Z');
     for (let d = days - 1; d >= 0; d--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - d);
-        let count = Math.floor(Math.random() * 8) + 2;
-        if (burstDays.includes(d)) count += Math.floor(Math.random() * 15) + 10;
+        const date = new Date(endDate);
+        date.setUTCDate(date.getUTCDate() - d);
+        let count = intBetween(random, 2, 9);
+        if (burstDays.includes(d)) count += intBetween(random, 10, 24);
         series.push({ date: date.toISOString().split('T')[0], count });
     }
     return series;
+}
+
+function buildDailyCounts(rows, days = 180) {
+    const parsedDates = (rows || []).map(row => {
+        const value = row.CaseMaster?.IncidentFromDate || row.IncidentFromDate;
+        return new Date(value);
+    }).filter(date => !Number.isNaN(date.getTime()));
+    const latest = parsedDates.reduce((value, date) => date > value ? date : value, new Date(0));
+    const endDate = latest.getTime() > 0 ? latest : new Date('2026-07-15T00:00:00Z');
+    const countByDate = {};
+    for (const date of parsedDates) {
+        const key = date.toISOString().split('T')[0];
+        countByDate[key] = (countByDate[key] || 0) + 1;
+    }
+    return Array.from({ length: days }, (_, index) => {
+        const date = new Date(endDate);
+        date.setUTCDate(date.getUTCDate() - (days - 1 - index));
+        const key = date.toISOString().split('T')[0];
+        return { date: key, count: countByDate[key] || 0 };
+    });
 }
 
 function blsDetect(series, crimeType) {
@@ -58,11 +80,25 @@ app.get('/transit-detection', async (req, res) => {
     try {
         const catalystApp = catalyst.initialize(req);
         const districtId = parseInt(req.query.district) || 1;
-        const crimeType = req.query.crimeType || 'theft';
+        const requestedCrimeType = String(req.query.crimeType || 'theft').toLowerCase();
+        const crimeType = CRIME_TYPES.includes(requestedCrimeType) ? requestedCrimeType : 'theft';
 
-        const burstDays = [];
-        for (let i = 0; i < 3; i++) burstDays.push(Math.floor(Math.random() * 180));
-        const series = generateDailyCounts(180, burstDays);
+        let series;
+        let synthetic = false;
+        try {
+            const crimeHeadId = CRIME_TYPES.indexOf(crimeType) + 1;
+            const rows = await catalystApp.zcql().executeZCQLQuery(
+                `SELECT IncidentFromDate FROM CaseMaster WHERE DistrictID = ${districtId} AND CrimeHeadID = ${crimeHeadId}`
+            );
+            series = buildDailyCounts(rows, 180);
+        } catch (dataError) {
+            console.warn('Data Store query failed, using deterministic synthetic demo series:', dataError.message);
+            synthetic = true;
+            const random = createSeededRandom(`transit-bursts:${districtId}:${crimeType}:v2`);
+            const burstDays = new Set();
+            while (burstDays.size < 3) burstDays.add(intBetween(random, 10, 169));
+            series = generateDailyCounts(180, [...burstDays], `transit-series:${districtId}:${crimeType}:v2`);
+        }
         const transits = blsDetect(series, crimeType);
 
         res.status(200).json({
@@ -75,7 +111,13 @@ app.get('/transit-detection', async (req, res) => {
                 minDurationDays: 3,
                 maxDurationDays: 21,
                 significanceThreshold: 1.5,
-                note: 'Synthetic daily crime data for demo — real deployment uses FIR filing dates'
+                dataSource: synthetic ? 'synthetic_demo' : 'catalyst_data_store',
+                synthetic,
+                modelValidationStatus: 'not_established',
+                note: synthetic
+                    ? 'Deterministic synthetic daily counts for interface demonstration. Detected windows are not verified crime events.'
+                    : 'Detected windows are descriptive signals from available FIR dates, not a validated forecast or proof of a crime pattern.',
+                humanReviewRequired: true
             }
         });
     } catch (err) {

@@ -8,14 +8,16 @@ async function apiFetch(path, options = {}) {
     };
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        headers['jwt_token'] = token;
     }
 
-    const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+    const target = String(path || '').startsWith(BASE_URL) ? path : `${BASE_URL}${path}`;
+    const res = await fetch(target, { credentials: 'same-origin', ...options, headers });
 
     if (res.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.hash = '/login';
         return null;
     }
 

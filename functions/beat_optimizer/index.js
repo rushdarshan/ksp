@@ -1,5 +1,6 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
+const { createSeededRandom, intBetween, numberBetween } = require('../shared/deterministic');
 
 const app = express();
 app.use(express.json());
@@ -10,25 +11,34 @@ function generateBeats(districtId, count = 6) {
     const beats = [];
     const crimeHeads = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     for (let i = 0; i < count; i++) {
-        const totalCrimes = Math.floor(Math.random() * 80) + 20;
+        const random = createSeededRandom(`beat:${districtId}:${i}:v2`);
+        const totalCrimes = intBetween(random, 32, 96);
         const byType = {};
-        for (const h of crimeHeads) {
-            byType[h] = Math.floor(Math.random() * (totalCrimes / crimeHeads.length) * 2);
+        const weights = crimeHeads.map(() => 0.5 + random());
+        const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+        let allocated = 0;
+        for (const [headIndex, h] of crimeHeads.entries()) {
+            const value = headIndex === crimeHeads.length - 1
+                ? totalCrimes - allocated
+                : Math.floor(totalCrimes * weights[headIndex] / weightTotal);
+            byType[h] = value;
+            allocated += value;
         }
+        const riskScore = Math.min(0.95, 0.2 + totalCrimes / 150 + numberBetween(random, 0, 0.08));
         beats.push({
             id: `${districtId}-B${String(i + 1).padStart(2, '0')}`,
             name: `Beat ${i + 1}`,
             districtId,
             totalCrimes,
             byType,
-            areaKm2: +(Math.random() * 15 + 3).toFixed(1),
-            officersAssigned: Math.floor(Math.random() * 8) + 3,
-            responseTimeMin: +(Math.random() * 12 + 3).toFixed(1),
-            riskScore: +(Math.random() * 0.8 + 0.2).toFixed(2),
-            hotspots: Array.from({ length: Math.floor(Math.random() * 4) + 1 }, (_, j) => ({
-                lat: 12.8 + Math.random() * 1.2,
-                lng: 77.4 + Math.random() * 0.4,
-                risk: Math.random(),
+            areaKm2: numberBetween(random, 4, 17, 1),
+            officersAssigned: intBetween(random, 4, 10),
+            responseTimeMin: numberBetween(random, 5, 14, 1),
+            riskScore: +riskScore.toFixed(2),
+            hotspots: Array.from({ length: intBetween(random, 2, 4) }, (_, j) => ({
+                lat: numberBetween(random, 12.82, 13.12, 6),
+                lng: numberBetween(random, 77.46, 77.76, 6),
+                risk: numberBetween(random, 0.3, 0.9, 2),
                 label: `Hotspot ${j + 1}`
             }))
         });
@@ -56,9 +66,9 @@ function computePatrolRoute(hotspots) {
 
 function generateOptimization(beats) {
     const total = beats.reduce((s, b) => s + b.totalCrimes, 0);
-    const avg = total / beats.length;
+    const avg = beats.length > 0 ? total / beats.length : 0;
     return beats.map(b => {
-        const loadRatio = b.totalCrimes / avg;
+        const loadRatio = avg > 0 ? b.totalCrimes / avg : 0;
         const recommendedOfficers = Math.round((b.officersAssigned * loadRatio + b.officersAssigned) / 2);
         return {
             beatId: b.id,
@@ -71,36 +81,81 @@ function generateOptimization(beats) {
     });
 }
 
+function enrichStoredBeat(row, districtId, index, maxCrimes) {
+    const id = row.b?.BeatID || row.BeatID || `${districtId}-B${String(index + 1).padStart(2, '0')}`;
+    const random = createSeededRandom(`stored-beat:${districtId}:${id}:v2`);
+    const totalCrimes = parseInt(row['COUNT(FIRNo)'] || row.crimeCount || 0);
+    return {
+        id,
+        name: row.b?.BeatName || row.BeatName || `Beat ${index + 1}`,
+        districtId: parseInt(row.b?.DistrictID || row.DistrictID || districtId),
+        totalCrimes,
+        areaKm2: numberBetween(random, 4, 17, 1),
+        officersAssigned: intBetween(random, 4, 10),
+        responseTimeMin: numberBetween(random, 5, 14, 1),
+        riskScore: +(0.2 + (maxCrimes > 0 ? totalCrimes / maxCrimes : 0) * 0.65).toFixed(2),
+        hotspots: []
+    };
+}
+
+async function loadBeats(zcql, districtId) {
+    try {
+        const rows = await zcql.executeZCQLQuery(
+            `SELECT b.BeatID, b.BeatName, b.DistrictID, COUNT(c.FIRNo) as crimeCount ` +
+            `FROM Beat b LEFT JOIN CaseMaster c ON b.DistrictID = c.DistrictID ` +
+            `WHERE b.DistrictID = ${districtId} ` +
+            `GROUP BY b.BeatID, b.BeatName, b.DistrictID`
+        );
+        if (rows && rows.length > 0) {
+            const maxCrimes = Math.max(...rows.map(row => parseInt(row['COUNT(FIRNo)'] || row.crimeCount || 0)), 0);
+            return {
+                beats: rows.map((row, index) => enrichStoredBeat(row, districtId, index, maxCrimes)),
+                metadata: {
+                    dataSource: 'catalyst_data_store_with_demo_planning_assumptions',
+                    synthetic: false,
+                    syntheticFields: ['areaKm2', 'officersAssigned', 'responseTimeMin', 'riskScore', 'hotspots']
+                }
+            };
+        }
+    } catch (error) {
+        console.warn('Data Store beat query failed, using deterministic synthetic demo data:', error.message);
+    }
+
+    return {
+        beats: generateBeats(districtId),
+        metadata: {
+            dataSource: 'synthetic_demo',
+            synthetic: true,
+            syntheticFields: ['all']
+        }
+    };
+}
+
+function routeDistanceKm(route) {
+    let distance = 0;
+    for (let index = 1; index < route.length; index++) {
+        const latKm = (route[index].lat - route[index - 1].lat) * 111;
+        const lngKm = (route[index].lng - route[index - 1].lng) * 108;
+        distance += Math.sqrt(latKm ** 2 + lngKm ** 2);
+    }
+    return distance;
+}
+
 app.get('/beats/:districtId', async (req, res) => {
     try {
         const districtId = parseInt(req.params.districtId) || 1;
         const catalystApp = catalyst.initialize(req);
         const zcql = catalystApp.zcql();
-        let beats;
-        try {
-            const rows = await zcql.executeZCQLQuery(
-                `SELECT b.BeatID, b.BeatName, b.DistrictID, COUNT(c.FIRNo) as crimeCount ` +
-                `FROM Beat b LEFT JOIN CaseMaster c ON b.DistrictID = c.DistrictID ` +
-                `WHERE b.DistrictID = ${districtId} ` +
-                `GROUP BY b.BeatID, b.BeatName, b.DistrictID`
-            );
-            if (rows && rows.length > 0) {
-                beats = rows.map(r => ({
-                    id: r.b?.BeatID || r.BeatID,
-                    name: r.b?.BeatName || r.BeatName,
-                    districtId: parseInt(r.b?.DistrictID || r.DistrictID),
-                    totalCrimes: parseInt(r['COUNT(FIRNo)'] || r.crimeCount || 0),
-                    areaKm2: +(Math.random() * 15 + 3).toFixed(1),
-                    officersAssigned: Math.floor(Math.random() * 8) + 3,
-                    responseTimeMin: +(Math.random() * 12 + 3).toFixed(1),
-                    riskScore: +(Math.random() * 0.8 + 0.2).toFixed(2),
-                    hotspots: []
-                }));
-                return res.status(200).json({ beats, districtId });
+        const result = await loadBeats(zcql, districtId);
+        res.status(200).json({
+            beats: result.beats,
+            districtId,
+            metadata: {
+                ...result.metadata,
+                note: 'Planning attributes are illustrative and require supervisor review before resource allocation.',
+                humanReviewRequired: true
             }
-        } catch (e) { console.warn('DB query failed, using demo data:', e.message); }
-        beats = generateBeats(districtId);
-        res.status(200).json({ beats, districtId });
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -111,18 +166,21 @@ app.get('/optimize/:districtId', async (req, res) => {
     try {
         const districtId = parseInt(req.params.districtId) || 1;
         const flowMode = req.query.flowMode === 'true';
-        const beats = generateBeats(districtId);
+        const catalystApp = catalyst.initialize(req);
+        const loaded = await loadBeats(catalystApp.zcql(), districtId);
+        const beats = loaded.beats;
         const optimization = generateOptimization(beats);
 
         let flowData = null;
         if (flowMode) {
+            const random = createSeededRandom(`beat-flow:${districtId}:v2`);
             const criminalClusters = Array.from({ length: 5 }, (_, i) => ({
                 clusterId: i + 1,
-                criminalCount: Math.floor(Math.random() * 30) + 10,
-                centroidLat: 12.8 + Math.random() * 1.2,
-                centroidLng: 77.4 + Math.random() * 0.4,
+                criminalCount: intBetween(random, 12, 36),
+                centroidLat: numberBetween(random, 12.82, 13.12, 6),
+                centroidLng: numberBetween(random, 77.46, 77.76, 6),
                 topCrimeType: ['theft', 'robbery', 'burglary', 'assault', 'cyber'][i],
-                avgTravelKm: +(Math.random() * 8 + 2).toFixed(1)
+                avgTravelKm: numberBetween(random, 2, 9, 1)
             }));
             const flowBeats = beats.map(b => {
                 const nearestCluster = criminalClusters.reduce((best, c) => {
@@ -145,7 +203,13 @@ app.get('/optimize/:districtId', async (req, res) => {
         const underloaded = optimization.filter(o => o.status === 'Underloaded').length;
         res.status(200).json({
             districtId, optimization, flowMode, flowData,
-            summary: { totalBeats: beats.length, overloaded, balanced, underloaded, avgLoad: +(beats.reduce((s, b) => s + b.totalCrimes, 0) / beats.length).toFixed(1) }
+            summary: { totalBeats: beats.length, overloaded, balanced, underloaded, avgLoad: beats.length > 0 ? +(beats.reduce((s, b) => s + b.totalCrimes, 0) / beats.length).toFixed(1) : 0 },
+            metadata: {
+                ...loaded.metadata,
+                flowScenarioSynthetic: flowMode,
+                note: 'Recommendations are deterministic planning scenarios, not deployment orders or evidence of criminal involvement.',
+                humanReviewRequired: true
+            }
         });
     } catch (err) {
         console.error(err);
@@ -156,15 +220,29 @@ app.get('/optimize/:districtId', async (req, res) => {
 app.get('/patrol/:districtId', async (req, res) => {
     try {
         const districtId = parseInt(req.params.districtId) || 1;
-        const beats = generateBeats(districtId);
-        const routes = beats.map(b => ({
-            beatId: b.id,
-            beatName: b.name,
-            route: computePatrolRoute(b.hotspots),
-            totalDistance: +(b.hotspots.length * (Math.random() * 2 + 1)).toFixed(1),
-            estimatedMinutes: +(b.hotspots.length * (Math.random() * 8 + 4)).toFixed(0)
-        }));
-        res.status(200).json({ districtId, routes });
+        const catalystApp = catalyst.initialize(req);
+        const loaded = await loadBeats(catalystApp.zcql(), districtId);
+        const beats = loaded.beats;
+        const routes = beats.map(b => {
+            const route = computePatrolRoute(b.hotspots);
+            const totalDistance = routeDistanceKm(route);
+            return {
+                beatId: b.id,
+                beatName: b.name,
+                route,
+                totalDistance: +totalDistance.toFixed(1),
+                estimatedMinutes: Math.round((totalDistance / 18) * 60 + b.hotspots.length * 3)
+            };
+        });
+        res.status(200).json({
+            districtId,
+            routes,
+            metadata: {
+                ...loaded.metadata,
+                note: 'Routes are illustrative straight-line sequences. Validate road access, staffing, and safety before use.',
+                humanReviewRequired: true
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

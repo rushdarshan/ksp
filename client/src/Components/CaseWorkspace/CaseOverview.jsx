@@ -1,34 +1,19 @@
-import React from 'react';
 import { useCaseContext } from './caseContext';
-
-const MOCK_ENTITIES = [
-  { type: 'Person', name: 'Ravi Kumar', role: 'Prime Suspect' },
-  { type: 'Phone', name: '98450XXXXX', role: 'Suspect CDR' },
-  { type: 'Vehicle', name: 'KA-01-AB-1234', role: 'Crime Vehicle' },
-];
-
-const MOCK_TIMELINE = [
-  { date: '2026-07-06', event: 'FIR registered — Robbery at SH-9 junction' },
-  { date: '2026-07-07', event: 'CCTV footage collected from junction camera' },
-  { date: '2026-07-08', event: 'Suspect vehicle identified — KA-01-AB-1234' },
-  { date: '2026-07-09', event: 'CDR analysis initiated for suspect phone' },
-];
+import { ACTIVE_CASE_ENTITIES, ACTIVE_CASE_FACTS, ACTIVE_CASE_TIMELINE } from './caseFacts';
 
 export default function CaseOverview() {
-  const { caseData, firId } = useCaseContext();
+  const { caseData } = useCaseContext();
   const stage = caseData?.fir_stage || 'Under Investigation';
   const crime = caseData?.CrimeGroup_Name || 'Robbery';
   const station = caseData?.UnitName || 'Brigade Road PS';
   const district = caseData?.DistrictName || 'Bengaluru';
+  const recentTimeline = ACTIVE_CASE_TIMELINE.slice(0, 4);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="case-overview">
       {/* 30-Second Case Card */}
-      <div style={{
-        padding: 24, background: 'var(--surface)', borderRadius: 12,
-        border: '1px solid var(--border-light)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div className="case-overview__section">
+        <div className="case-overview__heading">
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>30-Second Case Card</h3>
           <span style={{
             padding: '3px 10px', fontSize: 11, fontWeight: 700,
@@ -37,11 +22,14 @@ export default function CaseOverview() {
           }}>{stage}</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div className="case-overview__facts">
           {[
             { label: 'Crime', value: crime },
-            { label: 'Station', value: station },
-            { label: 'District', value: district },
+            { label: 'Incident', value: ACTIVE_CASE_FACTS.incidentDateLabel },
+            { label: 'Location', value: ACTIVE_CASE_FACTS.location },
+            { label: 'Investigating officer', value: ACTIVE_CASE_FACTS.investigatingOfficer },
+            { label: 'Readiness', value: `${ACTIVE_CASE_FACTS.readiness}%` },
+            { label: 'Statutory filing', value: `Due in ${ACTIVE_CASE_FACTS.filingDueDays} days` },
           ].map(item => (
             <div key={item.label}>
               <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>{item.label}</div>
@@ -51,19 +39,17 @@ export default function CaseOverview() {
         </div>
 
         <div style={{ padding: '12px 16px', background: '#f8717108', borderRadius: 8, border: '1px solid #f8717130', fontSize: 13, color: '#f87171' }}>
-          <strong>Recommended Next Action:</strong> Complete CDR analysis for suspect phone. Section 65B certificate pending for CCTV evidence.
+          <strong>Recommended next action:</strong> Acquire the identified CCTV footage, record its hash, and obtain the BSA Section 63 certificate. Continue at-large follow-up for Kiran Joseph.
         </div>
+        <p className="case-overview__jurisdiction">{station} · {district}</p>
       </div>
 
       {/* Key Entities */}
-      <div style={{
-        padding: 24, background: 'var(--surface)', borderRadius: 12,
-        border: '1px solid var(--border-light)',
-      }}>
+      <div className="case-overview__section">
         <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Key Entities</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {MOCK_ENTITIES.map((e, i) => (
-            <div key={i} style={{
+          {ACTIVE_CASE_ENTITIES.map((e) => (
+            <div key={`${e.type}-${e.name}`} style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '10px 14px', background: 'var(--surface-alt)', borderRadius: 8,
               border: '1px solid var(--border-light)',
@@ -83,19 +69,16 @@ export default function CaseOverview() {
       </div>
 
       {/* Recent Timeline */}
-      <div style={{
-        padding: 24, background: 'var(--surface)', borderRadius: 12,
-        border: '1px solid var(--border-light)',
-      }}>
+      <div className="case-overview__section">
         <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Recent Timeline</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {MOCK_TIMELINE.map((t, i) => (
-            <div key={i} style={{
+          {recentTimeline.map((t, i) => (
+            <div key={`${t.date}-${t.label}`} style={{
               display: 'flex', gap: 12, padding: '10px 0',
-              borderBottom: i < MOCK_TIMELINE.length - 1 ? '1px solid var(--border-light)' : 'none',
+              borderBottom: i < recentTimeline.length - 1 ? '1px solid var(--border-light)' : 'none',
             }}>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 80, fontFamily: 'monospace' }}>{t.date}</div>
-              <div style={{ fontSize: 13, color: 'var(--text)' }}>{t.event}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 80, fontFamily: 'var(--font-mono)' }}>{t.date.slice(0, 10)}</div>
+              <div style={{ fontSize: 13, color: 'var(--text)' }}>{t.label} - {t.detail}</div>
             </div>
           ))}
         </div>

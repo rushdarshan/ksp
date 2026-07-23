@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 function getScoreColor(score) {
     if (score >= 70) return '#16a34a';
@@ -7,9 +7,9 @@ function getScoreColor(score) {
 }
 
 function getScoreLabel(score) {
-    if (score >= 70) return 'High solvability';
-    if (score >= 40) return 'Moderate solvability';
-    return 'Low solvability';
+    if (score >= 70) return 'Strong readiness';
+    if (score >= 40) return 'Moderate readiness';
+    return 'Limited readiness';
 }
 
 export default function SolvabilityBadge({ firData }) {
@@ -17,7 +17,7 @@ export default function SolvabilityBadge({ firData }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchScore = async () => {
+    const fetchScore = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -35,7 +35,7 @@ export default function SolvabilityBadge({ firData }) {
                     suspectIdentified: false
                 })
             });
-            if (!res.ok) throw new Error('Solvability analysis unavailable');
+            if (!res.ok) throw new Error('Case readiness analysis unavailable');
             const data = await res.json();
             setResult(data);
         } catch (err) {
@@ -43,11 +43,11 @@ export default function SolvabilityBadge({ firData }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [firData]);
 
     useEffect(() => {
         if (firData) fetchScore();
-    }, [firData]);
+    }, [firData, fetchScore]);
 
     if (loading) {
         return (
@@ -69,20 +69,22 @@ export default function SolvabilityBadge({ firData }) {
 
     if (!result) return null;
 
-    const { solvabilityScore, uncertaintyBand, factors } = result;
+    const solvabilityScore = result.readinessScore ?? result.solvabilityScore ?? Math.round((result.score || 0) * 100);
+    const uncertaintyBand = result.uncertaintyBand ?? 15;
+    const factors = result.factors || [];
     const color = getScoreColor(solvabilityScore);
     const label = getScoreLabel(solvabilityScore);
 
     return (
         <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid var(--color-gray-200)', borderRadius: '8px', background: '#f9fafb' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600 }}>Solvability Index</h3>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600 }}>Case Readiness Signal</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <div
                     role="meter"
                     aria-valuenow={solvabilityScore}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label={`Solvability score ${solvabilityScore} out of 100`}
+                    aria-label={`Case readiness signal ${solvabilityScore} out of 100`}
                     style={{
                         width: '160px', height: '20px', background: 'var(--color-gray-200)', borderRadius: '10px',
                         overflow: 'hidden', position: 'relative'
@@ -98,7 +100,7 @@ export default function SolvabilityBadge({ firData }) {
                 </span>
                 <span style={{ fontSize: '13px', color: color, fontWeight: 500 }}>{label}</span>
             </div>
-            <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--color-gray-500)' }}>Heuristic score — not validated against local data</p>
+            <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--color-gray-500)' }}>Heuristic evidence-completeness signal; not a prediction of case outcome.</p>
             <details>
                 <summary style={{ cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#374151' }}>Factor breakdown</summary>
                 <ul style={{ margin: '8px 0 0 0', padding: '0 0 0 16px', fontSize: '13px', color: '#4b5563' }}>

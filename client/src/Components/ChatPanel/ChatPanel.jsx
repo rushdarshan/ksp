@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   PiChats,
   PiDownloadSimple,
@@ -38,8 +38,8 @@ const SUGGESTIONS = {
 const FALLBACKS = [
   {
     match: /142|summari[sz]e fir|ಸಂಕ್ಷಿಪ್ತ/iu,
-    answer: '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses and CCTV are recorded; the primary accused is linked to a repeat-offender cluster. Solvability is 67%, veracity is 84%, and the chargesheet deadline is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
-    sources: ['CaseMaster #142', 'Accused.CaseMasterID #142', 'Solvability engine', 'Veracity engine'],
+    answer: '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses are recorded and junction CCTV is referenced but not yet acquired. Investigation readiness is 67%; the narrative documentation signal is 84% and does not assess truth. The current filing date is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
+    sources: ['FIR KSP-2026-0142', 'Accused records for KSP-2026-0142', 'Case-readiness checklist', 'Narrative documentation review'],
   },
   {
     match: /at large|ಬಂಧನವಾಗದ/iu,
@@ -150,6 +150,9 @@ async function exportConversationPdf(messages, language) {
 
 const ChatPanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const workspaceArea = ['inspector', 'subinspector', 'supervisor'].find((area) => location.pathname.startsWith(`/${area}`));
+  const workspaceBase = workspaceArea ? `/${workspaceArea}` : '/dashboard';
   const initial = useRef(loadConversation()).current;
   const [isOpen, setIsOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -177,10 +180,15 @@ const ChatPanel = () => {
 
   const handleExport = useCallback(async () => {
     setExporting(true);
+    setStatus('Preparing PDF');
     try {
       await exportConversationPdf(messages, language);
+      setStatus('PDF downloaded');
+    } catch {
+      setStatus('PDF export failed');
     } finally {
       setExporting(false);
+      window.setTimeout(() => setStatus('Idle'), 1800);
     }
   }, [language, messages]);
 
@@ -195,7 +203,7 @@ const ChatPanel = () => {
     }
     if (query.startsWith('/case ')) {
       const caseId = query.split(/\s+/)[1];
-      navigate(`/dashboard/case/KSP-2026-${String(caseId).padStart(4, '0')}`);
+      navigate(`${workspaceBase}/case/KSP-2026-${String(caseId).padStart(4, '0')}`);
     }
 
     const userMessage = { id: crypto.randomUUID(), role: 'user', text: query, ts: new Date().toISOString() };
@@ -234,7 +242,7 @@ const ChatPanel = () => {
       ts: new Date().toISOString(),
     }]);
     setStatus('Idle');
-  }, [clearConversation, input, language, messages, navigate, status]);
+  }, [clearConversation, input, language, messages, navigate, status, workspaceBase]);
 
   const switchLanguage = () => {
     const next = language === 'en' ? 'kn' : 'en';
@@ -252,9 +260,8 @@ const ChatPanel = () => {
 
   if (!isOpen) {
     return (
-      <button className="cp__fab" onClick={() => setIsOpen(true)} aria-label="Open ZIA intelligence assistant">
+      <button className="cp__fab" onClick={() => setIsOpen(true)} aria-label="Open ZIA intelligence assistant" title="Open ZIA intelligence assistant">
         <PiChats size={18} />
-        <span className="cp__fab-label">ZIA Assistant</span>
       </button>
     );
   }
@@ -302,7 +309,11 @@ const ChatPanel = () => {
               })}
               {message.sources?.length > 0 && (
                 <div className="cp__msg-sources" aria-label="Evidence sources">
-                  {message.sources.map((source, index) => <span key={`${sourceLabel(source)}-${index}`} className="cp__msg-source">{sourceLabel(source)}</span>)}
+                  {message.sources.map((source, index) => source?.url ? (
+                    <a key={`${sourceLabel(source)}-${index}`} className="cp__msg-source" href={source.url} target="_blank" rel="noreferrer">
+                      {sourceLabel(source)}
+                    </a>
+                  ) : <span key={`${sourceLabel(source)}-${index}`} className="cp__msg-source">{sourceLabel(source)}</span>)}
                 </div>
               )}
               <div className="cp__msg-time">{new Date(message.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>

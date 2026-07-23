@@ -1,5 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import {
+  PiAlarm,
+  PiBrain,
+  PiChartBar,
+  PiChatCircleDots,
+  PiCheckCircle,
+  PiDna,
+  PiLightbulb,
+  PiMagnifyingGlass,
+  PiMapPin,
+  PiPuzzlePiece,
+  PiPushPin,
+  PiRobot,
+  PiScales,
+  PiShareNetwork,
+  PiSiren,
+  PiTarget,
+  PiTimer,
+  PiVideoCamera,
+  PiWarning,
+  PiXCircle,
+} from 'react-icons/pi';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
@@ -62,7 +84,7 @@ function ZIABrief({ firId }) {
   }, [firId]);
 
   if (loading) return (
-    <Section title="ZIA Case Intelligence Brief" icon="🤖">
+    <Section title="ZIA Case Intelligence Brief" icon={<PiRobot aria-hidden="true" />}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)' }}>
         <div style={{ width: 16, height: 16, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         ZIA orchestrating agents…
@@ -77,7 +99,7 @@ function ZIABrief({ firId }) {
   return (
     <Section
       title="ZIA Case Intelligence Brief"
-      icon="🤖"
+      icon={<PiRobot aria-hidden="true" />}
       badge={<ConfidenceBadge value={data.confidence} />}
     >
       {/* Orchestration pipeline */}
@@ -183,7 +205,7 @@ function ZIABrief({ firId }) {
 // 2. Theory Board
 // ──────────────────────────────────────────────────────
 
-const evidenceTypeIcon = { digital: '📹', intelligence: '🔍', pattern: '📊', spatial: '📍', absence: '❌' };
+const evidenceTypeIcon = { digital: PiVideoCamera, intelligence: PiMagnifyingGlass, pattern: PiChartBar, spatial: PiMapPin, absence: PiXCircle };
 const evidenceTypeColor = { digital: 'var(--color-blue-400)', intelligence: '#a78bfa', pattern: '#34d399', spatial: '#f97316', absence: 'var(--color-gray-400)' };
 
 function TheoryBoard({ firId }) {
@@ -193,11 +215,11 @@ function TheoryBoard({ firId }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
-  const [confirming, setConfirming] = useState(null);
+  const [reviewing, setReviewing] = useState(null);
   const [overrides, setOverrides] = useState({});
   const [theoryNotes, setTheoryNotes] = useState({
     T1: [
-      { author: 'PI Dharmendra', date: '2026-07-09 10:14', text: 'Verified getaway route with Jayanagar station CCTV. MO overlaps exactly with J-CEN robbery.' },
+      { author: 'PI Dharmendra', date: '2026-07-21 10:14', text: 'SH-9 junction camera coverage identified; footage acquisition and hash remain pending.' },
       { author: 'SI Ramesh', date: '2026-07-08 16:30', text: 'Complainant confirms height and build matches Mohan.' }
     ],
     T2: [
@@ -220,8 +242,8 @@ function TheoryBoard({ firId }) {
 
   useEffect(() => { fetchTheories(); }, [fetchTheories]);
 
-  const confirmTheory = async (theory) => {
-    setConfirming(theory.id);
+  const reviewTheory = async (theory) => {
+    setReviewing(theory.id);
     try {
       const res = await fetch(`${apiUrl}/zia/theories/${firId}/confirm`, {
         method: 'POST',
@@ -232,15 +254,15 @@ function TheoryBoard({ firId }) {
       if (data.success) {
         setTheories(prev => prev.map(t =>
           t.id === theory.id
-            ? { ...t, confirmedBy: data.confirmedBy, confidence: data.newConfidence }
+            ? { ...t, reviewedBy: data.reviewedBy || 'PI Dharmendra' }
             : t
         ));
-        toast.success(`Theory confirmed by ${data.confirmedBy}`);
+        toast.success(`Theory review recorded for ${data.reviewedBy || 'PI Dharmendra'}`);
       }
     } catch {
-      toast.error('Failed to confirm theory');
+      toast.error('Failed to record theory review');
     }
-    setConfirming(null);
+    setReviewing(null);
   };
 
   const adjustConfidence = (theoryId, amount) => {
@@ -297,7 +319,7 @@ function TheoryBoard({ firId }) {
   };
 
   if (loading) return (
-    <Section title="Theory Board" icon="🎯">
+    <Section title="Theory Board" icon={<PiTarget aria-hidden="true" />}>
       <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Loading theories…</div>
     </Section>
   );
@@ -306,11 +328,11 @@ function TheoryBoard({ firId }) {
   const statusStyle = {
     working: { bg: 'var(--color-blue-400)20', color: '#60a5fa', label: 'Working Theory' },
     weak: { bg: '#f8717120', color: '#f87171', label: 'Weak' },
-    confirmed: { bg: '#4ade8020', color: '#4ade80', label: 'Confirmed' },
+    reviewed: { bg: '#4ade8020', color: '#4ade80', label: 'Reviewed' },
   };
 
   return (
-    <Section title="Theory Board" icon="🎯"
+    <Section title="Theory Board" icon={<PiTarget aria-hidden="true" />}
       badge={<span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{theories?.length} theories</span>}
     >
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
@@ -405,18 +427,18 @@ function TheoryBoard({ firId }) {
                   title="Increase confidence score"
                 >+</button>
               </div>
-              {current.confirmedBy ? (
-                <span style={{ fontSize: '12px', color: 'var(--color-green-alt)', fontWeight: 600 }}>✓ Confirmed by {current.confirmedBy}</span>
+              {current.reviewedBy ? (
+                <span style={{ fontSize: '12px', color: 'var(--color-green-alt)', fontWeight: 600 }}>Reviewed by {current.reviewedBy}</span>
               ) : (
                 <button
-                  onClick={() => confirmTheory(current)}
-                  disabled={confirming === current.id}
+                  onClick={() => reviewTheory(current)}
+                  disabled={reviewing === current.id}
                   style={{
                     padding: '6px 14px', fontSize: '12px', fontWeight: 700,
                     background: '#4ade8020', color: '#4ade80', border: '1px solid #4ade8060',
                     borderRadius: '8px', cursor: 'pointer',
                   }}
-                >{confirming === current.id ? 'Confirming…' : '✓ Confirm Theory'}</button>
+                >{reviewing === current.id ? 'Recording…' : 'Mark reviewed'}</button>
               )}
             </div>
           </div>
@@ -428,7 +450,7 @@ function TheoryBoard({ firId }) {
                 textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-green-alt)',
                 display: 'flex', alignItems: 'center', gap: '6px',
               }}>
-                <span>✅</span> Supporting Evidence ({current.supporting.length})
+                <PiCheckCircle aria-hidden="true" /> Supporting Evidence ({current.supporting.length})
               </p>
               {current.supporting.length === 0 ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic' }}>No supporting evidence yet</p>
@@ -436,6 +458,7 @@ function TheoryBoard({ firId }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {current.supporting.map(e => {
                     const status = overrides[e.id] || 'suggested';
+                    const EvidenceIcon = evidenceTypeIcon[e.type] || PiPushPin;
                     return (
                       <div key={e.id} style={{
                         padding: '10px 14px', background: '#4ade8008',
@@ -444,7 +467,7 @@ function TheoryBoard({ firId }) {
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{evidenceTypeIcon[e.type] || '📌'}</span>
+                            <EvidenceIcon aria-hidden="true" />
                             <span style={{ fontSize: '11px', fontWeight: 600, color: evidenceTypeColor[e.type] || '#888', textTransform: 'capitalize' }}>{e.type}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
@@ -470,7 +493,7 @@ function TheoryBoard({ firId }) {
                 textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-red-soft)',
                 display: 'flex', alignItems: 'center', gap: '6px',
               }}>
-                <span>❌</span> Contradicting Evidence ({current.contradicting.length})
+                <PiXCircle aria-hidden="true" /> Contradicting Evidence ({current.contradicting.length})
               </p>
               {current.contradicting.length === 0 ? (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic' }}>No contradicting evidence</p>
@@ -478,6 +501,7 @@ function TheoryBoard({ firId }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {current.contradicting.map(e => {
                     const status = overrides[e.id] || 'suggested';
+                    const EvidenceIcon = evidenceTypeIcon[e.type] || PiPushPin;
                     return (
                       <div key={e.id} style={{
                         padding: '10px 14px', background: '#f8717108',
@@ -486,7 +510,7 @@ function TheoryBoard({ firId }) {
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{evidenceTypeIcon[e.type] || '📌'}</span>
+                            <EvidenceIcon aria-hidden="true" />
                             <span style={{ fontSize: '11px', fontWeight: 600, color: evidenceTypeColor[e.type] || '#888', textTransform: 'capitalize' }}>{e.type}</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
@@ -508,7 +532,7 @@ function TheoryBoard({ firId }) {
           </div>
 
           <div style={{ padding: '16px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: '10px', marginTop: '10px' }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>💬 Officer Comment Log</h4>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><PiChatCircleDots aria-hidden="true" /> Officer Comment Log</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
               {(theoryNotes[current.id] || []).map((n, idx) => (
                 <div key={idx} style={{ fontSize: '13px' }}>
@@ -552,7 +576,7 @@ function CaseStrengthMeter({ firId }) {
   }, [firId]);
 
   if (loading) return (
-    <Section title="Case Strength Meter" icon="⚖️">
+    <Section title="Case Strength Meter" icon={<PiScales aria-hidden="true" />}>
       <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Analysing case strength…</div>
     </Section>
   );
@@ -563,14 +587,14 @@ function CaseStrengthMeter({ firId }) {
   const checklists = [
     { label: 'CCTV Evidence Intact', check: true, details: 'Verified from junction SH-9 logs' },
     { label: 'Witness Statements Corroborated', check: true, details: 'Complainant and auto-driver Raju statements match' },
-    { label: 'Modus Operandi Consistent', check: true, details: 'Corresponds with 4 Jayanagar corridor robberies' },
+    { label: 'Modus Operandi Consistent', check: true, details: 'Comparable two-wheeler robbery pattern in 3 Bengaluru records' },
     { label: 'Forensic Reports / prints', check: false, details: 'FSL fingerprint lift analysis pending' },
     { label: 'Weapon / Property Recovery', check: false, details: 'Gold chain and getaway vehicle not recovered' },
     { label: 'Financial / CDR Trail', check: false, details: 'CDR logs for suspect phone pending telecom request' },
   ];
 
   return (
-    <Section title="Case Strength Meter" icon="⚖️"
+    <Section title="Case Strength Meter" icon={<PiScales aria-hidden="true" />}
       badge={
         <span style={{
           width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center',
@@ -616,7 +640,7 @@ function CaseStrengthMeter({ firId }) {
           padding: '16px', background: 'var(--surface-alt)', border: '1px solid var(--border)',
           borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px'
         }}>
-          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>🧩 Case Sufficiency Checklist</h4>
+          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><PiPuzzlePiece aria-hidden="true" /> Case Sufficiency Checklist</h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {checklists.map((c, idx) => (
               <div key={idx} style={{
@@ -632,8 +656,8 @@ function CaseStrengthMeter({ firId }) {
               </div>
             ))}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--color-red-soft)', marginTop: '6px', fontWeight: 600 }}>
-            ⚠️ Missing weapon recovery & telephone logs drops case score. Grade: {data.grade}
+          <div style={{ fontSize: '11px', color: 'var(--color-red-soft)', marginTop: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <PiWarning aria-hidden="true" /> Missing weapon recovery and telephone logs reduce the case-readiness score. Grade: {data.grade}
           </div>
         </div>
       </div>
@@ -682,7 +706,7 @@ function CaseStrengthMeter({ firId }) {
 // 4. Ambient Memory (Memory Not Search)
 // ──────────────────────────────────────────────────────
 
-const suggestionIcon = { related_case: '🔗', wanted: '🚨', deadline: '⏰', alert: '🔔', evidence_gap: '⚠️' };
+const suggestionIcon = { related_case: PiShareNetwork, wanted: PiSiren, deadline: PiTimer, alert: PiAlarm, evidence_gap: PiWarning };
 const suggestionColor = { related_case: 'var(--color-blue-400)', wanted: 'var(--color-red-soft)', deadline: 'var(--color-amber-alt)', alert: '#f97316', evidence_gap: '#a78bfa' };
 
 function AmbientMemory({ firId }) {
@@ -699,7 +723,7 @@ function AmbientMemory({ firId }) {
   }, [context, firId]);
 
   return (
-    <Section title="ZIA Memory" icon="🧠"
+    <Section title="ZIA Memory" icon={<PiBrain aria-hidden="true" />}
       badge={
         <div style={{ display: 'flex', gap: '4px' }}>
           {['general', 'investigation'].map(c => (
@@ -722,7 +746,7 @@ function AmbientMemory({ firId }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {data?.suggestions.map((s, i) => {
-            const ic = suggestionIcon[s.type] || '💡';
+            const SuggestionIcon = suggestionIcon[s.type] || PiLightbulb;
             const col = suggestionColor[s.type] || '#888';
             return (
               <div key={i} style={{
@@ -730,7 +754,7 @@ function AmbientMemory({ firId }) {
                 padding: '14px 16px', background: 'var(--bg)', borderRadius: '10px',
                 border: '1px solid var(--border-light)',
               }}>
-                <span style={{ fontSize: '20px', lineHeight: 1 }}>{ic}</span>
+                <span style={{ fontSize: '20px', lineHeight: 1 }}><SuggestionIcon aria-hidden="true" /></span>
                 <div style={{ flex: 1 }}>
                   {s.firNo && (
                     <p style={{ margin: '0 0 4px 0', fontSize: '12px', fontWeight: 700, color: col }}>
@@ -794,7 +818,7 @@ function CrimeGenomePanel({ firId = 'KSP-2026-0142', briefOnly = false, theoryOn
 
       {/* Banner */}
       <div className="panel-shell" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span style={{ fontSize: '32px' }}>🧬</span>
+        <PiDna size={32} aria-hidden="true" />
         <div>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--font-heading)' }}>
             Crime Genome Intelligence

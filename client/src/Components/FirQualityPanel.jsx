@@ -1,30 +1,29 @@
 import { useState } from 'react';
 import { PanelCard, PanelHeader, PanelBadge, PanelTable } from './panels';
 
-// ponytail: mock data matching POST /fir-quality/score/:firId response schema
 const MOCK_FIRS = [
   {
-    firNo: 'FIR-2026-142',
-    station: 'Koramangala PS',
-    date: '2026-03-12',
-    overallScore: 91,
-    status: 'good',
+    firNo: 'KSP-2026-0142',
+    station: 'Brigade Road PS',
+    date: '2026-03-15',
+    overallScore: 84,
+    status: 'reviewed',
     dimensions: {
-      completeness: { score: 95, suggestion: 'Narrative includes all essential elements' },
-      consistency: { score: 92, suggestion: 'Details align across sections' },
-      timeliness: { score: 88, suggestion: 'Filed within 24 hours — acceptable' },
-      specificity: { score: 90, suggestion: 'Specific locations, times, and descriptions provided' },
-      evidenceChain: { score: 85, suggestion: 'CCTV footage referenced; chain of custody documented' },
-      legalCompliance: { score: 94, suggestion: 'BNS sections correctly cited' },
-      witnessDetail: { score: 88, suggestion: 'Two witnesses named with contact details' },
-      locationDetail: { score: 93, suggestion: 'GPS coordinates and landmark references included' },
-      temporalDetail: { score: 91, suggestion: 'Precise time windows with corroborating evidence' },
-      modusOperandi: { score: 86, suggestion: 'Modus operandi pattern matches known MO database' },
+      completeness: { score: 88, suggestion: 'Core incident, people, and location fields are present' },
+      consistency: { score: 91, suggestion: 'Recorded date and location fields align with the narrative' },
+      timeliness: { score: 86, suggestion: 'Registration interval is documented in the case record' },
+      specificity: { score: 87, suggestion: 'The SH-9 junction and stolen property are specifically described' },
+      evidenceChain: { score: 54, suggestion: 'Record CCTV acquisition, hash, custody transfer, and certificate status' },
+      legalReferences: { score: 82, suggestion: 'Have the investigating officer verify cited BNS and BNSS provisions' },
+      witnessDetail: { score: 78, suggestion: 'Complete the pending witness examination record' },
+      locationDetail: { score: 92, suggestion: 'Station, corridor, and junction references are present' },
+      temporalDetail: { score: 90, suggestion: 'Incident and registration dates are present' },
+      modusOperandi: { score: 76, suggestion: 'Review the chain-snatching descriptors before linking other FIRs' },
     },
   },
   {
-    firNo: 'FIR-2026-087',
-    station: 'HSR Layout PS',
+    firNo: 'KSP-2026-0089',
+    station: 'Brigade Road PS',
     date: '2026-02-28',
     overallScore: 58,
     status: 'fair',
@@ -34,7 +33,7 @@ const MOCK_FIRS = [
       timeliness: { score: 70, suggestion: 'Filed 3 days after incident — acceptable for non-cognizable' },
       specificity: { score: 48, suggestion: 'Location described as "near the park" — needs exact address' },
       evidenceChain: { score: 40, suggestion: 'No physical evidence documented' },
-      legalCompliance: { score: 72, suggestion: 'Section cited is cognizable but procedure followed non-cognizable path' },
+      legalReferences: { score: 72, suggestion: 'Officer review is required to confirm the cited provisions and procedure' },
       witnessDetail: { score: 50, suggestion: 'Witness mentioned by name only — no address or contact' },
       locationDetail: { score: 52, suggestion: 'No map reference or GPS coordinates' },
       temporalDetail: { score: 65, suggestion: 'Time given as "evening" — narrow to hour range' },
@@ -42,8 +41,8 @@ const MOCK_FIRS = [
     },
   },
   {
-    firNo: 'FIR-2026-201',
-    station: 'Indiranagar PS',
+    firNo: 'KSP-2026-0201',
+    station: 'Mysuru North PS',
     date: '2026-04-05',
     overallScore: 34,
     status: 'poor',
@@ -53,7 +52,7 @@ const MOCK_FIRS = [
       timeliness: { score: 45, suggestion: 'Filed 7 days late without explanation' },
       specificity: { score: 22, suggestion: 'Vague descriptions throughout — "some people", "a vehicle"' },
       evidenceChain: { score: 18, suggestion: 'No evidence collected or documented' },
-      legalCompliance: { score: 40, suggestion: 'Wrong BNS section — should be 303 not 304' },
+      legalReferences: { score: 40, suggestion: 'The imported provision fields conflict and require officer review' },
       witnessDetail: { score: 25, suggestion: 'Witness name is "unknown person"' },
       locationDetail: { score: 30, suggestion: 'No identifiable location details' },
       temporalDetail: { score: 38, suggestion: 'Date approximate, no time reference' },
@@ -74,9 +73,9 @@ const FirQualityPanel = () => {
   const dims = Object.entries(fir.dimensions);
 
   return (
-    <PanelCard title="FIR Quality Scorer" badge="10-DIMENSION">
+    <PanelCard title="FIR Documentation Review" badge="HEURISTIC">
       <PanelHeader
-        subtitle="Automated quality audit of FIR narratives — scores 10 dimensions and suggests improvements"
+        subtitle="Checks documentation completeness and consistency without assessing truth, guilt, or legal sufficiency"
         action={
           <select
             value={selected}
@@ -101,10 +100,10 @@ const FirQualityPanel = () => {
           {fir.overallScore}
         </div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Overall Quality Score</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Documentation Signal</div>
           <PanelBadge
-            status={fir.status === 'good' ? 'low' : fir.status === 'fair' ? 'medium' : 'high'}
-            label={fir.status.toUpperCase()}
+            status={fir.overallScore >= 80 ? 'low' : fir.overallScore >= 50 ? 'medium' : 'high'}
+            label={fir.overallScore >= 80 ? 'DOCUMENTED' : fir.overallScore >= 50 ? 'REVIEW' : 'INCOMPLETE'}
           />
           <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>{fir.firNo} · {fir.station} · {fir.date}</div>
         </div>
@@ -147,7 +146,7 @@ const FirQualityPanel = () => {
       </div>
 
       <div style={{ marginTop: 14, fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>
-        Scores generated by FIR Quality Engine v2.1 · Use as guidance for FIR improvement — not a legal assessment.
+        Deterministic demo heuristic. Scores describe record quality only and are not findings of truth, guilt, or legal compliance.
       </div>
     </PanelCard>
   );

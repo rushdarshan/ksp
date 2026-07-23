@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useFilter, FILTER_KEYS } from '../FilterContext';
 
@@ -22,7 +22,7 @@ const FilterBar = () => {
       const val = searchParams.get(key);
       if (val) setFilter(key, val);
     }
-  }, []);
+  }, [searchParams, setFilter]);
 
   useEffect(() => {
     const next = new URLSearchParams();

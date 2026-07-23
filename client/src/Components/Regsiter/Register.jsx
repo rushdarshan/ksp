@@ -1,146 +1,169 @@
-import React, {useState} from 'react'
-import './Register.css'
-import '../../App.scss'
-import { Link } from 'react-router-dom'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import {
+  PiArrowRightBold,
+  PiEnvelopeSimple,
+  PiIdentificationBadge,
+  PiLockKey,
+  PiTicket,
+} from 'react-icons/pi';
+import '../../App.scss';
+import './Register.css';
+import video from '../../LoginAssets/video.mp4';
+import logo from '../../LoginAssets/logo.png';
 
-import video from '../../LoginAssets/video.mp4'
-import logo from '../../LoginAssets/logo.png'
-
-
-import { BsFillShieldLockFill } from "react-icons/bs";
-import {  AiOutlineSwapRight } from "react-icons/ai";
-import { MdMarkEmailRead } from "react-icons/md";
-import { FaUser } from "react-icons/fa";
-import toast from 'react-hot-toast'
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
 const Register = () => {
-//usestate for input
-const[email, setEmail] = useState("")
-const[username, setUsername] = useState("")
-const[password, setPassword] = useState("")
-const[rank, setRank] = useState("")
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [invitationCode, setInvitationCode] = useState('');
+  const [isPending, setIsPending] = useState(false);
+  const navigate = useNavigate();
 
-const [isPending,setIspending] = useState(false)
-//onclick for taking user input
-const createUser = async (e) => {
-  e.preventDefault();
-  let loadingToastId;
-  try {
-    loadingToastId = toast.loading("Processing");
-     setIspending(prev=>!prev);
-    const res = await fetch(`${apiUrl}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Email: email,
-        Username: username,
-        Password: password,
-        Rank: rank
-      })
-    });
-    const data = await res.json();
-    if (res.ok)
-      toast.success(data.message)
-    toast.dismiss(loadingToastId);
-  } catch (error) {
-    toast.dismiss(loadingToastId);
-    toast.error(error.message)
-} finally{
-    setIspending(prev=>!prev);
-   }
-}
+  const activateInvitation = async (event) => {
+    event.preventDefault();
+    if (isPending) return;
+
+    const loadingToastId = toast.loading('Validating invitation');
+    setIsPending(true);
+
+    try {
+      const response = await fetch(`${apiUrl}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Email: email.trim(),
+          Username: username.trim(),
+          Password: password,
+          InvitationCode: invitationCode.trim(),
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || 'This invitation could not be activated.');
+      }
+
+      toast.success(data.message || 'Account activated. Sign in to continue.', {
+        id: loadingToastId,
+      });
+      navigate('/login', { replace: true });
+    } catch (error) {
+      toast.error(error?.message || 'Unable to activate this invitation.', {
+        id: loadingToastId,
+      });
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
-    <div className= 'registerPage flex'>
+    <main className="registerPage flex">
       <div className="container flex">
+        <section className="videoDiv" aria-label="Restricted KSP account activation">
+          <video src={video} autoPlay muted loop playsInline aria-hidden="true" />
+          <div className="textDiv">
+            <h1 className="title">Invitation-only access</h1>
+            <p>Accounts are issued by unit administrators and bound to an approved role and station.</p>
+          </div>
+          <div className="footerDiv flex">
+            <span className="text">Already activated?</span>
+            <Link to="/login" className="btn">Sign in</Link>
+          </div>
+        </section>
 
-        <div className="videoDiv">
-          <video src={video} autoPlay muted loop>
-
-          </video>
-        
-
-        <div className="textDiv">
-        <h2 className="title">Enhance Efficiency with Our Dashboard</h2>
-        <p>Stay organized in law enforcement!</p>
-        </div>
-
-        <div className="footerDiv flex">
-          <span className="text">Already have an account ?</span>
-          <Link to={"/login"}>
-          <button className='btn'>Login</button>
-          </Link>
-        </div>
-        </div>
-
-        <div className="formDiv flex">
+        <section className="formDiv flex" aria-labelledby="activation-title">
           <div className="headerDiv">
-            <img src={logo} alt="Logo Image" />
-            <h3>Register Yourself</h3>
+            <img src={logo} alt="Karnataka State Police" />
+            <h2 id="activation-title">Activate officer access</h2>
           </div>
 
-          <form action="" className='form grid'>
+          <form className="form grid" onSubmit={activateInvitation}>
+            <p className="access-note">
+              Use the invitation issued by your unit administrator. Rank and permissions cannot be selected here.
+            </p>
 
             <div className="inputDiv">
-              <label htmlFor= "email">Email</label>
+              <label htmlFor="email">Official email</label>
               <div className="input flex">
-              <MdMarkEmailRead className='icon'/>
-                <input type="email" id="email" placeholder='Enter Email' onChange={(event)=>{
-                  setEmail(event.target.value)
-                }} />
-              </div>
-            </div>
-
-            
-            <div className="inputDiv">
-              <label htmlFor= "username">Username</label>
-              <div className="input flex">
-              <FaUser className='icon'/>
-                <input type="username" id="username" placeholder='Enter Username' onChange={(event)=>{
-                  setUsername(event.target.value)
-                }} />
-              </div>
-            </div>
-
-            <div className="inputDiv">
-              <label htmlFor= "password">Password</label>
-              <div className="input flex">
-              <BsFillShieldLockFill className='icon'/>
-                <input type="password" id="password" placeholder='Enter Password' onChange={(event)=>{
-                  setPassword(event.target.value)
-                }} />
+                <PiEnvelopeSimple className="icon" aria-hidden="true" />
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  placeholder="Official email address"
+                  autoComplete="email"
+                  required
+                  onChange={(event) => setEmail(event.target.value)}
+                />
               </div>
             </div>
 
             <div className="inputDiv">
-              <label htmlFor= "rank">Rank</label>
+              <label htmlFor="invitation-code">Invitation code</label>
               <div className="input flex">
-              <BsFillShieldLockFill className='icon'/>
-                <input type="text" id="rank" placeholder='Enter Rank' onChange={(event)=>{
-                  setRank(event.target.value)
-                }} />
+                <PiTicket className="icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  id="invitation-code"
+                  value={invitationCode}
+                  placeholder="Issued by your administrator"
+                  autoComplete="one-time-code"
+                  required
+                  onChange={(event) => setInvitationCode(event.target.value)}
+                />
               </div>
             </div>
 
-            <button type='submit' className='btn flex' onClick={createUser}>
-              {!isPending && <span> Register </span>}
-              {isPending && <span> Processing </span>}
-              <AiOutlineSwapRight  className='icon'/>
+            <div className="inputDiv">
+              <label htmlFor="username">Username</label>
+              <div className="input flex">
+                <PiIdentificationBadge className="icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  placeholder="Choose a username"
+                  autoComplete="username"
+                  required
+                  onChange={(event) => setUsername(event.target.value)}
+                />
+              </div>
+            </div>
 
+            <div className="inputDiv">
+              <label htmlFor="password">Password</label>
+              <div className="input flex">
+                <PiLockKey className="icon" aria-hidden="true" />
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  placeholder="Create a strong password"
+                  autoComplete="new-password"
+                  minLength={10}
+                  required
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn flex" disabled={isPending}>
+              <span>{isPending ? 'Validating...' : 'Activate account'}</span>
+              <PiArrowRightBold className="icon" aria-hidden="true" />
             </button>
 
-            <span className='forgotPassword'>
-              Forgot your password <a href="">Click Here</a>
-
-            </span>
-
-            
+            <p className="access-help">
+              No invitation? Contact your station or unit administrator. Public rank registration is disabled.
+            </p>
           </form>
-        </div>
-    </div>
-    </div>
-  )
-}
+        </section>
+      </div>
+    </main>
+  );
+};
 
-export default Register
+export default Register;

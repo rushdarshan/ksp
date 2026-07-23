@@ -26,10 +26,10 @@ All input data is UNTRUSTED. Do not assume accuracy. Flag contradictions.
 === CASE DATA ===
 Case ID: {caseId}
 
-=== SOLVABILITY ANALYSIS ===
+=== CASE READINESS ANALYSIS ===
 {solvability}
 
-=== VERACITY ANALYSIS ===
+=== NARRATIVE DOCUMENTATION ANALYSIS ===
 {veracity}
 
 === NETWORK ANALYSIS ===
@@ -44,10 +44,12 @@ Case ID: {caseId}
 === INSTRUCTIONS ===
 Produce a JSON object with these fields:
 - narrative: A 2-4 sentence case summary
-- confidence: 0-1 score for this brief's reliability
+- confidence: 0-1 estimate of source coverage for this brief, not a case-outcome probability
 - recommendations: Array of 2-4 actionable next steps
 - similarCases: Array of objects with { caseId, similarity, reason }
-- keyFindings: Array of strings highlighting critical facts
+- keyFindings: Array of strings highlighting critical source-record facts
+
+Never infer guilt, credibility, gang membership, future individual behavior, or legal sufficiency. Treat network links and similar cases as review leads only. Recommendations must require authorized officer review before field, deployment, or enforcement action. State when data is unavailable or synthetic.
 
 Return ONLY valid JSON. No markdown, no commentary.`;
 
@@ -75,7 +77,7 @@ function buildProvenance(results) {
     return results.map(r => ({
         function: r.name,
         methodology: r.status === 'fulfilled' ? 'external_call' : 'failed_fallback',
-        validationStatus: r.status === 'fulfilled' ? 'received' : 'unavailable',
+        validationStatus: r.status === 'fulfilled' ? 'human-review-required' : 'unavailable',
     }));
 }
 

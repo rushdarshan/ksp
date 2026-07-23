@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchLocation from "./SearchLocation";
 import MapComponent from "./MapComponent";
-import { useFetchData } from "../Details/ChartOne";
 import { getCrimeHotspots } from "../../utils/utility";
 import Loader from "../../ui/Dropdown/Loader";
 import styles from  "./map.module.scss";
+import { PiMapPin, PiPath } from "react-icons/pi";
 import {
   useNavigation,
 } from "react-router-dom";
@@ -46,9 +46,8 @@ const getCoordinates = async (place) => {
 
 export default function Map2() {
   const navigation = useNavigation();
-  const [userLocation, setUserLocation] = useState([15.3173, 75.7139]);
+  const [userLocation, setUserLocation] = useState([12.9716, 77.5946]);
   const [selectedValue, setSelectedValue] = useState("true");
-  const [routingControl,setRoutingControl] = useState(null)
   // const beatData = useLoaderData();
   const [beatData,setBeatData] = useState(null);
   const [hotspots, setHotspots] = useState([]);
@@ -146,6 +145,10 @@ export default function Map2() {
   return (
     <section className={styles.commandMap}>
     <div className={styles.option_selector}>
+        <div className={styles.map_intro}>
+          {selectedValue === 'true' ? <PiMapPin size={20} /> : <PiPath size={20} />}
+          <div><strong>Command map</strong><span>{selectedValue === 'true' ? `${hotspots.length} active beat clusters` : 'Plan a verified destination route'}</span></div>
+        </div>
         <label htmlFor="command-map-mode">Map mode</label>
         <select id="command-map-mode" value={selectedValue} onChange={handleChange}>
             <option value = {true}>Crime hotspots</option>
@@ -155,8 +158,6 @@ export default function Map2() {
     {selectedValue=="false" && <SearchLocation userLocation={userLocation} setUserLocation={setUserLocation}/>}
       {selectedValue=="true" && <MapComponent
         hotspots={hotspots}
-        selectedValue={selectedValue}
-        setRoutingControl={setRoutingControl}
         userLocation={userLocation}
       />}
     </section>

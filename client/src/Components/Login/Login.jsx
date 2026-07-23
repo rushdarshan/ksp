@@ -1,89 +1,76 @@
-import React, { useEffect, useState } from 'react'
-import './Login.css'
-import '../../App.scss'
-import { Link, useNavigate } from 'react-router-dom'
-
-import video from '../../LoginAssets/video.mp4'
-import logo from '../../LoginAssets/logo.png'
-
-import { FaUserShield } from "react-icons/fa";
-import { BsFillShieldLockFill } from "react-icons/bs";
-import { AiOutlineSwapRight } from "react-icons/ai";
-
-import toast from 'react-hot-toast'
-import { useAuth } from '../../AuthContext'
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import {
+  PiArrowRightBold,
+  PiIdentificationCard,
+  PiLockKey,
+} from 'react-icons/pi';
+import '../../App.scss';
+import './Login.css';
+import video from '../../LoginAssets/video.mp4';
+import logo from '../../LoginAssets/logo.png';
+import { getRoleHome, useAuth } from '../../AuthContext';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
+const DEMO_USERS = Object.freeze({
+  anjumala: { rank: 'ACP', name: 'Anjumala' },
+  dharmendra: { rank: 'Inspector', name: 'Dharmendra' },
+  marutig: { rank: 'Subinspector', name: 'Maruti G' },
+});
+
 const Login = () => {
-  const { isAuthenticated, setIsAuthenticated, user, setUser } = useAuth();
-  const [loginusername, setLoginUsername] = useState("")
-  const [loginpassword, setLoginPassword] = useState("")
-  const navigateTo = useNavigate()
-
-  const loginUser = async (e) => {
-    let loadingToastId;
-    e.preventDefault();
-    loadingToastId = toast.loading("Signing In");
-
-    const mockUsers = {
-      anjumala: { rank: 'ACP', name: 'Anjumala' },
-      dharmendra: { rank: 'Inspector', name: 'Dharmendra' },
-      marutig: { rank: 'Subinspector', name: 'Maruti G' }
-    };
-
-    if (mockUsers[loginusername] && loginpassword === '123') {
-      setTimeout(() => {
-        toast.dismiss(loadingToastId);
-        toast.success("Successfully logged In");
-        const mockToken = 'mock-jwt-' + loginusername;
-        localStorage.setItem("token", mockToken);
-        localStorage.setItem("user", JSON.stringify(mockUsers[loginusername]));
-        setIsAuthenticated(true);
-        setUser(mockUsers[loginusername]);
-      }, 500);
-      return;
-    }
-
-    fetch(`${apiUrl}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        LoginUsername: loginusername,
-        LoginPassword: loginpassword
-      })
-    }).then(r => r.json()).then((data) => {
-      toast.success("Successfully logged In")
-      toast.dismiss(loadingToastId);
-      localStorage.setItem("token", data.jwtToken);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setIsAuthenticated(true);
-      setUser(data.user)
-    })
-    .catch((error) => {
-      toast.dismiss(loadingToastId);
-      toast.error(error?.message || 'Login failed');
-    })
-  }
+  const { authenticate, isAuthenticated, user } = useAuth();
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      switch (user.rank) {
-        case 'ACP':
-          navigateTo('/dashboard/home');
-          break;
-        case 'Inspector':
-          navigateTo('/inspector/home');
-          break;
-        case 'Subinspector':
-          navigateTo('/subinspector/home');
-          break;
-        default:
-          navigateTo('/dashboard');
-          break;
-      }
+      navigate(getRoleHome(user), { replace: true });
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, navigate, user]);
+
+  const loginUser = async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    const username = loginUsername.trim().toLowerCase();
+    const loadingToastId = toast.loading('Verifying officer access');
+    setIsSubmitting(true);
+
+    try {
+      const demoUser = import.meta.env.DEV ? DEMO_USERS[username] : null;
+      if (demoUser && loginPassword === '123') {
+        authenticate(`mock-jwt-${username}`, demoUser);
+        toast.success('Demo session started', { id: loadingToastId });
+        return;
+      }
+
+      const response = await fetch(`${apiUrl}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          LoginUsername: loginUsername.trim(),
+          LoginPassword: loginPassword,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || 'The username or password is incorrect.');
+      }
+
+      authenticate(data.jwtToken || data.token, data.user);
+      toast.success('Access verified', { id: loadingToastId });
+    } catch (error) {
+      toast.error(error?.message || 'Unable to sign in.', { id: loadingToastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const fillDemo = (username) => {
     setLoginUsername(username);
@@ -91,67 +78,77 @@ const Login = () => {
   };
 
   return (
-    <div className='loginPage flex'>
+    <main className="loginPage flex">
       <div className="container flex">
-        <div className="videoDiv">
-          <video src={video} autoPlay muted loop></video>
+        <section className="videoDiv" aria-label="KSP Investigation OS">
+          <video src={video} autoPlay muted loop playsInline aria-hidden="true" />
           <div className="textDiv">
-            <h2 className="title">Crime Analytics Platform</h2>
-            <p>Investigative tools for Karnataka State Police officers.</p>
+            <h1 className="title">Crime Analytics Platform</h1>
+            <p>Secure investigative tools for authorized Karnataka State Police personnel.</p>
           </div>
           <div className="footerDiv flex">
-            <span className="text">Don't have an account?</span>
-            <Link to={"/register"}>
-              <button className='btn'>Sign Up</button>
-            </Link>
+            <span className="text">Have an admin invitation?</span>
+            <Link to="/register" className="btn">Activate access</Link>
           </div>
-        </div>
+        </section>
 
-        <div className="formDiv flex">
+        <section className="formDiv flex" aria-labelledby="login-title">
           <div className="headerDiv">
-            <img src={logo} alt="KSP Logo" />
-            <h3>Welcome Back</h3>
+            <img src={logo} alt="Karnataka State Police" />
+            <h2 id="login-title">Officer sign in</h2>
           </div>
 
-          <form action="" className='form grid' onSubmit={loginUser}>
+          <form className="form grid" onSubmit={loginUser}>
             <div className="inputDiv">
               <label htmlFor="username">Username</label>
               <div className="input flex">
-                <FaUserShield className='icon'/>
-                <input type="text" id="username" value={loginusername} placeholder='Enter Username' onChange={(event) => {
-                  setLoginUsername(event.target.value)
-                }}/>
+                <PiIdentificationCard className="icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  id="username"
+                  value={loginUsername}
+                  placeholder="Officer username"
+                  autoComplete="username"
+                  required
+                  onChange={(event) => setLoginUsername(event.target.value)}
+                />
               </div>
             </div>
 
             <div className="inputDiv">
               <label htmlFor="password">Password</label>
               <div className="input flex">
-                <BsFillShieldLockFill className='icon'/>
-                <input type="password" id="password" value={loginpassword} placeholder='Enter Password' onChange={(event) => {
-                  setLoginPassword(event.target.value)
-                }}/>
+                <PiLockKey className="icon" aria-hidden="true" />
+                <input
+                  type="password"
+                  id="password"
+                  value={loginPassword}
+                  placeholder="Password"
+                  autoComplete="current-password"
+                  required
+                  onChange={(event) => setLoginPassword(event.target.value)}
+                />
               </div>
             </div>
 
-            <button type='submit' className='btn flex'>
-              <span>Login</span>
-              <AiOutlineSwapRight className='icon'/>
+            <button type="submit" className="btn flex" disabled={isSubmitting}>
+              <span>{isSubmitting ? 'Verifying...' : 'Sign in'}</span>
+              <PiArrowRightBold className="icon" aria-hidden="true" />
             </button>
 
             {import.meta.env.DEV && (
-              <div className="demo-hint">
+              <div className="demo-hint" aria-label="Development demo accounts">
                 <span>Demo access:</span>
-                <button type="button" onClick={() => fillDemo('anjumala')} className="demo-link">DySP</button>
+                <button type="button" onClick={() => fillDemo('anjumala')} className="demo-link">ACP</button>
                 <button type="button" onClick={() => fillDemo('dharmendra')} className="demo-link">Inspector</button>
                 <button type="button" onClick={() => fillDemo('marutig')} className="demo-link">Sub-Inspector</button>
               </div>
             )}
           </form>
-        </div>
+        </section>
       </div>
-    </div>
-  )
-}
+    </main>
+  );
+};
 
-export default Login
+export default Login;

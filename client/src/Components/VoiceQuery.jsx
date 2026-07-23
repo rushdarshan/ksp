@@ -152,7 +152,7 @@ const VoiceQuery = () => {
             if (!ragRes.ok) throw new Error('RAG query failed');
             const ragData = await ragRes.json();
             setRagAnswer(ragData.answer || ragData.text);
-            setSources((ragData.sources || []).map(source => typeof source === 'string' ? source : source.label));
+            setSources(ragData.sources || []);
             
             // Speak the response via Zia TTS
             await speakResponse(ragData.answer);
@@ -189,7 +189,7 @@ const VoiceQuery = () => {
                 const kannadaVoice = window.speechSynthesis.getVoices().find(voice => voice.lang?.toLowerCase().startsWith('kn'));
                 if (kannadaVoice) utterance.voice = kannadaVoice;
                 window.speechSynthesis.speak(utterance);
-                setStatus('Complete · browser Kannada voice');
+                setStatus('Complete · device speech preview');
             } else {
                 setStatus('Complete · audio unavailable');
             }
@@ -440,8 +440,9 @@ const VoiceQuery = () => {
                 {sources && sources.length > 0 && (
                   <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-caption)', fontWeight: 600 }}>CITED SOURCES:</span>
-                    {sources.map(src => (
-                      <span key={src} style={{
+                    {sources.map((source, index) => {
+                      const label = typeof source === 'string' ? source : source.label || 'Evidence source';
+                      const sourceStyle = {
                         fontSize: 'var(--size-caption)',
                         fontFamily: 'var(--font-mono)',
                         fontWeight: 600,
@@ -449,11 +450,13 @@ const VoiceQuery = () => {
                         color: 'var(--pastel-blue-text)',
                         padding: '3px 10px',
                         borderRadius: 'var(--radius-sm)',
-                        border: '1px solid rgba(31, 108, 159, 0.2)'
-                      }}>
-                        {src}
-                      </span>
-                    ))}
+                        border: '1px solid rgba(31, 108, 159, 0.2)',
+                        textDecoration: 'none'
+                      };
+                      return source?.url ? (
+                        <a key={`${label}-${index}`} href={source.url} target="_blank" rel="noreferrer" style={sourceStyle}>{label}</a>
+                      ) : <span key={`${label}-${index}`} style={sourceStyle}>{label}</span>;
+                    })}
                   </div>
                 )}
               </div>

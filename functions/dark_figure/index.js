@@ -1,6 +1,7 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
 const { getCached, setCached } = require('../shared/cache-utils');
+const { DEMO_GENERATED_AT, createSeededRandom, intBetween } = require('../shared/deterministic');
 
 const app = express();
 app.use(express.json());
@@ -52,8 +53,8 @@ function computeDarkFigure(districtId, districtProfile, counts) {
     const totalEstimated = Object.values(estimatedTotals).reduce((s, v) => s + v.estimated, 0);
     const gapPercent = totalReported > 0 ? Math.round(((totalEstimated - totalReported) / totalReported) * 100) : 0;
     const recommendation = gapPercent > 50
-        ? 'Based on 2019 projections: Community outreach needed — significant underreporting gap detected'
-        : 'Based on 2019 projections: Standard monitoring';
+        ? 'Scenario review: consider community outreach and independent reporting-channel checks.'
+        : 'Scenario review: continue monitoring and compare with independent victimisation evidence.';
 
     return { districtId, districtName: districtProfile.name, firCounts, estimatedTotals, gaps, gapPercent, recommendation };
 }
@@ -63,11 +64,12 @@ app.get('/dark-figure', async (req, res) => {
         const catalystApp = catalyst.initialize(req);
         const zcql = catalystApp.zcql();
         const districtId = req.query.district;
-        const cacheKey = `panel:dark_figure:dark_figure:${districtId || 'all'}`;
+        const cacheKey = `panel:dark_figure:dark_figure:v2:${districtId || 'all'}`;
         const cached = await getCached(catalystApp, cacheKey);
         if (cached) return res.status(200).json(cached);
 
         let districtFIRCounts = {};
+        let syntheticCounts = false;
         try {
             const rows = await zcql.executeZCQLQuery(
                 `SELECT DistrictID, CrimeHeadID, COUNT(*) as cnt FROM CaseMaster GROUP BY DistrictID, CrimeHeadID`
@@ -80,11 +82,13 @@ app.get('/dark-figure', async (req, res) => {
                 districtFIRCounts[dId][CRIME_TYPES[crimeHeadId - 1] || 'other'] = cnt;
             }
         } catch (e) {
-            console.warn('Data Store query failed, using synthetic counts:', e.message);
+            console.warn('Data Store query failed, using deterministic synthetic demo counts:', e.message);
+            syntheticCounts = true;
             for (let d = 1; d <= 20; d++) {
+                const random = createSeededRandom(`dark-figure:${d}:v2`);
                 districtFIRCounts[d] = {};
                 for (const ct of CRIME_TYPES) {
-                    districtFIRCounts[d][ct] = Math.floor(Math.random() * 50) + 5;
+                    districtFIRCounts[d][ct] = intBetween(random, 8, 46);
                 }
             }
         }
@@ -105,9 +109,15 @@ app.get('/dark-figure', async (req, res) => {
             data: districtId ? results[0] : results,
             dataYear: 2019,
             metadata: {
-                note: 'Underreporting estimates based on Karnataka Crime Victimisation Survey 2019',
-                uncertaintyBand: '±35% (7-year projection gap)',
-                generatedAt: new Date().toISOString()
+                dataSource: syntheticCounts ? 'synthetic_demo' : 'catalyst_data_store_with_demo_assumptions',
+                synthetic: syntheticCounts,
+                syntheticAssumptions: true,
+                note: syntheticCounts
+                    ? 'Deterministic synthetic FIR counts with fixed under-reporting assumptions. This is an interface scenario, not an official estimate.'
+                    : 'Available FIR counts with fixed demonstration under-reporting assumptions. Validate against an approved victimisation study before use.',
+                uncertaintyBand: 'Illustrative range of plus or minus 35%; not empirically calibrated',
+                humanReviewRequired: true,
+                generatedAt: syntheticCounts ? DEMO_GENERATED_AT : new Date().toISOString()
             }
         };
 

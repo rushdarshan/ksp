@@ -78,9 +78,14 @@ app.get('/graph', async (req, res) => {
             summary: {
                 totalAccused: nodes.length,
                 A1Count: nodes.filter(node => node.personId === 'A1').length,
-                gangs: community,
+                communities: community,
             },
-            metadata: { mode: 'live', method: 'shared-FIR connected components' },
+            metadata: {
+                mode: 'live',
+                method: 'shared-FIR connected components',
+                note: 'Connected components show record co-occurrence only; they do not establish criminal association or guilt.',
+                humanReviewRequired: true,
+            },
         });
     } catch (error) {
         console.error('Co-accused graph failed:', error);

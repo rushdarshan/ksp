@@ -6,9 +6,9 @@ const QUALITY_DIMENSIONS = [
     { id: 'timePrecision', name: 'Time Precision', max: 10, description: 'Temporal markers in narrative' },
     { id: 'locationSpecificity', name: 'Location Specificity', max: 10, description: 'Specific location details' },
     { id: 'accusedDescription', name: 'Accused Description', max: 10, description: 'Details about accused persons' },
-    { id: 'narrativeCoherence', name: 'Narrative Coherence', max: 10, description: 'Linguistic coherence via VeriPol' },
+    { id: 'narrativeCoherence', name: 'Narrative Structure', max: 10, description: 'Presence of useful sequence and detail markers' },
     { id: 'propertyValuation', name: 'Property Valuation', max: 10, description: 'Property value documentation' },
-    { id: 'legalSectionMatch', name: 'Legal Section Match', max: 10, description: 'IPC/BNS section alignment' },
+    { id: 'legalSectionMatch', name: 'Classification Terms', max: 10, description: 'Recorded crime category terms present in the narrative' },
     { id: 'delayJustification', name: 'Delay Justification', max: 10, description: 'Reason for reporting delay' },
     { id: 'officerNotesCompleteness', name: 'Officer Notes Completeness', max: 10, description: 'Completeness of officer remarks' }
 ];
@@ -77,8 +77,8 @@ function computeQualityScore(firData) {
     } else if (analysis?.veracityScore != null) {
         narrScore = Math.round(analysis.veracityScore * 10);
     }
-    dimensions.push({ name: 'Narrative Coherence', score: narrScore, max: 10 });
-    details.narrativeCoherence = { script, veracityScore: analysis?.veracityScore };
+    dimensions.push({ name: 'Narrative Structure', score: narrScore, max: 10 });
+    details.narrativeCoherence = { script, documentationScore: analysis?.documentationScore };
 
     let propScore = 0;
     const pv = parseFloat(propertyValue || 0);
@@ -92,24 +92,24 @@ function computeQualityScore(firData) {
     if (crimeType) {
         const ct = crimeType.toLowerCase();
         const crimeKeywords = {
-            theft: ['379', '380', 'stolen', 'steal', 'theft'],
-            burglary: ['451', '453', 'break', 'trespass', 'housebreaking'],
-            robbery: ['382', '390', '392', '395', 'robbery', 'dacoity'],
-            assault: ['319', '320', '323', '324', 'hurt', 'assault'],
-            murder: ['302', '304', 'murder', 'homicide', 'kill'],
-            sexual: ['354', '356', '376', 'rape', 'molest'],
-            fraud: ['419', '420', '406', '408', 'fraud', 'cheat'],
+            theft: ['stolen', 'steal', 'theft', 'snatch'],
+            burglary: ['break', 'trespass', 'housebreaking', 'burglary'],
+            robbery: ['robbery', 'dacoity', 'weapon', 'threatened'],
+            assault: ['hurt', 'assault', 'hit', 'injured'],
+            murder: ['murder', 'homicide', 'kill', 'death'],
+            sexual: ['sexual', 'assault', 'rape', 'molest'],
+            fraud: ['fraud', 'cheat', 'impersonate', 'scam'],
             cyber: ['cyber', 'hack', 'phishing', 'online'],
             drugs: ['ndps', 'narcotic', 'drug'],
-            property: ['425', '426', 'mischief', 'damage', 'vandalism'],
-            extortion: ['384', '385', 'extortion', 'blackmail'],
-            publicorder: ['143', '144', '147', '148', '150', 'riot']
+            property: ['mischief', 'damage', 'vandalism'],
+            extortion: ['extortion', 'blackmail', 'threat'],
+            publicorder: ['riot', 'unlawful', 'assembly']
         };
         const keywords = crimeKeywords[ct] || [];
         const matches = keywords.filter(kw => text.includes(kw));
         legalScore = Math.min(10, matches.length * 2);
     }
-    dimensions.push({ name: 'Legal Section Match', score: legalScore, max: 10 });
+    dimensions.push({ name: 'Classification Terms', score: legalScore, max: 10 });
     details.legalSectionMatch = { crimeType };
 
     let delayScore = 10;

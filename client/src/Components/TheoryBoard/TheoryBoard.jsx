@@ -1,62 +1,53 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PanelCard, PanelHeader } from '../panels';
 import './theoryboard.scss';
 
 const STATUS_STYLES = {
   Active: { background: '#334e68', color: '#fff' },
-  Proven: { background: '#38a169', color: '#fff' },
-  Dismissed: { background: '#6c757d', color: '#fff' },
+  Supported: { background: '#2f6f4e', color: '#fff' },
+  Closed: { background: '#6c757d', color: '#fff' },
 };
 
 const mockHypotheses = [
   {
     id: 'TH-001',
-    title: 'Organized Gold Smuggling Ring',
-    description: 'Multiple FIRs across Bangalore rural point to coordinated gold smuggling through agricultural cover loads. Common modus operandi and vehicle patterns suggest a single syndicate operating across three districts.',
+    title: 'Two-person chain-snatching team',
+    description: 'Working hypothesis for KSP-2026-0142: witness descriptions and the recorded escape pattern may indicate coordinated roles. CCTV acquisition and officer review are still required.',
     status: 'Active',
-    confidence: 78,
-    linkedEntities: ['VEH-2847', 'PER-1192', 'FIR-2024-0847'],
-    createdAt: '2024-07-10',
+    confidence: 67,
+    linkedEntities: ['KSP-2026-0142', 'Mohan Kumar', 'Kiran Joseph'],
+    createdAt: '2026-03-16',
   },
   {
     id: 'TH-002',
-    title: 'Hawala Route via Textile Exports',
-    description: 'Unexplained cash deposits traced to textile export units in Hubli. Invoices inflated by 40-60% over market rate, funneling illicit funds through SEZ customs clearance.',
+    title: 'Shared robbery modus operandi',
+    description: 'Recorded approach, property target, and escape descriptors overlap with KSP-2026-0301. The similarity is a review lead and does not establish common offenders.',
     status: 'Active',
-    confidence: 62,
-    linkedEntities: ['FIR-2024-0912', 'PER-0451', 'LOC-HBL-003'],
-    createdAt: '2024-07-08',
+    confidence: 58,
+    linkedEntities: ['KSP-2026-0142', 'KSP-2026-0301', 'Brigade Road corridor'],
+    createdAt: '2026-03-18',
   },
   {
     id: 'TH-003',
-    title: 'Vehicle Theft-to-Chop Shop Pipeline',
-    description: 'Stolen two-wheelers from Mysuru city being rerouted to unregistered garages in Kollegal for parts extraction. VIN tampering patterns match across 12 reported thefts.',
-    status: 'Proven',
-    confidence: 91,
-    linkedEntities: ['FIR-2024-0723', 'VEH-1123', 'VEH-1129', 'PER-2034'],
-    createdAt: '2024-06-28',
+    title: 'SH-9 junction camera coverage',
+    description: 'The camera inventory confirms a likely field of view for the reported junction. This support is limited to coverage; the recording has not yet been acquired or authenticated.',
+    status: 'Supported',
+    confidence: 84,
+    linkedEntities: ['KSP-2026-0142', 'SH-9 junction camera'],
+    createdAt: '2026-03-17',
   },
   {
     id: 'TH-004',
-    title: 'Cyber Blackmail Targeting Govt Employees',
-    description: 'Recent spate of sextortion cases against Karnataka government clerks share a single Telegram handler and identical payment demand scripts. Perpetrator uses VoIP numbers registered outside India.',
-    status: 'Active',
-    confidence: 55,
-    linkedEntities: ['PER-3301', 'PER-3302', 'CYB-2024-014'],
-    createdAt: '2024-07-12',
-  },
-  {
-    id: 'TH-005',
-    title: 'Land Grab through Forged Succession Deeds',
-    description: 'Three separate complaints in Dakshina Kannada allege property transfers using forged death certificates and fake legal heir affidavits. All notarized by the same two sub-registrars.',
-    status: 'Dismissed',
-    confidence: 23,
-    linkedEntities: ['FIR-2024-0501', 'FIR-2024-0522', 'PER-7841'],
-    createdAt: '2024-06-15',
+    title: 'Initial single-offender account',
+    description: 'The initial account treated the incident as a single-offender robbery. Later person records indicate a possible second role, so this hypothesis was closed without deletion.',
+    status: 'Closed',
+    confidence: 24,
+    linkedEntities: ['KSP-2026-0142', 'Audit event 2026-03-18'],
+    createdAt: '2026-03-15',
   },
 ];
 
-const FILTERS = ['All', 'Active', 'Proven', 'Dismissed'];
+const FILTERS = ['All', 'Active', 'Supported', 'Closed'];
 
 function TheoryBoard() {
   const [activeFilter, setActiveFilter] = useState('All');
@@ -68,7 +59,7 @@ function TheoryBoard() {
   return (
     <div className="theory-board">
       <PanelHeader
-        subtitle="Track and manage investigation hypotheses across active cases."
+        subtitle="Track working hypotheses with linked evidence, uncertainty, and an auditable review status."
         action={
           <div className="theory-filter">
             {FILTERS.map(f => (
@@ -104,7 +95,7 @@ function TheoryBoard() {
                 <p className="theory-card__desc">{h.description}</p>
                 <div className="theory-card__meta">
                   <div className="theory-card__confidence">
-                    <span className="theory-card__label">Confidence</span>
+                    <span className="theory-card__label">Evidence fit</span>
                     <div className="theory-card__bar">
                       <div className="theory-card__bar-fill" style={{ width: `${h.confidence}%` }} />
                     </div>

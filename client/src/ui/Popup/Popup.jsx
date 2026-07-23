@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import styles from "./popup.module.css";
 export default function Popup() {
@@ -26,9 +26,11 @@ export default function Popup() {
     }}>
       <button className={styles.notif_btn} aria-label="Notifications">
         <IoIosNotificationsOutline/>
+        {notifying && (
         <span className={styles.unread_wrapper}>
         <span className={styles.unread_background}></span>
         </span>
+        )}
       </button>
       <ul className={`${styles.notif_cont} ${ dropdownOpen === true ? styles.open : ''}`}
        ref={dropdown}

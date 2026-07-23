@@ -1,5 +1,16 @@
 export function defineMockApi() {
   return {
+    // Development-only identity boundary. Demo accounts are handled by Login.jsx;
+    // unknown credentials must not fall through as a successful empty response.
+    'POST /server/login': () => ({ __status: 401, message: 'Use an approved development demo account.' }),
+    'GET /server/verify': () => ({ __status: 401, message: 'Development demo tokens are verified in the client guard.' }),
+    'POST /server/register': ({ body }) => {
+      if (body?.InvitationCode !== 'KSP-DEMO-2026') {
+        return { __status: 403, message: 'Invitation code is invalid or expired.' };
+      }
+      return { message: 'Development invitation validated. Account activation is simulated locally.' };
+    },
+
     // === Topology ===
     'GET /server/topology_navigator/topology': () => ({
       nodes: [
@@ -41,7 +52,7 @@ export function defineMockApi() {
 
     // === Fairness Audit ===
     'GET /server/fairness_audit/fairness-audit/models': () => ({
-      models: ['xgb_hotspot', 'rf_solvability', 'lr_recidivism', 'gb_veracity']
+      models: ['xgb_hotspot', 'rf_case_readiness', 'lr_resource_demand', 'narrative_quality']
     }),
     'GET /server/fairness_audit/fairness-audit/metrics': ({ query }) => {
       const model = query.model || 'xgb_hotspot';
@@ -61,7 +72,7 @@ export function defineMockApi() {
         { model: 'xgb_hotspot', parity_ratio: 0.88, eo_diff: 0.05, status: 'PASS' },
         { model: 'rf_solvability', parity_ratio: 0.82, eo_diff: 0.09, status: 'REVIEW' },
         { model: 'lr_recidivism', parity_ratio: 0.75, eo_diff: 0.14, status: 'FAIL' },
-        { model: 'gb_veracity', parity_ratio: 0.91, eo_diff: 0.03, status: 'PASS' },
+        { model: 'narrative_quality', parity_ratio: 0.91, eo_diff: 0.03, status: 'REVIEW' },
       ]
     }),
 
@@ -120,7 +131,7 @@ export function defineMockApi() {
       const hasSpecifics = /\d{1,2}:\d{2}|KA-\d{2}|\d{2,}/.test(narrative);
       const isVague = wordCount < 50 || /someone|something|bad person|bothering/.test(narrative.toLowerCase());
       const score = isVague ? 0.32 : hasSpecifics ? 0.84 : 0.61;
-      const label = score >= 0.7 ? 'GENUINE' : score >= 0.45 ? 'NEEDS REVIEW' : 'FABRICATED';
+      const label = score >= 0.7 ? 'MORE COMPLETE' : score >= 0.45 ? 'NEEDS REVIEW' : 'SPARSE RECORD';
 
       return {
         score,
@@ -132,24 +143,26 @@ export function defineMockApi() {
           { type: 'delay_indicator', weight: body.delayReason ? 0.4 : 0.9, description: body.delayReason ? `Delay reported: "${body.delayReason}"` : 'No delay in reporting' },
           { type: 'property_claim', weight: body.propertyValue > 100000 ? 0.3 : 0.7, description: body.propertyValue > 100000 ? 'High-value property claim warrants verification' : 'Property value within expected range' },
         ],
-        ziaAssessment: `Linguistic analysis completed. Veracity score: ${(score * 100).toFixed(0)}%. Based on ${wordCount} words, ${hasSpecifics ? 'high specificity markers detected' : 'low specificity markers'}. VeriPol-style behavioral pattern matching active.`,
-        methodology: 'VeriPol-inspired logistic regression + TF-IDF features + behavioral markers'
+        ziaAssessment: `Narrative quality review completed. Documentation signal: ${(score * 100).toFixed(0)}%. Based on ${wordCount} words, ${hasSpecifics ? 'specific temporal or identifier markers were found' : 'few specific markers were found'}. This does not assess truthfulness or guilt.`,
+        methodology: 'Synthetic narrative-completeness heuristic; not validated for truth classification',
+        reviewRequired: true,
+        mode: 'synthetic-demo',
       };
     },
 
     // === Agentic ===
     'GET /server/agentic/actions': () => ({
       actions: [
-        { id: 1, agent: 'PatrolOptimizer', action: 'Reallocated 3 patrol units to Brigade Road corridor', timestamp: '2026-07-06T08:30:00Z', status: 'executed', confidence: 0.87 },
+        { id: 1, agent: 'PatrolPlanner', action: 'Prepared a Brigade Road coverage scenario for supervisor review', timestamp: '2026-07-22T08:30:00Z', status: 'awaiting-review', confidence: 0.67 },
         { id: 2, agent: 'CaseTriager', action: 'Flagged FIR KSP-2026-0142 for priority review', timestamp: '2026-07-06T07:15:00Z', status: 'executed', confidence: 0.92 },
-        { id: 3, agent: 'VeracityScanner', action: 'Batch-processed 47 FIR narratives for veracity scoring', timestamp: '2026-07-06T06:00:00Z', status: 'completed', confidence: 0.85 },
-        { id: 4, agent: 'HotspotPredictor', action: 'Updated 12-hour crime forecast for District 1', timestamp: '2026-07-06T05:30:00Z', status: 'completed', confidence: 0.79 },
+        { id: 3, agent: 'NarrativeQuality', action: 'Reviewed 47 FIR narratives for documentation gaps', timestamp: '2026-07-22T06:00:00Z', status: 'completed', confidence: 0.85 },
+        { id: 4, agent: 'PatternAnalyst', action: 'Updated 12-hour district pattern signals for analyst review', timestamp: '2026-07-22T05:30:00Z', status: 'completed', confidence: 0.64 },
         { id: 5, agent: 'BriefGenerator', action: 'Generated morning intelligence brief for ACP Anjumala', timestamp: '2026-07-06T05:00:00Z', status: 'delivered', confidence: 0.91 },
       ]
     }),
     'GET /server/agentic/briefs': () => ({
       briefs: [
-        { id: 1, date: '2026-07-06', title: 'Morning Intelligence Brief', summary: 'Overnight crime analysis: 12 FIRs registered, 3 flagged for veracity review. Brigade Road hotspot active.', sections: ['Crime Summary', 'Hotspot Alert', 'Case Status', 'Resource Allocation'] },
+        { id: 1, date: '2026-07-22', title: 'Morning Intelligence Brief', summary: 'Overnight review: 12 FIRs registered and 3 flagged for documentation review. Brigade Road pattern requires analyst verification.', sections: ['Crime Summary', 'Pattern Review', 'Case Status', 'Coverage Scenarios'] },
         { id: 2, date: '2026-07-05', title: 'Evening Intelligence Brief', summary: 'Day shift summary: 28 FIRs processed, 2 arrests made, clearance rate 42%.', sections: ['Crime Summary', 'Arrest Log', 'Pending Cases'] },
       ]
     }),
@@ -159,9 +172,9 @@ export function defineMockApi() {
 
     // === Alerts ===
     'GET /server/fir_api/alerts': () => ([
-      { id: 1, type: 'VERACITY', severity: 'high', title: 'FIR KSP-2026-0142 flagged as FABRICATED', district: 'Bangalore Urban', timestamp: '2026-07-06T08:45:00Z' },
+      { id: 1, type: 'DOCUMENTATION', severity: 'high', title: 'FIR KSP-2026-0142 needs CCTV custody documentation', district: 'Bangalore Urban', timestamp: '2026-07-22T08:45:00Z' },
       { id: 2, type: 'HOTSPOT', severity: 'medium', title: 'Brigade Road showing elevated theft activity', district: 'Bangalore Urban', timestamp: '2026-07-06T07:30:00Z' },
-      { id: 3, type: 'SOLVABILITY', severity: 'low', title: 'Case #1234 solvability index dropped to 0.31', district: 'Mysuru', timestamp: '2026-07-06T06:15:00Z' },
+      { id: 3, type: 'CASE_READINESS', severity: 'low', title: 'FIR KSP-2026-0234 readiness needs review', district: 'Bengaluru Urban', timestamp: '2026-07-06T06:15:00Z' },
       { id: 4, type: 'FAIRNESS', severity: 'medium', title: 'Recidivism model parity ratio below threshold (0.75)', district: 'All', timestamp: '2026-07-06T05:00:00Z' },
     ]),
 
@@ -219,7 +232,7 @@ export function defineMockApi() {
 
     // === FIR Quality ===
     'GET /server/fir_quality/fir-quality/lowest': () => ([
-      { firNo: 'KSP-2026-0142', district: 'Bangalore Urban', score: 0.31, issues: ['Missing witness details', 'Vague suspect description', 'No weapon mentioned'] },
+      { firNo: 'KSP-2026-0234', district: 'Bangalore Urban', score: 0.31, issues: ['Witness details incomplete', 'Location description incomplete', 'Evidence source not recorded'] },
       { firNo: 'KSP-2026-0089', district: 'Bangalore Urban', score: 0.38, issues: ['Delayed reporting without reason', 'Property value inflated'] },
       { firNo: 'KSP-2026-0201', district: 'Mysuru', score: 0.42, issues: ['Incomplete address', 'No FIR stage marked'] },
     ]),
@@ -232,10 +245,10 @@ export function defineMockApi() {
     ]),
     'POST /server/fir_quality/fir-quality': ({ body }) => ({
       firNo: body.firNo || 'KSP-2026-0142',
-      score: 0.62,
-      label: 'NEEDS REVIEW',
-      issues: ['Vague suspect description', 'No weapon mentioned'],
-      methodology: 'VeriPol-inspired quality scoring'
+      score: 0.84,
+      label: 'MORE COMPLETE',
+      issues: ['CCTV acquisition not recorded', 'CCTV hash not recorded', 'BSA Section 63 certificate pending'],
+      methodology: 'Synthetic documentation-completeness checklist'
     }),
 
     // === GBV Analytics ===
@@ -272,31 +285,46 @@ export function defineMockApi() {
       modelVersion: 'QuickML-v3.2',
       confidence: 0.81,
     }),
+    'GET /server/predictive_mode/predict': ({ query }) => ({
+      districtId: Number(query.districtId) || 1,
+      districtName: ['Bengaluru Urban', 'Mysuru', 'Dakshina Kannada'][((Number(query.districtId) || 1) - 1) % 3],
+      firCount: 1247,
+      method: 'calibrated-demonstration-baseline',
+      generatedAt: '2026-07-22T09:00:00+05:30',
+      topCrimes: [['robbery', 145], ['theft', 121], ['burglary', 88]],
+      predictions: [
+        { crime_type: 'robbery', confidence: 0.78, location: 'Brigade Road corridor', time_window: '18:00-22:00', reasoning: 'Seven-day robbery count is 1.6x the seasonal baseline; event density is concentrated in two adjacent beats.' },
+        { crime_type: 'theft', confidence: 0.64, location: 'Majestic transit interchange', time_window: '16:00-20:00', reasoning: 'Transit-footfall and recent theft reports exceed the demonstration threshold.' },
+        { crime_type: 'burglary', confidence: 0.47, location: 'Indiranagar east beat', time_window: '00:00-04:00', reasoning: 'A small night-time cluster is present; confidence remains below deployment threshold.' },
+      ],
+      limitations: ['Synthetic demonstration data', 'Signals support patrol planning only', 'Supervisor review required before deployment'],
+    }),
 
     // === Network Analysis ===
     'GET /server/network_analysis/graph': () => ({
       nodes: [
-        { id: 'N1', label: 'Suspect A', group: 1, size: 12 },
-        { id: 'N2', label: 'Suspect B', group: 1, size: 10 },
-        { id: 'N3', label: 'Suspect C', group: 2, size: 8 },
+        { id: 'N1', label: 'Person A', group: 1, size: 12 },
+        { id: 'N2', label: 'Person B', group: 1, size: 10 },
+        { id: 'N3', label: 'Person C', group: 2, size: 8 },
         { id: 'N4', label: 'Victim 1', group: 3, size: 6 },
         { id: 'N5', label: 'Witness', group: 4, size: 5 },
-        { id: 'N6', label: 'Suspect D', group: 2, size: 9 },
-        { id: 'N7', label: 'Associate', group: 4, size: 4 },
+        { id: 'N6', label: 'Person D', group: 2, size: 9 },
+        { id: 'N7', label: 'Recorded contact', group: 4, size: 4 },
         { id: 'N8', label: 'Victim 2', group: 3, size: 5 },
       ],
       links: [
-        { source: 'N1', target: 'N2', weight: 5, relation: 'co-offender' },
-        { source: 'N1', target: 'N3', weight: 3, relation: 'known-associate' },
-        { source: 'N2', target: 'N6', weight: 4, relation: 'family' },
-        { source: 'N3', target: 'N6', weight: 2, relation: 'co-offender' },
-        { source: 'N1', target: 'N4', weight: 1, relation: 'perpetrator-victim' },
-        { source: 'N3', target: 'N8', weight: 1, relation: 'perpetrator-victim' },
-        { source: 'N5', target: 'N4', weight: 1, relation: 'witness' },
-        { source: 'N6', target: 'N7', weight: 2, relation: 'associate' },
+        { source: 'N1', target: 'N2', weight: 5, relation: 'shared-FIR record' },
+        { source: 'N1', target: 'N3', weight: 3, relation: 'recorded contact' },
+        { source: 'N2', target: 'N6', weight: 4, relation: 'recorded family relation' },
+        { source: 'N3', target: 'N6', weight: 2, relation: 'shared-FIR record' },
+        { source: 'N1', target: 'N4', weight: 1, relation: 'accused-victim record' },
+        { source: 'N3', target: 'N8', weight: 1, relation: 'accused-victim record' },
+        { source: 'N5', target: 'N4', weight: 1, relation: 'witness record' },
+        { source: 'N6', target: 'N7', weight: 2, relation: 'recorded contact' },
       ],
       communities: 4,
       totalCases: 6,
+      metadata: { mode: 'synthetic-demo', humanReviewRequired: true, note: 'Links describe source-record relationships only.' },
     }),
 
     // === Notifications ===
@@ -332,7 +360,7 @@ export function defineMockApi() {
       district: 'Bangalore Urban',
       dateRegistered: '2026-03-15',
       complainant: 'Rajesh Kumar',
-      sections: ['379 IPC', '506 IPC'],
+      sections: ['BNS 304', 'BNS 309', 'BNS 3(5) - legal officer review required'],
       status: 'Under Investigation',
       io: 'PI Dharmendra',
     }),
@@ -341,26 +369,52 @@ export function defineMockApi() {
     'POST /server/solvability_index/solvability': ({ body }) => ({
       firNo: body.firNo || 'KSP-2026-0142',
       score: 0.67,
-      label: 'SOLVABLE',
+      readinessScore: 67,
+      solvabilityScore: 67,
+      uncertaintyBand: 15,
+      label: 'HUMAN REVIEW REQUIRED',
       factors: [
-        { name: 'Witness availability', weight: 0.85, value: '2 witnesses identified' },
-        { name: 'Physical evidence', weight: 0.72, value: 'CCTV footage within 48hr window' },
-        { name: 'Suspect identification', weight: 0.60, value: 'Partial — scar description, no name' },
-        { name: 'Time to report', weight: 0.92, value: 'Reported within 4 hours' },
-        { name: 'Location specificity', weight: 0.88, value: 'Exact location identified' },
+        { name: 'Witness records', score: 15, max: 20, value: '2 witnesses identified' },
+        { name: 'Recorded evidence types', score: 18, max: 30, value: 'CCTV source identified; acquisition and integrity records pending' },
+        { name: 'Named accused records', score: 15, max: 15, value: 'Mohan Kumar and Kiran Joseph are named' },
+        { name: 'Time and place detail', score: 10, max: 10, value: 'Date, time, and SH-9 junction recorded' },
+        { name: 'Reporting timeline', score: 9, max: 15, value: 'Registration timing recorded' },
       ],
-      recommendation: 'Prioritize for investigation. Strong witness and evidence indicators.',
+      recommendation: 'Acquire the referenced CCTV lawfully, record its hash, obtain the BSA Section 63 certificate, and verify the at-large status.',
+      note: 'Synthetic evidence-completeness heuristic; not a prediction of guilt, conviction, or case outcome.',
     }),
 
     // === Victim Risk ===
     'GET /server/victim_risk_shield/high-risk': () => ({
       victims: [
-        { id: 1, name: 'Protected', age: 34, riskLevel: 'HIGH', riskScore: 0.82, factors: ['Repeat victim (3x)', 'High-crime area', 'No protection order'] },
-        { id: 2, name: 'Protected', age: 28, riskLevel: 'MEDIUM', riskScore: 0.61, factors: ['Domestic violence history', 'Recent threats'] },
-        { id: 3, name: 'Protected', age: 52, riskLevel: 'HIGH', riskScore: 0.78, factors: ['Elderly', 'Isolated living', 'Financial exploitation pattern'] },
+        { victimId: 'V-1042', name: 'Identity protected', count: 3, riskLevel: 'High', riskScore: 82, factors: ['Three reports in 180 days', 'Recent escalation marker', 'Protection-plan review pending'] },
+        { victimId: 'V-1187', name: 'Identity protected', count: 2, riskLevel: 'Medium', riskScore: 61, factors: ['Two related reports', 'Recent threat marker'] },
+        { victimId: 'V-1209', name: 'Identity protected', count: 3, riskLevel: 'High', riskScore: 78, factors: ['Repeat financial exploitation reports', 'Safeguarding referral pending'] },
       ],
       total: 3,
       avgRiskScore: 0.74,
+      mode: 'synthetic-demo',
+      reviewRequired: true,
+    }),
+    'GET /server/victim_risk_shield/score/:id': ({ params }) => ({
+      victimId: params.id,
+      victimName: 'Identity protected',
+      riskLevel: 'High',
+      riskScore: 82,
+      percentile: 87,
+      firCount: 3,
+      timeSpanDays: 176,
+      escalationRate: 0.5,
+      recentMONdays: 18,
+      factors: ['Three related reports in 180 days', 'Shortening interval between reports', 'Safeguarding review not yet recorded'],
+      recommendation: 'Route to the district safeguarding officer for human review. Do not use this score as the sole basis for enforcement action.',
+      history: [
+        { firNo: 'KSP-2026-0061', year: 2026, date: '2026-01-18', districtId: 'Bengaluru Urban' },
+        { firNo: 'KSP-2026-0214', year: 2026, date: '2026-04-12', districtId: 'Bengaluru Urban' },
+        { firNo: 'KSP-2026-0417', year: 2026, date: '2026-07-04', districtId: 'Bengaluru Urban' },
+      ],
+      mode: 'synthetic-demo',
+      reviewRequired: true,
     }),
 
     // === Voice Query ===
@@ -399,6 +453,8 @@ export function defineMockApi() {
     },
     'POST /server/crime_chat/query': ({ body }) => {
       const query = String(body?.query || '').toLowerCase();
+      const history = Array.isArray(body?.history) ? body.history.map(item => String(item?.text || '')).join(' ').toLowerCase() : '';
+      const contextualFir = `${query} ${history}`.match(/ksp-2026-0?142|\bfir\s*0?142\b/) ? 'KSP-2026-0142' : null;
       const kannada = body?.language === 'kn';
       const copilotResponse = (intent, answer, confidence, reasoning, sources, limitations = []) => ({
         intent,
@@ -416,6 +472,14 @@ export function defineMockApi() {
         { label: 'ArrestSurrender records (1)', table: 'ArrestSurrender', record: 142 },
         { label: 'ActSectionAssociation (2)', table: 'ActSectionAssociation', record: 142 },
       ];
+      if (/at large|not arrested|unmatched arrest|ಬಂಧನವಾಗದ|ತಲೆಮರೆಸಿಕೊಂಡ/u.test(query) && contextualFir) {
+        return copilotResponse('accused_status', kannada
+          ? '**FIR KSP-2026-0142 — ಆರೋಪಿ ಸ್ಥಿತಿ**\n\nಕಿರಣ್ ಜೋಸೆಫ್‌ಗೆ ಹೊಂದುವ ಬಂಧನ ಅಥವಾ ಶರಣಾಗತಿ ದಾಖಲೆ ಇಲ್ಲ. ಮೋಹನ್ ಕುಮಾರ್ ಬಂಧನದಲ್ಲಿದ್ದಾರೆ.\n\n**ಅಧಿಕಾರಿ ಕ್ರಮ:** ವಾರಂಟ್ ಮತ್ತು ಕೊನೆಯ ಪರಿಶೀಲಿತ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಿ; ಈ ಡೆಮೋ ಫಲಿತಾಂಶದ ಆಧಾರದ ಮೇಲೆ ಮಾತ್ರ ಕಾರ್ಯಾಚರಣೆ ಮಾಡಬೇಡಿ.'
+          : '**FIR KSP-2026-0142 — Accused status**\n\nKiran Joseph has no matching arrest or surrender record. Mohan Kumar is recorded in custody.\n\n**Officer action:** Verify the warrant and last confirmed location before any field action.', 0.91, [
+          { label: 'Mohan Kumar', value: 'In custody', impact: 'ArrestSurrender record AS-142-01 is present.' },
+          { label: 'Kiran Joseph', value: 'At large', impact: 'No matching arrest or surrender event is recorded.' },
+        ], caseSources, ['Synthetic demonstration records require CCTNS and warrant-register verification.']);
+      }
       if (/missing evidence|evidence gap|completeness/.test(query)) {
         return copilotResponse('evidence_gaps', 'The case has strong witness and location records, but CCTV acquisition, chain-of-custody confirmation, and one accused process event remain unresolved. Completeness is 72% across the available demonstration checks.', 0.89, [
           { label: 'Witness statements', value: 'Recorded', impact: 'Two witness records support event reconstruction.' },
@@ -444,11 +508,11 @@ export function defineMockApi() {
           { label: 'Suspect process', value: 'Incomplete', impact: 'One accused lacks a matching arrest or surrender event.' },
         ], caseSources, ['Readiness measures recorded completeness, not guilt, conviction probability, or legal sufficiency.']);
       }
-      if (/142|ಸಂಕ್ಷಿಪ್ತ/u.test(query)) {
+      if ((contextualFir && !/bns|snatch|ವಿಧಿ|common intention|two accused|ಇಬ್ಬರು/u.test(query)) || /ಸಂಕ್ಷಿಪ್ತ/u.test(query)) {
         return {
           answer: kannada
             ? '**FIR KSP-2026-0142 — ಸಾಕ್ಷ್ಯ ಸಾರಾಂಶ**\n\nಬ್ರಿಗೇಡ್ ರೋಡ್ ಪೊಲೀಸ್ ಠಾಣೆಯಲ್ಲಿ ದರೋಡೆ ಪ್ರಕರಣ ದಾಖಲಾಗಿದೆ. ಇಬ್ಬರು ಸಾಕ್ಷಿಗಳು ಮತ್ತು CCTV ದಾಖಲಿಸಲಾಗಿದೆ. ಪ್ರಾಥಮಿಕ ಆರೋಪಿ ಪುನರಾವರ್ತಿತ ಅಪರಾಧಿಗಳ ಜಾಲಕ್ಕೆ ಸಂಬಂಧಿಸಿದ್ದಾನೆ.\n\n**ಮುಂದಿನ ಕ್ರಮ:** CCTV ವೀಡಿಯೊವನ್ನು ಪಡೆದು ಅದರ ಹ್ಯಾಶ್ ಅನ್ನು ಸಂರಕ್ಷಿಸಿ.'
-            : '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses and CCTV are recorded; the primary accused is linked to a repeat-offender cluster. Solvability is 67%, veracity is 84%, and the chargesheet deadline is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
+            : '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses are recorded and junction CCTV is referenced but not yet acquired. Investigation readiness is 67%; the narrative documentation signal is 84% and does not assess truth. The current filing date is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
           sources: [
             { label: 'CaseMaster #142', table: 'CaseMaster', record: 142 },
             { label: 'Accused records (3)', table: 'Accused', record: 142 },
@@ -464,10 +528,13 @@ export function defineMockApi() {
           method: 'synthetic-schema-grounded-join', confidence: 0.92, mode: 'demo', intent: 'case_summary'
         };
       }
-      if (/bns|snatch|ವಿಧಿ/u.test(query)) {
+      if (/bns|snatch|ವಿಧಿ|common intention|two accused|ಇಬ್ಬರು/u.test(query)) {
         return {
-          answer: 'Based on the verified legal index: BNS 304 covers snatching and provides punishment that may extend to three years and fine. If force, hurt, or fear of instant hurt is involved, BNS 309 robbery may also require review. Verify the exact facts and subsection with the legal officer before filing.',
-          sources: [{ label: 'BNS 304 · India Code' }, { label: 'BNS 309 · India Code' }],
+          answer: 'The official BNS text supports reviewing section 304 for snatching and section 309 where the facts amount to robbery. Because the record names two alleged participants, section 3(5) on acts done by several persons in furtherance of common intention may also require review. This is retrieval support, not a charging decision; verify facts and subsections with the legal officer.',
+          sources: [
+            { label: 'Bharatiya Nyaya Sanhita, 2023 · India Code', url: 'https://www.indiacode.nic.in/handle/123456789/20062?locale=en' },
+            { label: 'Official BNS Act PDF · India Code', url: 'https://www.indiacode.nic.in/bitstream/123456789/20062/1/a2023-45.pdf' },
+          ],
           method: 'verified-keyword-retrieval', confidence: 0.87, mode: 'demo', intent: 'legal'
         };
       }
@@ -483,11 +550,11 @@ export function defineMockApi() {
 
     // === Exceedance Curve ===
     'GET /server/exceedance_curve/exceedance': ({ query }) => {
-      const crimeTypes = ['theft', 'burglary', 'assault', 'cyber_fraud', 'robbery', 'vehicle_theft', 'homicide', 'kidnapping'];
+      const crimeTypes = ['robbery', 'theft', 'burglary', 'assault', 'cyber fraud', 'vehicle theft', 'homicide', 'kidnapping'];
+      const baselines = { robbery: [338, 145], theft: [310, 112], burglary: [244, 91], assault: [221, 76], 'cyber fraud': [196, 88], 'vehicle theft': [184, 62], homicide: [42, 13], kidnapping: [37, 12] };
       const curves = {};
       crimeTypes.forEach(ct => {
-        const mean = 80 + Math.round(Math.random() * 320);
-        const std = Math.round(mean * (0.15 + Math.random() * 0.25));
+        const [mean, std] = baselines[ct];
         curves[ct] = { mean, std, exceedanceCurve: [1, 2, 5, 10, 20, 50].map(rp => ({ returnPeriodYears: rp, thresholdExceedance: Math.round(mean + std * Math.sqrt(rp) * 1.28), probabilityAnnual: rp === 1 ? 0.63 : 1 / rp })) };
       });
       const worst = Object.entries(curves).sort((a, b) => b[1].exceedanceCurve.find(e => e.returnPeriodYears === 1).thresholdExceedance - a[1].exceedanceCurve.find(e => e.returnPeriodYears === 1).thresholdExceedance)[0];
@@ -524,8 +591,8 @@ export function defineMockApi() {
     // === Chargesheet Clock ===
     'GET /server/chargesheet_clock/stats': () => {
       const cases = [
-        { caseId: 1, firNo: 'KSP-2026-0142', crimeType: 'robbery', officer: 'PI Dharmendra', districtId: 3, dateRegistered: '2026-03-15', daysSinceRegistration: 114, cpcLimitDays: 90, daysOverdue: 24, deadlineDate: '2026-06-13', status: 'overdue' },
-        { caseId: 2, firNo: 'KSP-2026-0089', crimeType: 'burglary', officer: 'PI Maruti', districtId: 7, dateRegistered: '2026-02-28', daysSinceRegistration: 129, cpcLimitDays: 90, daysOverdue: 39, deadlineDate: '2026-05-29', status: 'overdue' },
+        { caseId: 1, firNo: 'KSP-2026-0142', crimeType: 'robbery', officer: 'PI Dharmendra', districtId: 3, dateRegistered: '2026-03-15', clockBasis: 'Current court-approved investigation schedule', daysSinceRegistration: 129, cpcLimitDays: 147, daysOverdue: 0, daysRemaining: 18, deadlineDate: '2026-08-09', status: 'at_risk' },
+        { caseId: 2, firNo: 'KSP-2026-0089', crimeType: 'burglary', officer: 'PI Maruti', districtId: 7, dateRegistered: '2026-02-28', clockBasis: 'Current court-approved investigation schedule', daysSinceRegistration: 144, cpcLimitDays: 150, daysOverdue: 0, daysRemaining: 6, deadlineDate: '2026-07-28', status: 'at_risk' },
         { caseId: 3, firNo: 'KSP-2026-0201', crimeType: 'assault', officer: 'PI Anjumala', districtId: 2, dateRegistered: '2026-01-10', daysSinceRegistration: 178, cpcLimitDays: 90, daysOverdue: 88, deadlineDate: '2026-04-10', status: 'overdue' },
         { caseId: 4, firNo: 'KSP-2026-0156', crimeType: 'theft', officer: 'SI Ramesh', districtId: 5, dateRegistered: '2026-04-01', daysSinceRegistration: 97, cpcLimitDays: 90, daysOverdue: 7, deadlineDate: '2026-06-30', status: 'overdue' },
         { caseId: 5, firNo: 'KSP-2026-0234', crimeType: 'fraud', officer: 'PI Dharmendra', districtId: 3, dateRegistered: '2026-03-20', daysSinceRegistration: 109, cpcLimitDays: 90, daysOverdue: 19, deadlineDate: '2026-06-18', status: 'overdue' },
@@ -597,10 +664,11 @@ export function defineMockApi() {
     // === Duration-Weighted Harm ===
     'GET /server/duration_harm/harm-weight': () => {
       const crimes = ['burglary', 'robbery', 'assault', 'theft', 'fraud', 'extortion', 'kidnapping', 'rioting'];
+      const durationOptions = [1, 1, 1, 1, 2, 3, 5, 7, 14, 21, 30, 60, 90, 120, 180];
       const points = Array.from({ length: 120 }, (_, i) => {
-        const lat = 12.8 + Math.random() * 0.8;
-        const lng = 74.5 + Math.random() * 0.6 + (i % 3) * 0.4;
-        const durationDays = [1, 1, 1, 1, 2, 3, 5, 7, 14, 21, 30, 60, 90, 120, 180][Math.floor(Math.random() * 15)];
+        const lat = 12.8 + ((i * 37) % 80) / 100;
+        const lng = 74.5 + ((i * 23) % 60) / 100 + (i % 3) * 0.4;
+        const durationDays = durationOptions[(i * 7) % durationOptions.length];
         const harmWeight = Math.round(Math.log10(durationDays + 1) * 100) / 100;
         return {
           id: i + 1, lat: Math.round(lat * 10000) / 10000, lng: Math.round(lng * 10000) / 10000,
@@ -621,12 +689,12 @@ export function defineMockApi() {
     // === Co-Accused Network ===
     'GET /server/co_accused_network/graph': () => {
       const nodes = [
-        { id: 'Suresh Patil', personId: 'A1', community: 1, cases: 4, firNos: ['KSP-2026-0142', 'KSP-2026-0198', 'KSP-2026-0211', 'KSP-2026-0255'] },
+        { id: 'Suresh Patil', personId: 'A1', community: 1, cases: 4, firNos: ['KSP-2026-0190', 'KSP-2026-0198', 'KSP-2026-0211', 'KSP-2026-0255'] },
         { id: 'Ravi Shetty', personId: 'A1', community: 1, cases: 3, firNos: ['KSP-2026-0089', 'KSP-2026-0211', 'KSP-2026-0330'] },
         { id: 'Venkatesh Gowda', personId: 'A1', community: 1, cases: 3, firNos: ['KSP-2026-0201', 'KSP-2026-0198', 'KSP-2026-0255'] },
-        { id: 'Mohan Kumar', personId: 'A2', community: 1, cases: 2, firNos: ['KSP-2026-0142', 'KSP-2026-0330'] },
+        { id: 'Mohan Kumar', personId: 'A1', community: 1, cases: 2, firNos: ['KSP-2026-0142', 'KSP-2026-0301'] },
         { id: 'Arun Nair', personId: 'A2', community: 1, cases: 2, firNos: ['KSP-2026-0211', 'KSP-2026-0089'] },
-        { id: 'Kiran Joseph', personId: 'A3', community: 1, cases: 1, firNos: ['KSP-2026-0142'] },
+        { id: 'Kiran Joseph', personId: 'A2', community: 1, cases: 1, firNos: ['KSP-2026-0142'] },
         { id: 'Imran Khan', personId: 'A2', community: 1, cases: 2, firNos: ['KSP-2026-0267', 'KSP-2026-0255'] },
         { id: 'Deepa Shetty', personId: 'A3', community: 2, cases: 1, firNos: ['KSP-2026-0333'] },
         { id: 'Prakash Acharya', personId: 'A1', community: 2, cases: 3, firNos: ['KSP-2026-0388', 'KSP-2026-0390', 'KSP-2026-0412'] },
@@ -637,8 +705,7 @@ export function defineMockApi() {
       const links = [
         { source: 'Suresh Patil', target: 'Ravi Shetty', cases: 1, role: 'A1-A1', firNos: ['KSP-2026-0211'] },
         { source: 'Suresh Patil', target: 'Venkatesh Gowda', cases: 2, role: 'A1-A1', firNos: ['KSP-2026-0198', 'KSP-2026-0255'] },
-        { source: 'Suresh Patil', target: 'Mohan Kumar', cases: 1, role: 'A1-A2', firNos: ['KSP-2026-0142'] },
-        { source: 'Suresh Patil', target: 'Kiran Joseph', cases: 1, role: 'A1-A3', firNos: ['KSP-2026-0142'] },
+        { source: 'Mohan Kumar', target: 'Kiran Joseph', cases: 1, role: 'A1-A2', firNos: ['KSP-2026-0142'] },
         { source: 'Ravi Shetty', target: 'Arun Nair', cases: 1, role: 'A1-A2', firNos: ['KSP-2026-0089'] },
         { source: 'Ravi Shetty', target: 'Mohan Kumar', cases: 1, role: 'A1-A2', firNos: ['KSP-2026-0330'] },
         { source: 'Venkatesh Gowda', target: 'Girish Poojary', cases: 2, role: 'A1-A2', firNos: ['KSP-2026-0198', 'KSP-2026-0201'] },
@@ -646,7 +713,7 @@ export function defineMockApi() {
         { source: 'Prakash Acharya', target: 'Manjunath Hegde', cases: 2, role: 'A1-A2', firNos: ['KSP-2026-0388', 'KSP-2026-0390'] },
         { source: 'Prakash Acharya', target: 'Shweta Kamath', cases: 1, role: 'A1-A3', firNos: ['KSP-2026-0412'] },
       ];
-      return { nodes, links, summary: { gangs: 2, totalAccused: nodes.length, A1Count: nodes.filter(n => n.personId === 'A1').length } };
+      return { nodes, links, summary: { communities: 2, totalAccused: nodes.length, A1Count: nodes.filter(n => n.personId === 'A1').length }, metadata: { method: 'shared-FIR connected components', humanReviewRequired: true } };
     },
 
     // === Mutual Accusation Signal ===
@@ -659,7 +726,7 @@ export function defineMockApi() {
     }),
     'GET /server/mutual_accusation/pairs': () => {
       const pairs = [
-        { id: 1, fir1: 'KSP-2026-0142', fir2: 'KSP-2026-0160', complainant1: 'Rajesh Kumar', complainant2: 'Suresh Patil', crimeType: 'robbery', dateFiled1: '2026-03-15', dateFiled2: '2026-03-22', status: 'active', crossAllegations: 'Both accuse each other of assault during property dispute', station1: 'Brigade Road PS', station2: 'Brigade Road PS' },
+        { id: 1, fir1: 'KSP-2026-0112', fir2: 'KSP-2026-0160', complainant1: 'Ravi Prasad', complainant2: 'Suresh Patil', crimeType: 'assault', dateFiled1: '2026-03-12', dateFiled2: '2026-03-22', status: 'active', crossAllegations: 'Both parties recorded allegations arising from the same property dispute', station1: 'Brigade Road PS', station2: 'Brigade Road PS' },
         { id: 2, fir1: 'KSP-2026-0201', fir2: 'KSP-2026-0215', complainant1: 'Venkatesh Gowda', complainant2: 'Manjunath Hegde', crimeType: 'assault', dateFiled1: '2026-01-10', dateFiled2: '2026-01-18', status: 'resolved', crossAllegations: 'Neighbourhood dispute — both sides filed assault charges', station1: 'Mysuru North PS', station2: 'Mysuru North PS' },
         { id: 3, fir1: 'KSP-2026-0267', fir2: 'KSP-2026-0280', complainant1: 'Imran Khan', complainant2: 'Ravi Shetty', crimeType: 'burglary', dateFiled1: '2026-04-30', dateFiled2: '2026-05-05', status: 'active', crossAllegations: 'Both parties claim the other burgled their shop', station1: 'Brigade Road PS', station2: 'Cubbon Park PS' },
         { id: 4, fir1: 'KSP-2026-0333', fir2: 'KSP-2026-0341', complainant1: 'Deepa Shetty', complainant2: 'Shweta Kamath', crimeType: 'assault', dateFiled1: '2026-06-01', dateFiled2: '2026-06-08', status: 'active', crossAllegations: 'Family dispute — sisters accusing each other', station1: 'Shivamogga PS', station2: 'Shivamogga PS' },
@@ -710,7 +777,7 @@ export function defineMockApi() {
         { name: 'Central Crime Branch', district: 'Bangalore Urban', lat: 12.9780, lng: 77.5740 },
       ];
       const vectors = [
-        { caseId: 1, firNo: 'KSP-2026-0142', incident: { lat: 12.9592, lng: 77.6193 }, stationIdx: 0, gravity: 'felony', date: '2026-03-18', officer: 'PI Dharmendra' },
+        { caseId: 1, firNo: 'KSP-2026-0142', incident: { lat: 12.9762, lng: 77.6033 }, stationIdx: 0, gravity: 'felony', date: '2026-03-15', officer: 'PI Dharmendra' },
         { caseId: 2, firNo: 'KSP-2026-0089', incident: { lat: 12.9340, lng: 77.6100 }, stationIdx: 0, gravity: 'misdemeanour', date: '2026-03-05', officer: 'PI Maruti' },
         { caseId: 3, firNo: 'KSP-2026-0201', incident: { lat: 12.3100, lng: 76.6200 }, stationIdx: 2, gravity: 'felony', date: '2026-01-20', officer: 'PI Anjumala' },
         { caseId: 4, firNo: 'KSP-2026-0156', incident: { lat: 12.9000, lng: 74.8700 }, stationIdx: 6, gravity: 'petty', date: '2026-04-10', officer: 'SI Ramesh' },
@@ -750,12 +817,12 @@ export function defineMockApi() {
     // === Accused-at-Large Ledger ===
     'GET /server/accused_at_large/ledger': () => {
       const accused = [
-        { id: 1, name: 'Suresh Patil', age: 34, crimeType: 'robbery', firNo: 'KSP-2026-0142', districtId: 3, abscondingSince: '2026-04-20', daysAtLarge: 78, status: 'absconding', lastKnownLocation: 'Hubli', warrantsIssued: 2, officer: 'PI Dharmendra' },
+        { id: 1, name: 'Kiran Joseph', age: 29, crimeType: 'robbery', firNo: 'KSP-2026-0142', districtId: 1, abscondingSince: '2026-04-01', daysAtLarge: 112, status: 'warrant_verification', lastKnownLocation: 'Shivajinagar, Bengaluru', warrantsIssued: 1, officer: 'PI Dharmendra' },
         { id: 2, name: 'Ravi Shetty', age: 28, crimeType: 'burglary', firNo: 'KSP-2026-0089', districtId: 7, abscondingSince: '2026-03-15', daysAtLarge: 114, status: 'absconding', lastKnownLocation: 'Belgaum', warrantsIssued: 3, officer: 'PI Maruti' },
         { id: 3, name: 'Venkatesh Gowda', age: 42, crimeType: 'assault', firNo: 'KSP-2026-0201', districtId: 2, abscondingSince: '2026-02-01', daysAtLarge: 156, status: 'absconding', lastKnownLocation: 'Mysuru', warrantsIssued: 4, officer: 'PI Anjumala' },
-        { id: 4, name: 'Mohan Kumar', age: 25, crimeType: 'theft', firNo: 'KSP-2026-0156', districtId: 5, abscondingSince: '2026-05-10', daysAtLarge: 58, status: 'absconding', lastKnownLocation: 'Mangaluru', warrantsIssued: 1, officer: 'SI Ramesh' },
+        { id: 4, name: 'Nadeem Pasha', age: 35, crimeType: 'theft', firNo: 'KSP-2026-0156', districtId: 5, abscondingSince: '2026-05-10', daysAtLarge: 73, status: 'absconding', lastKnownLocation: 'Mangaluru', warrantsIssued: 1, officer: 'SI Ramesh' },
         { id: 5, name: 'Arun Nair', age: 31, crimeType: 'fraud', firNo: 'KSP-2026-0234', districtId: 3, abscondingSince: '2026-04-05', daysAtLarge: 93, status: 'absconding', lastKnownLocation: 'Udupi', warrantsIssued: 2, officer: 'PI Dharmendra' },
-        { id: 6, name: 'Kiran Joseph', age: 29, crimeType: 'robbery', firNo: 'KSP-2026-0301', districtId: 1, abscondingSince: '2026-06-01', daysAtLarge: 36, status: 'bailable_warrant', lastKnownLocation: 'Bengaluru', warrantsIssued: 1, officer: 'SI Patel' },
+        { id: 6, name: 'Ajay Rao', age: 29, crimeType: 'robbery', firNo: 'KSP-2026-0301', districtId: 1, abscondingSince: '2026-06-01', daysAtLarge: 51, status: 'bailable_warrant', lastKnownLocation: 'Bengaluru', warrantsIssued: 1, officer: 'SI Patel' },
         { id: 7, name: 'Imran Khan', age: 38, crimeType: 'burglary', firNo: 'KSP-2026-0267', districtId: 7, abscondingSince: '2026-04-30', daysAtLarge: 68, status: 'absconding', lastKnownLocation: 'Dharwad', warrantsIssued: 2, officer: 'PI Maruti' },
         { id: 8, name: 'Deepa Shetty', age: 27, crimeType: 'assault', firNo: 'KSP-2026-0333', districtId: 4, abscondingSince: '2026-06-15', daysAtLarge: 22, status: 'bailable_warrant', lastKnownLocation: 'Shivamogga', warrantsIssued: 1, officer: 'SI Rao' },
         { id: 9, name: 'Prakash Acharya', age: 45, crimeType: 'fraud', firNo: 'KSP-2026-0388', districtId: 5, abscondingSince: '2026-07-01', daysAtLarge: 6, status: 'recent', lastKnownLocation: 'Chitradurga', warrantsIssued: 0, officer: 'SI Ramesh' },
@@ -774,7 +841,7 @@ export function defineMockApi() {
       const q = (query.q || '').toLowerCase()
       const people = [
         { id: 1, name: 'Suresh Patil', roles: [
-          { role: 'accused', firNo: 'KSP-2026-0142', station: 'Brigade Road PS', crimeType: 'robbery' },
+          { role: 'accused', firNo: 'KSP-2026-0190', station: 'Brigade Road PS', crimeType: 'robbery' },
           { role: 'accused', firNo: 'KSP-2026-0198', station: 'Brigade Road PS', crimeType: 'burglary' },
           { role: 'complainant', firNo: 'KSP-2026-0160', station: 'Brigade Road PS', crimeType: 'assault' },
         ]},
@@ -787,15 +854,15 @@ export function defineMockApi() {
           { role: 'complainant', firNo: 'KSP-2026-0007', station: 'Mysuru North PS', crimeType: 'assault' },
         ]},
         { id: 4, name: 'Mohan Kumar', roles: [
-          { role: 'accused', firNo: 'KSP-2026-0156', station: 'Mangaluru PS', crimeType: 'theft' },
-          { role: 'victim', firNo: 'KSP-2026-0330', station: 'Brigade Road PS', crimeType: 'burglary' },
+          { role: 'accused', firNo: 'KSP-2026-0142', station: 'Brigade Road PS', crimeType: 'robbery' },
+          { role: 'accused', firNo: 'KSP-2026-0301', station: 'Cubbon Park PS', crimeType: 'robbery' },
         ]},
         { id: 5, name: 'Arun Nair', roles: [
           { role: 'accused', firNo: 'KSP-2026-0234', station: 'CCB', crimeType: 'fraud' },
           { role: 'complainant', firNo: 'KSP-2026-0402', station: 'Mangaluru PS', crimeType: 'fraud' },
         ]},
         { id: 6, name: 'Kiran Joseph', roles: [
-          { role: 'accused', firNo: 'KSP-2026-0301', station: 'Cubbon Park PS', crimeType: 'robbery' },
+          { role: 'accused', firNo: 'KSP-2026-0142', station: 'Brigade Road PS', crimeType: 'robbery' },
         ]},
         { id: 7, name: 'Imran Khan', roles: [
           { role: 'accused', firNo: 'KSP-2026-0267', station: 'Brigade Road PS', crimeType: 'burglary' },
@@ -827,12 +894,15 @@ export function defineMockApi() {
         ]},
       ]
       const matched = people.filter(p => q.length >= 2 && p.name.toLowerCase().includes(q))
-      return { results: matched.map(p => ({
-        ...p,
-        linkedPersons: [
-          { name: 'Rajesh Kumar', relation: 'complainant', firNo: 'KSP-2026-0142' },
-        ].filter(l => l.name !== p.name)
-      })) }
+      const linksByPerson = {
+        'Mohan Kumar': [{ name: 'Kiran Joseph', relation: 'named in same FIR', firNo: 'KSP-2026-0142' }],
+        'Kiran Joseph': [{ name: 'Mohan Kumar', relation: 'named in same FIR', firNo: 'KSP-2026-0142' }],
+        'Rajesh Kumar': [
+          { name: 'Mohan Kumar', relation: 'complainant-accused record', firNo: 'KSP-2026-0142' },
+          { name: 'Kiran Joseph', relation: 'complainant-accused record', firNo: 'KSP-2026-0142' },
+        ],
+      }
+      return { results: matched.map(p => ({ ...p, linkedPersons: linksByPerson[p.name] || [] })) }
     },
 
     // === Proactive Triage ===
@@ -870,6 +940,28 @@ export function defineMockApi() {
       { id: 4, ioname: 'PC Girish', rank: 'PC', kgid: 'KG2159182', station: 'Brigade Road PS', cases: 8, status: 'Suspended' },
       { id: 5, ioname: 'SI Patel', rank: 'PSI', kgid: 'KG1953112', station: 'Cubbon Park PS', cases: 31, status: 'Active' },
       { id: 6, ioname: 'SI Rao', rank: 'PSI', kgid: 'KG1968114', station: 'Shivamogga PS', cases: 22, status: 'Active' }
+    ]),
+    'POST /server/getdata_withid': () => ([
+      { FirNo: 'KSP-2026-0142', fir_stage: 'Under Investigation', CrimeGroup_Name: 'Robbery', Fir_Date: '2026-03-15' },
+      { FirNo: 'KSP-2026-0234', fir_stage: 'Under Investigation', CrimeGroup_Name: 'Fraud', Fir_Date: '2026-03-20' },
+      { FirNo: 'KSP-2026-0301', fir_stage: 'Chargesheet Filed', CrimeGroup_Name: 'Robbery', Fir_Date: '2026-05-10' },
+      { FirNo: 'KSP-2026-0359', fir_stage: 'Case Closed', CrimeGroup_Name: 'Theft', Fir_Date: '2026-06-15' },
+    ]),
+    'POST /server/getofficerinfo_withid': () => ([
+      { id: 1, ioname: 'PI Dharmendra', rank: 'PI', kgid: 'KG1841136', station: 'Brigade Road PS', status: 'Active' },
+    ]),
+    'POST /server/getresponsetime': () => ({ response_time: 8.2 }),
+    'POST /server/getconviction': () => ([
+      { accused_chargesheeted_count: 18, conviction_count: 11 },
+      { accused_chargesheeted_count: 14, conviction_count: 9 },
+      { accused_chargesheeted_count: 9, conviction_count: 5 },
+    ]),
+    'POST /server/getcrimehotspot': () => ([
+      { beat_name: 'Brigade Road beat', village_area_name: 'Brigade Road corridor', district: 'Bengaluru Urban', Latitude: 12.9719, Longitude: 77.6077, CrimeGroup_Name: 'Robbery' },
+      { beat_name: 'Brigade Road beat', village_area_name: 'Brigade Road corridor', district: 'Bengaluru Urban', Latitude: 12.9719, Longitude: 77.6077, CrimeGroup_Name: 'Theft' },
+      { beat_name: 'Majestic transit beat', village_area_name: 'Majestic interchange', district: 'Bengaluru Urban', Latitude: 12.9767, Longitude: 77.5713, CrimeGroup_Name: 'Theft' },
+      { beat_name: 'Indiranagar east beat', village_area_name: 'Indiranagar east', district: 'Bengaluru Urban', Latitude: 12.9784, Longitude: 77.6408, CrimeGroup_Name: 'Burglary' },
+      { beat_name: 'MG Road beat', village_area_name: 'MG Road metro', district: 'Bengaluru Urban', Latitude: 12.9756, Longitude: 77.6068, CrimeGroup_Name: 'Robbery' },
     ]),
     'POST /server/getfirdetails': ({ body }) => {
       const year = body.year || 2026;
@@ -994,29 +1086,36 @@ export function defineMockApi() {
       };
       
       const mapping = crimeTypeMap[cleanNum] || { type: 'theft', head: 'THEFT', desc: 'Theft of property.' };
+      const isCanonicalCase = cleanNum === 142 && String(year) === '2026';
+      const incidentDate = isCanonicalCase ? '2026-03-15' : `${year}-03-${String((cleanNum % 28) + 1).padStart(2, '0')}`;
       
       return [{
-        FIRNo: rawFir,
+        FIRNo: `KSP-${year}-${String(cleanNum).padStart(4, '0')}`,
         FIRYear: parseInt(year),
-        DistrictID: (cleanNum % 5) + 1,
-        DistrictName: ['Bengaluru City', 'Mysuru City', 'Mangaluru City', 'Hubballi-Dharwad City', 'Belagavi City'][cleanNum % 5],
+        DistrictID: isCanonicalCase ? 1 : (cleanNum % 5) + 1,
+        DistrictName: isCanonicalCase ? 'Bengaluru Urban' : ['Bengaluru City', 'Mysuru City', 'Mangaluru City', 'Hubballi-Dharwad City', 'Belagavi City'][cleanNum % 5],
         PoliceStationID: (cleanNum % 3) + 1,
         UnitName: ['Cubbon Park PS', 'Brigade Road PS', 'Malleswaram PS'][cleanNum % 3],
         complainantName: 'Rajesh Kumar',
-        accusedCount: cleanNum % 3,
+        accusedCount: isCanonicalCase ? 2 : cleanNum % 3,
         hasWitnesses: cleanNum % 2 === 0,
         delayReason: cleanNum % 4 === 0 ? 'Hospitalization of victim' : '',
         propertyValue: cleanNum * 150,
-        Narrative: `On ${year}-03-${(cleanNum % 28) + 1} at approximately 8:30 PM, the incident occurred. ${mapping.desc} The suspect pointed a sharp object at the victim and demanded valuables. Complainant was walking alone back from the office. Two bystanders saw the event but refused to make formal statements on site.`,
+        Narrative: isCanonicalCase
+          ? 'On 2026-03-15 at approximately 8:30 PM, a robbery was reported near the SH-9 junction in the Brigade Road corridor. The complainant reported that two persons used a sharp object to demand valuables and left on a two-wheeler. Two bystanders were identified. Junction CCTV is referenced in the case diary, but acquisition, hash verification, and the BSA Section 63 certificate remain pending.'
+          : `On ${incidentDate} at approximately 8:30 PM, the incident occurred. ${mapping.desc} The suspect pointed a sharp object at the victim and demanded valuables. Two bystanders were identified for follow-up.`,
         CrimeGroup_Name: mapping.type,
         CrimeHead_Name: mapping.head,
         fir_stage: cleanNum % 3 === 0 ? 'Case Closed' : 'Under Investigation',
-        Fir_Date: `${year}-03-${(cleanNum % 28) + 1}`,
-        complainantMobile: '9876543210',
-        complainantAadhaar: '1234-5678-9012',
-        accusedName: cleanNum % 3 > 0 ? 'Mohan Kumar, Kiran Joseph' : 'Unknown',
+        Fir_Date: incidentDate,
+        complainantMobile: '98XXXXXX10',
+        complainantAadhaar: 'XXXX-XXXX-9012',
+        accusedName: isCanonicalCase ? 'Mohan Kumar, Kiran Joseph' : cleanNum % 3 > 0 ? 'Mohan Kumar, Kiran Joseph' : 'Unknown',
         victimName: 'Rajesh Kumar',
-        location: 'MG Road'
+        location: isCanonicalCase ? 'SH-9 junction, Brigade Road corridor' : 'MG Road',
+        filingDeadline: isCanonicalCase ? '2026-08-09' : null,
+        filingDaysRemaining: isCanonicalCase ? 18 : null,
+        dataMode: 'synthetic-demo',
       }];
     },
 
@@ -1046,22 +1145,25 @@ export function defineMockApi() {
     // === Person 360 API Mock ===
     'GET /server/fir_api/person/:id': ({ params }) => {
       const name = decodeURIComponent(params.id).replace(/_/g, ' ');
+      const isKiran = name.toLowerCase().includes('kiran');
       return {
         name,
-        aliases: ['Munna', 'Gowda Junior'],
-        legalStatus: name.includes('Kiran') ? 'bailable_warrant' : 'absconding',
-        age: 32,
+        aliases: isKiran ? ['KJ'] : ['Mohan K.'],
+        legalStatus: isKiran ? 'warrant_verification_pending' : 'in_custody',
+        age: isKiran ? 29 : 32,
         gender: 'Male',
         primaryPhone: '9845012345',
         aadhaarId: 'XXXX-XXXX-9182',
-        lastKnownAddress: '7th Main, Malleshwaram, Bengaluru',
-        gangAffiliation: 'M G Road Snatchers',
-        riskCategory: 'High Recidivism Risk',
+        lastKnownAddress: isKiran ? 'Last confirmed: Shivajinagar, Bengaluru' : '7th Main, Malleshwaram, Bengaluru',
+        associationReview: 'One shared-FIR association is recorded; no organized-group finding is established.',
+        riskCategory: 'Human review required',
         FIRs: [
           { firNo: 'KSP-2026-0142', role: 'Accused', crimeType: 'robbery', date: '2026-03-15', stage: 'Under Investigation' },
-          { firNo: 'KSP-2026-0301', role: 'Accused', crimeType: 'robbery', date: '2026-05-10', stage: 'Under Investigation' }
+          ...(isKiran ? [] : [{ firNo: 'KSP-2026-0301', role: 'Accused', crimeType: 'robbery', date: '2026-05-10', stage: 'Under Investigation' }])
         ],
-        coAccused: ['Mohan Kumar', 'Rajesh Kumar']
+        coAccused: isKiran ? ['Mohan Kumar'] : ['Kiran Joseph'],
+        mode: 'synthetic-demo',
+        piiAuditRequired: true,
       };
     },
 
@@ -1070,25 +1172,25 @@ export function defineMockApi() {
       firId: params.firId || 'KSP-2026-0142',
       generatedAt: new Date().toISOString(),
       confidence: 0.82,
-      summary: `Good morning Inspector. The case for FIR ${params.firId || 'KSP-2026-0142'} became significantly stronger overnight. A suspect phone has now been linked directly to FIR-0089. Based on this link and the modus operandi, this appears to be a gang-coordinated snatch robbery consistent with the M G Road Snatchers group. I highly recommend interviewing witness Raju before reviewing the CCTV from SH-9 junction, because doing so could invalidate Theory T2.\n\nEstimated review time: 4 minutes.`,
+      summary: `FIR ${params.firId || 'KSP-2026-0142'} remains 67% investigation-ready. Mohan Kumar and Kiran Joseph are listed as accused; Kiran has no matching arrest or surrender event. The SH-9 junction CCTV source is identified, but acquisition, hash registration, and the BSA Section 63 certificate remain pending. Similar-case results describe record overlap only and require officer verification.\n\nEstimated review time: 4 minutes.`,
       keyFindings: [
-        { finding: 'MO matches 4 prior incidents (chain snatching, 2-wheeler getaway)', confidence: 0.91, source: 'Pattern DB' },
-        { finding: 'Primary accused linked to M G Road Snatchers gang', confidence: 0.87, source: 'Co-Accused Network' },
-        { finding: 'Incident location is hotspot — 3rd crime in 30 days in same grid', confidence: 0.94, source: 'Predictive Intelligence' },
-        { finding: 'Victim profile: solo women commuters, 08:00–09:30 AM window', confidence: 0.78, source: 'Gender Violence Module' }
+        { finding: 'Two-wheeler robbery attributes overlap with two open Bengaluru reports', confidence: 0.72, source: 'Recorded classification and MO fields' },
+        { finding: 'Mohan Kumar and Kiran Joseph share one FIR association', confidence: 0.98, source: 'Accused records for KSP-2026-0142' },
+        { finding: 'SH-9 CCTV is referenced but not yet acquired or hashed', confidence: 0.96, source: 'Case evidence checklist' },
+        { finding: 'Kiran Joseph has no matching arrest or surrender event', confidence: 0.91, source: 'ArrestSurrender records' }
       ],
       recommendations: [
-        { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
-        { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
-        { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
-        { priority: 'LOW', action: 'File supplementary chargesheet sections 395/397 IPC', deadline: '2026-07-25T18:00:00Z' }
+        { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction and record its hash', deadline: '2026-07-23T09:00:00+05:30' },
+        { priority: 'HIGH', action: 'Verify Kiran Joseph warrant and last confirmed location', deadline: '2026-07-23T18:00:00+05:30' },
+        { priority: 'MEDIUM', action: 'Complete witness and electronic-record documentation review', deadline: '2026-07-25T18:00:00+05:30' },
+        { priority: 'LOW', action: 'Review BNS 304, 309 and 3(5) with the legal officer', deadline: '2026-08-02T18:00:00+05:30' }
       ],
-      sources: ['FIR Database', 'Pattern DB', 'Co-Accused Network', 'Predictive Intelligence', 'Gender Violence Module'],
+      sources: ['CaseMaster #142', 'Accused records for case #142', 'ArrestSurrender records', 'Case evidence checklist'],
       orchestrationSteps: [
-        { step: 1, agent: 'MO Matcher', status: 'complete', result: '4 similar cases found' },
-        { step: 2, agent: 'Gang Linker', status: 'complete', result: 'Network cluster identified' },
-        { step: 3, agent: 'Hotspot Analyser', status: 'complete', result: 'Grid-level risk confirmed' },
-        { step: 4, agent: 'Legal Advisor', status: 'complete', result: 'IPC sections validated' }
+        { step: 1, agent: 'Record Matcher', status: 'complete', result: '2 similar records surfaced for review' },
+        { step: 2, agent: 'Association Mapper', status: 'complete', result: '1 shared-FIR association recorded' },
+        { step: 3, agent: 'Evidence Reviewer', status: 'complete', result: '3 CCTV documentation gaps identified' },
+        { step: 4, agent: 'Legal Reference', status: 'complete', result: 'BNS and BSA references attached for officer review' }
       ]
     }),
 
@@ -1098,34 +1200,32 @@ export function defineMockApi() {
       theories: [
         {
           id: 'T1',
-          title: 'Premeditated Gang Robbery',
-          description: 'Accused conducted surveillance of victim\'s route for at least 3 days before incident. Gang operation with assigned roles.',
-          confidence: 0.85,
+          title: 'Two-person coordinated robbery',
+          description: 'Working hypothesis based on the complainant account, two accused records, and the recorded two-wheeler escape. It is not an established finding.',
+          confidence: 0.67,
           status: 'working',
-          confirmedBy: null,
+          reviewedBy: null,
           supporting: [
-            { id: 'E1', text: 'CCTV shows same 2-wheeler circling area on 3 consecutive days', type: 'digital' },
-            { id: 'E2', text: 'Accused known to gang with specialised role (scout)', type: 'intelligence' },
-            { id: 'E3', text: 'MO identical to 3 prior incidents attributed to same gang', type: 'pattern' }
+            { id: 'E1', text: 'Complainant account records two persons and a two-wheeler escape', type: 'intelligence' },
+            { id: 'E2', text: 'Mohan Kumar and Kiran Joseph are both named in the accused records', type: 'pattern' }
           ],
           contradicting: [
-            { id: 'C1', text: 'No direct communication intercept placing accused at scene', type: 'absence' }
+            { id: 'C1', text: 'Referenced CCTV has not been acquired or verified', type: 'absence' }
           ]
         },
         {
           id: 'T2',
-          title: 'Opportunistic Solo Act',
-          description: 'Single accused acted alone on impulse, no prior planning.',
-          confidence: 0.22,
+          title: 'Vehicle link to nearby robberies',
+          description: 'Working hypothesis based on similar two-wheeler MO fields in nearby reports. No vehicle, phone, or digital identifier has been verified across cases.',
+          confidence: 0.42,
           status: 'weak',
-          confirmedBy: null,
+          reviewedBy: null,
           supporting: [
-            { id: 'E4', text: 'No gang communication intercepts recovered', type: 'absence' }
+            { id: 'E3', text: 'Two open reports share a two-wheeler robbery classification', type: 'pattern' }
           ],
           contradicting: [
-            { id: 'C2', text: 'CCTV shows 2 distinct individuals involved', type: 'digital' },
-            { id: 'C3', text: 'Getaway route pre-planned (narrow lane, no cameras)', type: 'spatial' },
-            { id: 'C4', text: 'Gang MO match is statistically significant (p<0.05)', type: 'pattern' }
+            { id: 'C2', text: 'No verified vehicle registration link is recorded', type: 'absence' },
+            { id: 'C3', text: 'No cross-case phone or digital evidence is recorded', type: 'absence' }
           ]
         }
       ]
@@ -1134,9 +1234,9 @@ export function defineMockApi() {
       success: true,
       theoryId: body?.theoryId || 'T1',
       firId: params.firId,
-      confirmedBy: 'PI Dharmendra',
-      confirmedAt: new Date().toISOString(),
-      newConfidence: Math.min(0.99, (body?.currentConfidence || 0.85) + 0.07)
+      reviewedBy: 'PI Dharmendra',
+      reviewedAt: new Date().toISOString(),
+      newConfidence: body?.currentConfidence || 0.5
     }),
     'POST /server/zia/theories/:firId/add': ({ body }) => ({
       success: true,
@@ -1146,7 +1246,7 @@ export function defineMockApi() {
         description: body?.description || '',
         confidence: 0.5,
         status: 'working',
-        confirmedBy: null,
+        reviewedBy: null,
         supporting: [],
         contradicting: []
       }
@@ -1157,14 +1257,14 @@ export function defineMockApi() {
       firId: params.firId || 'KSP-2026-0142',
       overallScore: 68,
       grade: 'B',
-      chargeableSections: ['379 IPC', '395 IPC', '34 IPC'],
+      chargeableSections: ['BNS 304', 'BNS 309', 'BNS 3(5) - legal officer review required'],
       factors: [
         { factor: 'Witness Statements', score: 75, weight: 0.25, explanation: '2 eyewitness statements recorded; victim statement corroborated by bystander.' },
-        { factor: 'Physical Evidence', score: 55, weight: 0.20, explanation: 'Stolen item not recovered. Partial fingerprint on getaway vehicle obtained.' },
-        { factor: 'Digital Evidence', score: 80, weight: 0.20, explanation: 'CCTV footage confirms suspect vehicle. Mobile tower CDR links accused to area.' },
-        { factor: 'MO Consistency', score: 90, weight: 0.15, explanation: 'Pattern match to 4 prior incidents — strong basis for linking charges.' },
-        { factor: 'Accused Identification', score: 65, weight: 0.15, explanation: 'TIP parade conducted. One accused identified; one still at large.' },
-        { factor: 'Legal Completeness', score: 40, weight: 0.05, explanation: 'Section 161 statements pending for 2 witnesses. Chargesheet due in 18 days.' }
+        { factor: 'Physical Evidence', score: 45, weight: 0.20, explanation: 'Stolen property and weapon recovery are not recorded.' },
+        { factor: 'Digital Evidence', score: 30, weight: 0.20, explanation: 'CCTV source is identified, but footage, hash, and BSA Section 63 certificate are pending.' },
+        { factor: 'MO Documentation', score: 70, weight: 0.15, explanation: 'Two-wheeler escape and weapon threat are recorded; cross-case matches require verification.' },
+        { factor: 'Accused Records', score: 65, weight: 0.15, explanation: 'Two accused are named; Kiran Joseph has no matching arrest or surrender event.' },
+        { factor: 'Legal Completeness', score: 55, weight: 0.05, explanation: 'BNSS 180 witness examinations and electronic-record documentation require review.' }
       ],
       trend: [
         { date: '2026-07-01', score: 42 },
@@ -1173,9 +1273,9 @@ export function defineMockApi() {
         { date: '2026-07-10', score: 68 }
       ],
       gaps: [
-        'Recover stolen chain or trace sale through fence network',
-        'Complete 161 statements for Witnesses 3 and 4',
-        'Arrest second accused Arun Nair'
+        'Record the current recovery status of the stolen property and reported weapon',
+        'Complete pending witness examinations under BNSS 180',
+        'Verify and execute the current warrant process for Kiran Joseph'
       ]
     }),
 
@@ -1184,14 +1284,14 @@ export function defineMockApi() {
       const context = query.context || 'general';
       const suggestions = {
         general: [
-          { type: 'related_case', firNo: 'KSP-2026-0089', summary: 'Same MO — Rajajinagar chain snatch, 2 weeks ago. Shared accused Arun Nair.', relevance: 0.91 },
-          { type: 'wanted', name: 'Arun Nair', reason: 'Accused at large in current case and KSP-2026-0089', relevance: 0.88 },
+          { type: 'related_case', firNo: 'KSP-2026-0301', summary: 'Similar two-wheeler robbery MO; Mohan Kumar appears in both records.', relevance: 0.91 },
+          { type: 'wanted', name: 'Kiran Joseph', reason: 'No matching arrest or surrender event for KSP-2026-0142', relevance: 0.88 },
           { type: 'deadline', event: 'Chargesheet due — KSP-2026-0142', daysRemaining: 18, relevance: 0.95 },
           { type: 'alert', text: 'New snatch incident reported in same grid 6 hours ago — KSP-2026-0522', relevance: 0.85 }
         ],
         investigation: [
-          { type: 'evidence_gap', text: 'No section 65B certificate filed for CCTV evidence. Required for admissibility.', relevance: 0.97 },
-          { type: 'related_case', firNo: 'KSP-2026-0255', summary: 'Same gang linked. Accused Imran Khan arrested — potential approver.', relevance: 0.89 }
+          { type: 'evidence_gap', text: 'No BSA Section 63 certificate is recorded for the CCTV evidence. Review before submission.', relevance: 0.97 },
+          { type: 'related_case', firNo: 'KSP-2026-0255', summary: 'Similar recorded MO fields; no shared person or digital identifier is verified.', relevance: 0.58 }
         ]
       };
       return {
@@ -1204,8 +1304,8 @@ export function defineMockApi() {
     // === Case Management (expiring cases — unique route not defined above) ===
     'GET /server/case_management/cases/expiring': () => ({
       cases: [
-        { id: 2, firNo: 'KSP-2026-0089', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Maruti', dateRegistered: '2026-02-28', nextHearing: '2026-07-12', expiringSoon: true, daysRemaining: 6 },
-        { id: 5, firNo: 'KSP-2026-0234', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Dharmendra', dateRegistered: '2026-03-20', nextHearing: '2026-07-18', expiringSoon: true, daysRemaining: 12 },
+        { id: 2, firNo: 'KSP-2026-0089', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Maruti', dateRegistered: '2026-02-28', nextHearing: '2026-07-28', expiringSoon: true, daysRemaining: 6 },
+        { id: 5, firNo: 'KSP-2026-0234', stage: 'chargesheet', severity: 'misdemeanour', io: 'PI Dharmendra', dateRegistered: '2026-03-20', nextHearing: '2026-08-03', expiringSoon: true, daysRemaining: 12 },
       ],
       total: 2,
     }),
@@ -1217,23 +1317,23 @@ export function defineMockApi() {
       const firNo = requestedCase.startsWith('KSP-') ? requestedCase : `KSP-2026-${String(caseId).padStart(4, '0')}`;
       return {
         caseId,
-        narrative: `FIR ${firNo} involves a robbery near MG Road metro station reported on 2026-03-15. Solvability analysis indicates strong witness and CCTV evidence. Veracity score is 84% (GENUINE). Network analysis links primary accused to the M G Road Snatchers gang with 2 co-offenders. The case is currently under investigation at Brigade Road PS with golden period expired but chargesheet review is due in 18 days.`,
+        narrative: `FIR ${firNo} concerns a robbery reported near the SH-9 junction in the Brigade Road corridor on 2026-03-15. Two witness records are present. Junction CCTV is referenced, but acquisition, hash verification, and the BSA Section 63 certificate remain pending. The narrative documentation signal is 84%; it measures specificity, not truth or guilt. Mohan Kumar and Kiran Joseph are recorded as accused, with no matching arrest or surrender event for Kiran. The current case-order filing date is 18 days away.`,
         solvability: {
           firNo,
           score: 0.67,
-          label: 'SOLVABLE',
+          label: 'HUMAN REVIEW REQUIRED',
           factors: [
             { name: 'Witness availability', weight: 0.85, value: '2 witnesses identified' },
-            { name: 'Physical evidence', weight: 0.72, value: 'CCTV footage within 48hr window' },
-            { name: 'Suspect identification', weight: 0.60, value: 'Partial — scar description, no name' },
+            { name: 'Digital evidence', weight: 0.30, value: 'CCTV source identified; acquisition, hash, and certificate pending' },
+            { name: 'Accused records', weight: 0.65, value: 'Mohan Kumar and Kiran Joseph are named; identity findings require officer review' },
             { name: 'Time to report', weight: 0.92, value: 'Reported within 4 hours' },
             { name: 'Location specificity', weight: 0.88, value: 'Exact location identified' },
           ],
-          recommendation: 'Prioritize for investigation. Strong witness and evidence indicators.',
+          recommendation: 'Acquire the referenced CCTV lawfully, record its hash, obtain the BSA Section 63 certificate, and verify the at-large status.',
         },
         veracity: {
           score: 0.84,
-          label: 'GENUINE',
+          label: 'MORE COMPLETE',
           flags: [
             { type: 'specificity', weight: 0.8, description: 'Narrative contains specific temporal and spatial details' },
             { type: 'coherence', weight: 0.7, description: 'Event sequence is logically ordered and internally consistent' },
@@ -1241,33 +1341,33 @@ export function defineMockApi() {
             { type: 'delay_indicator', weight: 0.9, description: 'No delay in reporting' },
             { type: 'property_claim', weight: 0.7, description: 'Property value within expected range' },
           ],
-          ziaAssessment: 'Linguistic analysis completed. Veracity score: 84%. High specificity markers detected. VeriPol-style behavioral pattern matching active.',
-          methodology: 'VeriPol-inspired logistic regression + TF-IDF features + behavioral markers',
+          ziaAssessment: 'Narrative quality review completed. Documentation signal: 84%. Specific temporal and location markers were found. This does not assess truthfulness or guilt.',
+          methodology: 'Synthetic narrative-completeness heuristic; not validated for truth classification',
         },
         similarCases: [
           { caseId: 89, similarity: 0.78, reason: 'Same MO — chain snatching with 2-wheeler getaway in nearby area' },
-          { caseId: 301, similarity: 0.65, reason: 'Linked accused, same gang affiliation (M G Road Snatchers)' },
+          { caseId: 301, similarity: 0.65, reason: 'Mohan Kumar appears in both records; the linkage requires officer verification' },
           { caseId: 255, similarity: 0.52, reason: 'Geographic proximity, similar time-of-day pattern' },
         ],
         entityLinks: [
-          { source: 'N1', target: 'N2', weight: 5, relation: 'co-offender' },
-          { source: 'N1', target: 'N3', weight: 3, relation: 'known-associate' },
-          { source: 'N2', target: 'N6', weight: 4, relation: 'family' },
-          { source: 'N1', target: 'N4', weight: 1, relation: 'perpetrator-victim' },
+          { source: 'N1', target: 'N2', weight: 1, relation: 'named in same FIR' },
+          { source: 'N1', target: 'N3', weight: 1, relation: 'record similarity for review' },
+          { source: 'N2', target: 'N6', weight: 1, relation: 'recorded contact requiring verification' },
+          { source: 'N1', target: 'N4', weight: 1, relation: 'accused-victim record link' },
         ],
         recommendations: [
-          { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
-          { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
-          { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
-          { priority: 'LOW', action: 'Review BNS 309 and any applicable aggravated provision with the legal officer', deadline: '2026-07-25T18:00:00Z' },
+          { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction and record its hash', deadline: '2026-07-23T09:00:00+05:30' },
+          { priority: 'HIGH', action: 'Verify Kiran Joseph warrant and last confirmed location', deadline: '2026-07-23T18:00:00+05:30' },
+          { priority: 'MEDIUM', action: 'Complete witness and electronic-record documentation review', deadline: '2026-07-25T18:00:00+05:30' },
+          { priority: 'LOW', action: 'Review BNS 304, 309 and 3(5) with the legal officer', deadline: '2026-08-02T18:00:00+05:30' },
         ],
         confidence: 0.82,
         provenance: [
-          { function: 'solvability_index', methodology: 'Random Forest classifier on case features', validationStatus: 'received' },
-          { function: 'veracity_index', methodology: 'VeriPol-inspired logistic regression + TF-IDF', validationStatus: 'received' },
-          { function: 'network_analysis', methodology: 'Graph-based co-offender linkage', validationStatus: 'received' },
-          { function: 'daily_brief', methodology: 'Aggregate district crime statistics', validationStatus: 'received' },
-          { function: 'agentic_police', methodology: 'Multi-agent orchestration log', validationStatus: 'received' },
+          { function: 'case_readiness', methodology: 'Deterministic evidence-completeness checklist', validationStatus: 'human-review-required' },
+          { function: 'narrative_quality', methodology: 'Synthetic documentation-completeness heuristic', validationStatus: 'human-review-required' },
+          { function: 'network_analysis', methodology: 'Shared-FIR record graph', validationStatus: 'human-review-required' },
+          { function: 'daily_brief', methodology: 'Aggregate synthetic district statistics', validationStatus: 'synthetic-demo' },
+          { function: 'agentic_police', methodology: 'Deterministic orchestration demonstration', validationStatus: 'synthetic-demo' },
         ],
       };
     },

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { PiGraph, PiSpinnerGap, PiWarningCircle } from 'react-icons/pi';
 
 const CRIME_COLORS = {
     theft: '#f59e0b', burglary: '#f97316', robbery: '#ef4444',
-    assault: 'var(--color-red)', murder: '#7f1d1d', sexual: '#be185d',
-    fraud: 'var(--color-amber)', cyber: '#7c3aed', drugs: '#059669',
+    assault: '#dc2626', murder: '#7f1d1d', sexual: '#be185d',
+    fraud: '#d97706', cyber: '#7c3aed', drugs: '#059669',
     property: '#0891b2', extortion: '#e11d48', publicorder: '#6366f1'
 };
 
@@ -43,7 +44,7 @@ const TopologyPanel = () => {
             .then(res => res.json())
             .then(json => { setData(json); setLoading(false); })
             .catch(err => { setError(err.message); setLoading(false); });
-    }, [currentMonthIndex]);
+    }, [currentMonthIndex, months]);
 
     useEffect(() => {
         if (!data || !canvasRef.current) return;
@@ -89,7 +90,7 @@ const TopologyPanel = () => {
                         edgeColor = e.weight > baselineEdge.weight ? '#ef4444' : '#3b82f6';
                     }
                 } else if (isHighlighted) {
-                    edgeColor = 'var(--color-blue-400)';
+                    edgeColor = '#60a5fa';
                 }
                 ctx.beginPath();
                 ctx.moveTo(src.x, src.y);
@@ -102,7 +103,7 @@ const TopologyPanel = () => {
 
                 if (isHighlighted) {
                     const mx = (src.x + dst.x) / 2, my = (src.y + dst.y) / 2;
-                    ctx.fillStyle = 'var(--color-gray-400)';
+                    ctx.fillStyle = '#94a3b8';
                     ctx.font = '11px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText(e.label, mx, my - 4);
@@ -129,13 +130,13 @@ const TopologyPanel = () => {
                 ctx.lineWidth = selectedNode === n.id ? 3 : 1;
                 ctx.stroke();
 
-                ctx.fillStyle = 'var(--color-surface-50)';
+                ctx.fillStyle = '#f8fafc';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(n.label, pos.x, pos.y + r + 14);
 
                 if (n.fsc !== undefined) {
-                    ctx.fillStyle = 'var(--color-gray-400)';
+                    ctx.fillStyle = '#94a3b8';
                     ctx.font = '9px sans-serif';
                     ctx.fillText(`FSC: ${n.fsc.toFixed(2)}`, pos.x, pos.y + r + 26);
                 }
@@ -146,18 +147,18 @@ const TopologyPanel = () => {
         render();
 
         return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-    }, [data, selectedNode]);
+    }, [data, selectedNode, vsBaseline]);
 
-    if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>⏳ Loading topology...</div>;
-    if (error) return <div style={{ padding: '40px', color: 'var(--color-red)' }}>Error: {error}</div>;
+    if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)' }}><PiSpinnerGap aria-hidden="true" /> Loading topology...</div>;
+    if (error) return <div role="alert" style={{ padding: '40px', color: 'var(--pastel-red-text)' }}><PiWarningCircle aria-hidden="true" /> Unable to load topology: {error}</div>;
     if (!data) return null;
 
     return (
         <div className="panel" style={{ padding: '20px' }}>
-            <h2>🔗 Crime Topology Navigator</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><PiGraph aria-hidden="true" /> Crime Topology Navigator</h2>
             <p style={{ color: '#666', marginBottom: '16px' }}>
-                Directed graph of crime-type transitions. Based on Markov chain analysis of offender career patterns (Heiler et al. 2023).
-                Higher <strong>FSC</strong> (Forward Specialization Coefficient) = more specialized crime type.
+                Explore recorded transitions between crime categories. Edge weight reflects frequency in the selected dataset;
+                the specialization coefficient is descriptive and must not be treated as an offender prediction.
             </p>
 
             {months.length > 0 && (
@@ -203,9 +204,9 @@ const TopologyPanel = () => {
                 )}
             </div>
 
-            <div style={{ display: 'flex', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
                 <div style={{ flex: 1 }}>
-                    <canvas ref={canvasRef} width={700} height={500} style={{ borderRadius: '12px', width: '100%', height: '500px' }}
+                    <canvas ref={canvasRef} width={700} height={500} style={{ borderRadius: '12px', width: '100%', height: 'auto', aspectRatio: '7 / 5' }}
                         onClick={(e) => {
                             const rect = canvasRef.current.getBoundingClientRect();
                             const x = (e.clientX - rect.left) * (700 / rect.width);
@@ -229,7 +230,7 @@ const TopologyPanel = () => {
                     const node = data.nodes.find(n => n.id === selectedNode);
                     const edges = data.edges.filter(e => e.source === selectedNode || e.target === selectedNode);
                     return (
-                        <div style={{ width: '280px', background: '#1e293b', borderRadius: '12px', padding: '16px', color: 'var(--color-surface-50)', fontSize: '13px', height: 'fit-content' }}>
+                        <div style={{ minWidth: 0, background: '#1e293b', borderRadius: '8px', padding: '16px', color: 'var(--color-surface-50)', fontSize: '13px', height: 'fit-content' }}>
                             <h3 style={{ margin: '0 0 8px', color: CRIME_COLORS[selectedNode] || '#6366f1' }}>
                                 {node?.label || selectedNode}
                             </h3>

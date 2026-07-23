@@ -2,34 +2,35 @@
 
 ## Project Structure & Module Organization
 
-This repository contains the KSP Crime Analytics Dashboard. The React/Vite app lives in `client/`; source files are under `client/src`, static assets under `client/public`, and production output under `client/dist`. Reusable UI is in `client/src/Components`, shared helpers in `client/src/utils`, and page views in `client/src/Pages`. Zoho Catalyst serverless functions live in `functions/<function_name>/`, with shared utilities in `functions/shared`. Python models, pipelines, and synthetic CCTNS CSVs live in `appsail/`, `quickml_pipeline.py`, `generate_ksp_data.py`, and `synthetic_data/`. Product and design notes are in `docs/` and `plans/`.
+The React/Vite frontend lives in `client/`. Place reusable views in `client/src/Components`, route-level pages in `client/src/Pages`, shared helpers in `client/src/utils`, and tests in `client/tests`. Zoho Catalyst services live in `functions/<service>/`; cross-service helpers belong in `functions/shared`. Product notes and implementation plans are stored in `docs/` and `plans/`. Synthetic datasets and model utilities live in `synthetic_data/`, `appsail/`, and the root Python scripts.
 
-Generated landing artwork belongs in `client/public/assets/landing/` and is served from `/assets/landing/<name>`. Follow the [landing asset manifest](client/public/assets/landing/README.md): use descriptive kebab-case filenames, WebP for final delivery, meaningful alt text, and no text baked into images. Record the prompt and intended placement when adding or replacing an asset.
+Landing-page artwork belongs in `client/public/assets/landing/` and is served as `/assets/landing/<filename>`. Follow `client/public/assets/landing/README.md`: use descriptive kebab-case names, optimized WebP output, meaningful alt text, and no text embedded in images.
 
 ## Build, Test, and Development Commands
 
 Run frontend commands from `client/`:
 
-- `npm install` installs dependencies from `package-lock.json`.
-- `npm run dev` starts the Vite development server on the local network.
+- `npm install` installs locked dependencies.
+- `npm run dev` starts the local Vite server.
+- `npm test` runs the Node test suite in `client/tests`.
+- `npm run lint` checks all JavaScript and JSX with zero warnings allowed.
 - `npm run build` creates the production bundle in `client/dist`.
-- `npm run preview` serves the production build locally.
-- `npm run lint` runs ESLint for `.js` and `.jsx` files with zero warnings allowed.
+- `npm run preview` serves that bundle locally.
 
-Serverless functions are maintained per folder under `functions/`; install dependencies inside the relevant folder when a `package.json` is present.
+Install service-specific dependencies inside a `functions/<service>/` directory when its `package.json` requires them.
 
 ## Coding Style & Naming Conventions
 
-Use modern JavaScript modules and React functional components. Match existing naming: PascalCase for components (`CaseWorkspace.jsx`), camelCase for utilities (`apiFetch.js`), and scoped styles beside related components when established. Keep indentation consistent with nearby code, typically two spaces. Before UI changes, read `DESIGN.md`; follow its fonts, colors, spacing, motion rules, and accessibility expectations unless the user approves a deviation.
+Use ES modules and React functional components. Follow existing names: PascalCase components (`CaseWorkspace.jsx`), camelCase helpers (`apiFetch.js`), and kebab-case assets (`crime-network.webp`). Use two-space indentation unless the surrounding file establishes another style. Keep styles near their owning component. Follow `DESIGN.md` for typography, spacing, color, motion, and accessibility. Use Phosphor icons through `react-icons/pi`.
 
-## Testing Guidelines
+## Testing & Browser Verification
 
-There is no dedicated automated test script in `client/package.json` yet. Treat `npm run lint` and `npm run build` as required checks before submitting changes. For UI work, run the app in a browser and verify the affected route, responsive behavior, keyboard access, console errors, and loading/error states. Name future tests after the unit or workflow, for example `CaseWorkspace.test.jsx`.
+Name tests after the behavior under test, such as `chat-context.test.mjs`. Before submitting, run tests, lint, and a production build. For UI changes, verify every affected route in a real browser at desktop and mobile widths. Exercise loading, empty, error, keyboard, and permission states; inspect the console; confirm images and canvases render; and check for clipping or horizontal overflow. Include screenshots for visual changes.
 
 ## Commit & Pull Request Guidelines
 
-The Git history uses Conventional Commit style, such as `fix(responsive): ...`, `refactor(theming): ...`, and `perf(memo): ...`. Keep commits focused and use a clear scope. Pull requests should include a summary, verification steps, linked issue or task context, and screenshots or recordings for UI changes. Mention data, Catalyst function, or environment changes explicitly.
+Use focused Conventional Commits such as `fix(chat): preserve case context`. Pull requests must summarize behavior, list verification steps, link relevant tasks, and include screenshots or recordings for UI work. Call out Catalyst, schema, data, or environment changes.
 
-## Security & Configuration Tips
+## Security & Data Safety
 
-Do not commit real police data, credentials, API keys, or generated secrets. Keep demo data synthetic, and preserve PII masking behavior in `client/src/utils/piiMask.js` and `functions/shared/pii-mask.js` when touching case, person, or FIR flows.
+Never commit real police records, secrets, or credentials. Keep demos synthetic, preserve PII masking and access-purpose logging, and label analytical outputs with source, limitations, and required human review.

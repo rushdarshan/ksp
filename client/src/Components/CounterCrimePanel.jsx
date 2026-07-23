@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { PanelCard, PanelHeader, PanelBadge, PanelTable } from './panels';
 
-// ponytail: mock data matching POST /countercrime/simulate response schema
 const MOCK_SIMULATIONS = [
   {
     simulationId: 'sim_2026_001',
@@ -10,7 +9,7 @@ const MOCK_SIMULATIONS = [
       projectedIncidents: 245,
       confidenceInterval: { lower: 198, upper: 292 },
       riskLevel: 'high',
-      resourceRecommendation: 'Deploy 3 additional patrol units to Zone 4 during peak hours (6 PM – 10 PM)',
+      resourceRecommendation: 'Compare a three-unit Zone 4 coverage scenario for 6 PM-10 PM; supervisor approval required',
       hotspotAreas: [
         { name: 'MG Road', risk: 0.87 },
         { name: 'Commercial Street', risk: 0.72 },
@@ -31,7 +30,7 @@ const MOCK_SIMULATIONS = [
       projectedIncidents: 89,
       confidenceInterval: { lower: 67, upper: 111 },
       riskLevel: 'medium',
-      resourceRecommendation: 'Establish fixed pickets at 2 highway entry points',
+      resourceRecommendation: 'Compare fixed-picket coverage at two highway entry points; supervisor approval required',
       hotspotAreas: [
         { name: 'Devaraja Mohalla', risk: 0.78 },
         { name: 'Mandakalli', risk: 0.61 },
@@ -81,9 +80,9 @@ const CounterCrimePanel = () => {
   const riskStatus = r.riskLevel === 'critical' ? 'critical' : r.riskLevel === 'high' ? 'high' : r.riskLevel === 'medium' ? 'medium' : 'low';
 
   return (
-    <PanelCard title="CounterCrime Simulator" badge="PREDICTIVE">
+    <PanelCard title="Patrol Scenario Comparison" badge="PLANNING AID">
       <PanelHeader
-        subtitle="What-if crime simulation — adjust parameters and see projected incident counts, hotspot shifts, and resource recommendations"
+        subtitle="Compare illustrative demand scenarios and options that require supervisor review"
         action={
           <select
             value={simIndex}
@@ -107,9 +106,9 @@ const CounterCrimePanel = () => {
 
       {/* headline stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
-        <StatCard label="Projected Incidents" value={r.projectedIncidents} sub={`${r.confidenceInterval.lower}–${r.confidenceInterval.upper} CI`} color={RISK_COLORS[r.riskLevel]} />
-        <StatCard label="Risk Level" value={r.riskLevel.toUpperCase()} badge={<PanelBadge status={riskStatus} label={r.riskLevel.toUpperCase()} />} />
-        <StatCard label="Top Factor" value={r.topFactor} small />
+        <StatCard label="Scenario Estimate" value={r.projectedIncidents} sub={`${r.confidenceInterval.lower}-${r.confidenceInterval.upper} sensitivity range`} color={RISK_COLORS[r.riskLevel]} />
+        <StatCard label="Demand Band" value={r.riskLevel.toUpperCase()} badge={<PanelBadge status={riskStatus} label={r.riskLevel.toUpperCase()} />} />
+        <StatCard label="Scenario Assumption" value={r.topFactor} small />
       </div>
 
       {/* hotspot areas */}
@@ -122,7 +121,7 @@ const CounterCrimePanel = () => {
               <div style={{ height: 6, background: 'var(--border-light)', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${h.risk * 100}%`, background: RISK_COLORS[r.riskLevel], borderRadius: 3 }} />
               </div>
-              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>Risk: {Math.round(h.risk * 100)}%</div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>Relative index: {Math.round(h.risk * 100)}/100</div>
             </div>
           ))}
         </div>
@@ -130,13 +129,13 @@ const CounterCrimePanel = () => {
 
       {/* resource recommendation */}
       <div style={{ padding: '12px 16px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Resource Recommendation</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Planning Consideration</div>
         <div style={{ fontSize: 14, color: 'var(--text)' }}>{r.resourceRecommendation}</div>
       </div>
 
       {/* interventions */}
       <div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>Suggested Interventions</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>Options for Supervisor Review</div>
         <PanelTable headers={['#', 'Intervention']}>
           {r.interventions.map((item, i) => (
             <tr key={i}>
@@ -148,7 +147,7 @@ const CounterCrimePanel = () => {
       </div>
 
       <div style={{ marginTop: 16, fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>
-        Simulation {sim.simulationId} · Projections are illustrative — use as decision support only.
+        Synthetic demonstration data. This scenario is not an operational forecast and must not trigger automated deployment or enforcement action.
       </div>
     </PanelCard>
   );

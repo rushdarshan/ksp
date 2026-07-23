@@ -1,6 +1,8 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
 const { getCached, setCached } = require('../shared/cache-utils');
+const { createSeededRandom, intBetween } = require('../shared/deterministic');
+const { maskAadhaar, maskPhone } = require('../shared/pii-mask');
 
 const app = express();
 app.use(express.json());
@@ -72,12 +74,20 @@ app.post('/fir/lookup', async (req, res) => {
         const catalystApp = catalyst.initialize(req);
         const { mobile, aadhaar } = req.body;
         if (!mobile && !aadhaar) return res.status(400).json({ error: 'Provide mobile or aadhaar' });
+        const lookupKey = String(mobile || aadhaar).replace(/\D/g, '');
+        const random = createSeededRandom(`fir-lookup:${lookupKey}:v2`);
         const mock = {
-            name: 'Ramesh Kumar',
-            mobile: mobile || '9876543210',
-            aadhaar: aadhaar || '1234-5678-9012',
-            address: '12th Cross, Malleswaram, Bengaluru - 560003',
-            previousFIRs: Math.floor(Math.random() * 3)
+            name: `Demo person ${String(intBetween(random, 100, 999))}`,
+            mobile: maskPhone(String(mobile || '')),
+            aadhaar: maskAadhaar(String(aadhaar || '')),
+            address: 'Synthetic address withheld',
+            previousFIRs: intBetween(random, 0, 2),
+            metadata: {
+                dataSource: 'synthetic_demo',
+                synthetic: true,
+                note: 'No identity lookup was performed. This deterministic record exists only to demonstrate the interface.',
+                humanReviewRequired: true
+            }
         };
         res.status(200).json(mock);
     } catch (err) {

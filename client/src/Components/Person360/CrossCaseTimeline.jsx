@@ -1,15 +1,12 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 
-// ponytail: hardcoded mock data for hackathon — wire to API when backend provides timeline endpoint
 const MOCK_TIMELINE = [
-  { firNo: '142/2026', date: '2026-03-15', crimeType: 'Armed Robbery', role: 'Primary Accused', stage: 'Chargesheet Filed', sector: 'Malleshwaram' },
-  { firNo: '87/2025', date: '2025-11-02', crimeType: 'Extortion', role: 'Co-Accused', stage: 'Trial', sector: 'Brigade Road' },
-  { firNo: '203/2025', date: '2025-06-18', crimeType: 'Drug Trafficking', role: 'Witness Linked', stage: 'Investigation', sector: 'Koramangala' },
+  { firNo: 'KSP-2026-0142', date: '2026-03-15', crimeType: 'Robbery', role: 'Named accused', stage: 'Under investigation', sector: 'Brigade Road' },
+  { firNo: 'KSP-2026-0301', date: '2026-05-10', crimeType: 'Robbery', role: 'Record similarity only', stage: 'Under investigation', sector: 'Cubbon Park' },
 ];
 
 export default function CrossCaseTimeline({ firList = [] }) {
-  const events = MOCK_TIMELINE;
+  const events = firList.length ? firList : MOCK_TIMELINE;
 
   return (
     <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
@@ -26,10 +23,10 @@ export default function CrossCaseTimeline({ firList = [] }) {
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginTop: '2px' }}>
               Involved in {ev.crimeType} (
               <Link to={`/dashboard/case/${ev.firNo}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{ev.firNo}</Link>
-              ) — {ev.sector}
+              ) - {ev.sector}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Stage: {ev.stage} · Role: {ev.role}
+              Stage: {ev.stage} | Role: {ev.role}
             </div>
           </div>
         ))}

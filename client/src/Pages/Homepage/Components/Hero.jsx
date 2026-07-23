@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom'
 
 var WORKFLOW_STEPS = [
   { phase: '01', title: 'My Day', desc: 'Prioritized case queue. Urgency-ranked. Zero friction.', tag: 'DASHBOARD' },
-  { phase: '02', title: 'ZIA Intelligence Brief', desc: 'Multi-agent AI synthesis — solvability, veracity, network analysis in seconds.', tag: 'AI ENGINE' },
-  { phase: '03', title: 'Theory Board', desc: 'Prosecution-ready hypothesis tracking. Evidence classified automatically.', tag: 'INVESTIGATION' },
-  { phase: '04', title: 'Entity Graph', desc: 'Co-offender networks. Cross-case links. Force-directed visualization.', tag: 'NETWORK' },
-  { phase: '05', title: 'Chargesheet', desc: 'Auto-generated chargesheets with BNS sections and evidence chain validation.', tag: 'OUTPUT' },
+  { phase: '02', title: 'ZIA Intelligence Brief', desc: 'Multi-agent synthesis of case readiness, documentation gaps, and network signals.', tag: 'AI ENGINE' },
+  { phase: '03', title: 'Theory Board', desc: 'Working hypotheses with officer-reviewed evidence classifications.', tag: 'INVESTIGATION' },
+  { phase: '04', title: 'Entity Graph', desc: 'Shared-record relationships and cross-case links in a force-directed view.', tag: 'NETWORK' },
+  { phase: '05', title: 'Chargesheet', desc: 'Draft assembly with BNS references and an evidence-chain checklist.', tag: 'OUTPUT' },
 ];
 
 var CAPABILITIES = [
-  { icon: 'A', title: '15 Analytics Panels', desc: 'Veracity, topology, predictive, fairness, counter-crime, and more.' },
-  { icon: 'I', title: 'ZIA Investigator', desc: 'Not a chatbot. A senior investigator that explains why, evidence, and next action.' },
-  { icon: 'D', title: '27 CCTNS Tables', desc: 'Real Karnataka police data schema. FIRs, accused, witnesses, chargesheets.' },
+  { icon: 'A', title: '15 Analytics Panels', desc: 'Narrative quality, topology, planning signals, fairness, and more.' },
+  { icon: 'I', title: 'ZIA Investigator', desc: 'A context-aware assistant that explains sources, limitations, and next review steps.' },
+  { icon: 'D', title: '27 CCTNS Tables', desc: 'CCTNS-compatible schema coverage for FIRs, accused, witnesses, and chargesheets.' },
   { icon: 'V', title: 'Voice in Kannada', desc: 'Natural language voice search with BNS section lookup.' },
 ];
 

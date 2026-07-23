@@ -1,12 +1,16 @@
-import React, { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-const powerbi = () => {
+const Powerbi = () => {
+  const iframeRef = useRef(null);
+
   useEffect(() => {
     const resizeIframe = () => {
-      const iframe = document.getElementById("powerBIReport");
-      const container = iframe.parentElement;
-      iframe.width = container.clientWidth;
-      iframe.height = container.clientHeight;
+      const iframe = iframeRef.current;
+      const container = iframe?.parentElement;
+      if (iframe && container) {
+        iframe.width = container.clientWidth;
+        iframe.height = container.clientHeight;
+      }
     };
 
     // Call resizeIframe when the window is resized
@@ -20,11 +24,6 @@ const powerbi = () => {
       window.removeEventListener("resize", resizeIframe);
     };
   }, []);
-
-  const handleIframeLoad = () => {
-    // Delay resizing to ensure the content is fully loaded
-    setTimeout(resizeIframe, 1000); // Adjust the delay time as needed
-  };
 
   return (
     <div style={{
@@ -44,20 +43,16 @@ const powerbi = () => {
         <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--text)' }}>
           Operational Beat Ledger
         </h3>
-        <button aria-label="Dashboard menu" style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-          ⋮
-        </button>
       </div>
       <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: '12px' }}>
         <iframe
-          id="powerBIReport"
+          ref={iframeRef}
           title="SubInspector Dashboard"
           width="100%"
           height="100%"
           src="https://app.powerbi.com/view?r=eyJrIjoiMDExMDEyMDctZThkMi00NzMxLWI1NzctYTM1Nzk1ZTBmOTI4IiwidCI6ImI1MzYyMTYxLTgyMWEtNDk3Mi04NGEwLTg2ZGQzNjA2OGVkOCJ9"
           frameBorder="0"
           allowFullScreen={true}
-          onLoad={handleIframeLoad}
           style={{ border: 'none', width: '100%', height: '100%' }}
         ></iframe>
       </div>
@@ -65,4 +60,4 @@ const powerbi = () => {
   );
 };
 
-export default powerbi;
+export default Powerbi;

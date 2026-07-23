@@ -1,14 +1,5 @@
-import React from 'react';
 import { useCaseContext } from './caseContext';
-
-const MOCK_EVENTS = [
-  { date: '2026-07-06T09:15:00', type: 'report', label: 'FIR Registered', detail: 'Robbery reported at SH-9 junction, Brigade Road PS' },
-  { date: '2026-07-06T14:30:00', type: 'evidence', label: 'Victim Statement Recorded', detail: 'S/O Lakshmi Devi — identified suspect vehicle' },
-  { date: '2026-07-07T10:00:00', type: 'evidence', label: 'CCTV Footage Collected', detail: 'SH-9 junction camera — suspect vehicle visible' },
-  { date: '2026-07-07T16:45:00', type: 'analysis', label: 'Vehicle Identified', detail: 'KA-01-AB-1234 linked to suspect Ravi Kumar' },
-  { date: '2026-07-08T11:00:00', type: 'evidence', label: 'Fingerprint Lift', detail: 'From suspect vehicle — sent to FSL Bangalore' },
-  { date: '2026-07-09T09:30:00', type: 'analysis', label: 'CDR Analysis Initiated', detail: 'Suspect phone 98450XXXXX — pending Telecom Nodal response' },
-];
+import { ACTIVE_CASE_TIMELINE } from './caseFacts';
 
 const typeColors = {
   report: 'var(--color-red-soft)',
@@ -29,10 +20,8 @@ export default function CaseTimeline() {
           position: 'absolute', left: 7, top: 8, bottom: 8, width: 2,
           background: 'var(--border-light)',
         }} />
-        {MOCK_EVENTS.map((e, i) => (
-          <div key={i} style={{
-            display: 'flex', gap: 16, padding: '12px 0', position: 'relative',
-          }}>
+        {ACTIVE_CASE_TIMELINE.map((e) => (
+          <div key={`${e.date}-${e.label}`} className="case-timeline__event">
             {/* Dot */}
             <div style={{
               position: 'absolute', left: -20, top: 16,

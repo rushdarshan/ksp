@@ -107,6 +107,14 @@ body:has(.dashboard) {
   overflow: hidden;
 }
 
+.dashboard .dashboardContainer > .mainContent.mainContent--focused {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard .dashboardContainer > .mainContent.mainContent--focused > .mainScroll {
+  grid-column: 1;
+}
+
 .dashboard .dashboardContainer > .mainContent > .mainScroll {
   padding: 18px 20px 24px;
   background: var(--dashboard-canvas);

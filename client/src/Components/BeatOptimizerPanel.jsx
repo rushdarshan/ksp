@@ -1,217 +1,268 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import {
+  PiArrowClockwise, PiChartBar, PiInfo, PiMapPin, PiMapTrifold, PiPath,
+  PiUsersThree, PiWarningCircle,
+} from 'react-icons/pi';
+import {
+  apiArray, apiObject, clampNumber, displayText, fetchJson, finiteNumber, KARNATAKA_DISTRICTS,
+} from '../utils/apiData';
 
-const BeatOptimizerPanel = () => {
-    const [districtId, setDistrictId] = useState(1);
-    const [districts, setDistricts] = useState([]);
-    const [beats, setBeats] = useState(null);
-    const [optimization, setOptimization] = useState(null);
-    const [routes, setRoutes] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [tab, setTab] = useState('beats');
-    const [flowMode, setFlowMode] = useState(false);
-
-    const KARNATAKA_DISTRICTS = [
-        { id: 1, name: 'Bengaluru City' },
-        { id: 2, name: 'Mysuru City' },
-        { id: 3, name: 'Mangaluru City' },
-        { id: 4, name: 'Hubballi-Dharwad City' },
-        { id: 5, name: 'Belagavi City' },
-        { id: 6, name: 'Kalaburagi City' },
-        { id: 7, name: 'Shivamogga' },
-        { id: 8, name: 'Tumakuru' },
-        { id: 9, name: 'Davanagere' },
-        { id: 10, name: 'Ballari' }
-    ];
-
-    useEffect(() => {
-        fetch('/server/beat_optimizer/districts')
-            .then(r => r.json())
-            .then(data => setDistricts(
-                Array.isArray(data) ? data : Array.isArray(data?.districts) ? data.districts : KARNATAKA_DISTRICTS
-            ))
-            .catch(() => setDistricts(KARNATAKA_DISTRICTS));
-    }, []);
-
-    const load = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const [b, o, r] = await Promise.all([
-                fetch(`/server/beat_optimizer/beats/${districtId}`).then(r => r.json()),
-                fetch(`/server/beat_optimizer/optimize/${districtId}${flowMode ? '?flowMode=true' : ''}`).then(r => r.json()),
-                fetch(`/server/beat_optimizer/patrol/${districtId}`).then(r => r.json())
-            ]);
-            setBeats(b);
-            setOptimization(o);
-            setRoutes(r);
-        } catch (err) { setError(err.message); }
-        finally { setLoading(false); }
+function syntheticPlanningData(districtId, flowMode) {
+  const district = KARNATAKA_DISTRICTS.find((item) => item.id === Number(districtId))?.name || `District ${districtId}`;
+  const base = Number(districtId) % 5;
+  const names = ['Central', 'Market', 'Transit', 'East', 'South'];
+  const beats = names.map((name, index) => ({
+    id: `${districtId}-${index + 1}`,
+    name: `${district} · ${name}`,
+    totalCrimes: 34 + base * 3 + index * 9,
+    areaKm2: Number((4.8 + index * 1.3).toFixed(1)),
+    officersAssigned: 5 + (index % 3),
+    responseTimeMin: 8 + index * 2,
+    riskScore: Number((0.34 + index * 0.1).toFixed(2)),
+  }));
+  const optimization = beats.map((beat, index) => {
+    const scenarioOfficers = Math.max(4, Math.round(beat.totalCrimes / 8));
+    const loadRatio = Number((beat.totalCrimes / Math.max(1, beat.officersAssigned)).toFixed(1));
+    return {
+      beatId: beat.id,
+      beatName: beat.name,
+      currentCrimes: beat.totalCrimes,
+      currentOfficers: beat.officersAssigned,
+      recommendedOfficers: scenarioOfficers,
+      loadRatio,
+      status: scenarioOfficers > beat.officersAssigned ? 'Review load' : scenarioOfficers < beat.officersAssigned ? 'Capacity available' : 'Balanced',
+      index,
     };
+  });
+  const flowData = flowMode ? {
+    criminalClusters: [
+      { clusterId: 'A', criminalCount: 12 + base, topCrimeType: 'theft', avgTravelKm: 3.8 },
+      { clusterId: 'B', criminalCount: 8 + base, topCrimeType: 'burglary', avgTravelKm: 5.1 },
+    ],
+    flowBeats: beats.map((beat, index) => ({
+      beatId: beat.id,
+      flowRiskScore: Number((0.42 + index * 0.08).toFixed(2)),
+      predictedTargetCrime: index % 2 ? 'burglary' : 'theft',
+      recommendedPatrolShift: index % 2 ? 'Evening review' : 'Morning review',
+    })),
+  } : null;
+  const routes = beats.slice(0, 4).map((beat, index) => ({
+    beatId: beat.id,
+    beatName: beat.name,
+    totalDistance: Number((5.2 + index * 1.1).toFixed(1)),
+    estimatedMinutes: 38 + index * 7,
+    route: [
+      { label: 'Station', lat: 12.96 + index * 0.01, lng: 77.58 + index * 0.01 },
+      { label: 'Transit node', lat: 12.97 + index * 0.01, lng: 77.59 + index * 0.01 },
+      { label: 'Market area', lat: 12.98 + index * 0.01, lng: 77.60 + index * 0.01 },
+    ],
+  }));
+  const overloaded = optimization.filter((item) => item.status === 'Review load').length;
+  const balanced = optimization.filter((item) => item.status === 'Balanced').length;
 
-    useEffect(() => { load(); }, [districtId, flowMode]);
+  return {
+    beats: { districtId, beats },
+    optimization: {
+      districtId, optimization, flowMode, flowData,
+      summary: {
+        totalBeats: beats.length,
+        overloaded,
+        balanced,
+        avgLoad: Number((beats.reduce((sum, beat) => sum + beat.totalCrimes, 0) / beats.length).toFixed(1)),
+      },
+    },
+    routes: { districtId, routes },
+  };
+}
 
-    return (
-        <div className="panel" style={{ padding: '20px', maxWidth: '1000px' }}>
-            <h2>Beat & Patrol Optimizer</h2>
-            <p style={{ color: '#666', marginBottom: '20px' }}>
-                Optimize beat boundaries and patrol routes based on crime load. MIP-based beat redesign and ACO-inspired patrol routing.
-            </p>
+function normalizeBeats(payload) {
+  const source = apiObject(payload, ['beats', 'districtId'], ['beatData']);
+  if (!Object.prototype.hasOwnProperty.call(source, 'beats')) throw new Error('Unsupported beat response');
+  const beats = apiArray(source.beats, ['beats']).map((item, index) => {
+      const rawRisk = finiteNumber(item?.riskScore ?? item?.risk, 0);
+      return {
+        id: displayText(item?.id ?? item?.beatId, `beat-${index + 1}`),
+        name: displayText(item?.name ?? item?.beatName, `Beat ${index + 1}`),
+        totalCrimes: Math.max(0, finiteNumber(item?.totalCrimes ?? item?.crimes)),
+        areaKm2: Math.max(0, finiteNumber(item?.areaKm2 ?? item?.area)),
+        officersAssigned: Math.max(0, finiteNumber(item?.officersAssigned ?? item?.officers)),
+        responseTimeMin: Math.max(0, finiteNumber(item?.responseTimeMin ?? item?.responseMinutes)),
+        riskScore: clampNumber(rawRisk > 1 ? rawRisk / 100 : rawRisk),
+      };
+    });
+  const hasUsableWorkload = beats.some((beat) => beat.totalCrimes > 0
+    || beat.areaKm2 > 0
+    || beat.responseTimeMin > 0
+    || beat.riskScore > 0);
+  if (beats.length > 0 && !hasUsableWorkload) throw new Error('Beat response contains placeholder rows only');
 
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center' }}>
-                <label style={{ fontWeight: 600, fontSize: '13px' }}>District:</label>
-                <select value={districtId} onChange={e => setDistrictId(Number(e.target.value))}
-                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db' }}>
-                    {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                <button onClick={load} style={{ padding: '6px 16px', background: 'var(--color-blue-500)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
-                    Refresh
-                </button>
-            </div>
+  return {
+    districtId: source.districtId,
+    beats,
+  };
+}
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
-                {['beats', 'optimize', 'patrol'].map(t => (
-                    <button key={t} onClick={() => setTab(t)}
-                        style={{ padding: '8px 16px', background: tab === t ? 'var(--color-blue-500)' : 'var(--color-surface-50)', color: tab === t ? 'white' : '#333', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
-                        {t === 'beats' ? 'Beats' : t === 'optimize' ? 'Optimization' : 'Patrol Routes'}
-                    </button>
-                ))}
-                <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-gray-500)' }}>
-                        <input type="checkbox" checked={flowMode} onChange={e => setFlowMode(e.target.checked)}
-                            style={{ marginRight: '4px' }} />
-                        Criminal-Flow Mode
-                    </label>
-                    {flowMode && <span style={{ fontSize: '11px', padding: '2px 6px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontWeight: 600 }}>BETA</span>}
-                </div>
-            </div>
+function normalizeOptimization(payload) {
+  const source = apiObject(payload, ['optimization', 'summary'], ['optimizationData']);
+  if (!Object.prototype.hasOwnProperty.call(source, 'optimization')) throw new Error('Unsupported optimization response');
+  const rows = apiArray(source.optimization, ['optimization']).map((item, index) => ({
+    beatId: displayText(item?.beatId ?? item?.id, `beat-${index + 1}`),
+    beatName: displayText(item?.beatName ?? item?.name, ''),
+    currentCrimes: Math.max(0, finiteNumber(item?.currentCrimes ?? item?.crimes)),
+    currentOfficers: Math.max(0, finiteNumber(item?.currentOfficers ?? item?.officers)),
+    recommendedOfficers: Math.max(0, finiteNumber(item?.recommendedOfficers ?? item?.proposedOfficers)),
+    loadRatio: Math.max(0, finiteNumber(item?.loadRatio)),
+    status: displayText(item?.status, 'Review'),
+  }));
+  const summary = apiObject(source.summary);
+  const flowSource = apiObject(source.flowData, ['criminalClusters', 'flowBeats']);
+  const flowData = source.flowMode ? {
+    criminalClusters: apiArray(flowSource.criminalClusters, ['criminalClusters']),
+    flowBeats: apiArray(flowSource.flowBeats, ['flowBeats']),
+  } : null;
+  return {
+    districtId: source.districtId,
+    optimization: rows,
+    flowMode: Boolean(source.flowMode),
+    flowData,
+    summary: {
+      totalBeats: Math.max(0, finiteNumber(summary.totalBeats, rows.length)) || rows.length,
+      overloaded: Math.max(0, finiteNumber(summary.overloaded, rows.filter((item) => item.status === 'Overloaded').length)),
+      balanced: Math.max(0, finiteNumber(summary.balanced, rows.filter((item) => item.status === 'Balanced').length)),
+      avgLoad: Math.max(0, finiteNumber(summary.avgLoad)),
+    },
+  };
+}
 
-            {error && <div style={{ color: 'var(--color-red)', marginBottom: '16px' }}>Error: {error}</div>}
-            {loading && <div style={{ color: '#666' }}>Loading...</div>}
+function normalizeRoutes(payload) {
+  const source = apiObject(payload, ['routes', 'districtId'], ['patrol', 'routeData']);
+  if (!Object.prototype.hasOwnProperty.call(source, 'routes')) throw new Error('Unsupported route response');
+  return {
+    districtId: source.districtId,
+    routes: apiArray(source.routes, ['routes']).map((item, index) => ({
+      beatId: displayText(item?.beatId ?? item?.id, `route-${index + 1}`),
+      beatName: displayText(item?.beatName ?? item?.name, `Beat ${index + 1}`),
+      totalDistance: Math.max(0, finiteNumber(item?.totalDistance ?? item?.distanceKm)),
+      estimatedMinutes: Math.max(0, finiteNumber(item?.estimatedMinutes ?? item?.durationMinutes)),
+      route: apiArray(item?.route, ['route', 'stops']).map((stop, stopIndex) => ({
+        label: displayText(stop?.label ?? stop?.name, `Stop ${stopIndex + 1}`),
+        lat: finiteNumber(stop?.lat ?? stop?.latitude, Number.NaN),
+        lng: finiteNumber(stop?.lng ?? stop?.longitude, Number.NaN),
+      })),
+    })),
+  };
+}
 
-            {tab === 'beats' && beats && (
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
-                        <thead><tr style={{ background: '#f1f5f9' }}>
-                            <th style={th}>Beat</th><th style={th}>Crimes</th><th style={th}>Area km²</th><th style={th}>Officers</th><th style={th}>Response (min)</th><th style={th}>Risk</th>
-                        </tr></thead>
-                        <tbody>
-                            {beats.beats.map(b => (
-                                <tr key={b.id} style={{ borderBottom: '1px solid var(--color-border-200)' }}>
-                                    <td style={td}>{b.name}</td>
-                                    <td style={td}>{b.totalCrimes ?? '—'}</td>
-                                    <td style={td}>{b.areaKm2 ?? '—'}</td>
-                                    <td style={td}>{b.officersAssigned ?? '—'}</td>
-                                    <td style={td}>{b.responseTimeMin ?? '—'}</td>
-                                    <td style={td}><span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: b.riskScore > 0.6 ? 'var(--color-surface-red)' : '#f0fdf4', color: b.riskScore > 0.6 ? 'var(--color-red)' : '#22c55e' }}>{Number(b.riskScore || 0).toFixed(2)}</span></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+function EmptyState({ icon: Icon, title, message }) {
+  return <div style={{ display: 'flex', gap: 10, padding: '24px 14px', border: '1px dashed var(--border-light)', borderRadius: 6, color: 'var(--text-secondary)' }}><Icon size={22} weight="duotone" aria-hidden="true" /><div><strong style={{ color: 'var(--text)' }}>{title}</strong><p style={{ margin: '4px 0 0', fontSize: 12 }}>{message}</p></div></div>;
+}
 
-            {tab === 'optimize' && optimization && (
-                <>
-                    <div style={{ display: 'grid', gridTemplateColumns: optimization.flowMode ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-                        {[
-                            { label: 'Total Beats', value: optimization.summary.totalBeats, color: 'var(--color-blue-500)' },
-                            { label: 'Overloaded', value: optimization.summary.overloaded, color: 'var(--color-red)' },
-                            { label: 'Balanced', value: optimization.summary.balanced, color: 'var(--color-green)' },
-                            { label: 'Avg Crime Load', value: optimization.summary.avgLoad, color: 'var(--color-gray-500)' },
-                            ...(optimization.flowMode ? [{ label: 'Criminal Clusters', value: optimization.flowData.criminalClusters.length, color: '#7c3aed' }] : [])
-                        ].map(s => (
-                            <div key={s.label} style={{ padding: '16px', background: 'var(--color-surface-50)', borderRadius: '10px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
-                                <div style={{ fontSize: '11px', color: s.color, fontWeight: 600 }}>{s.label}</div>
-                                <div style={{ fontSize: '24px', fontWeight: 700, color: s.color }}>{s.value}</div>
-                            </div>
-                        ))}
-                    </div>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
-                            <thead><tr style={{ background: '#f1f5f9' }}>
-                                <th style={th}>Beat</th><th style={th}>Current Crimes</th><th style={th}>Current Officers</th><th style={th}>Recommended</th><th style={th}>Load Ratio</th><th style={th}>Status</th>
-                                {optimization.flowMode && <><th style={th}>Flow Risk</th><th style={th}>Target Crime</th><th style={th}>Patrol Shift</th></>}
-                            </tr></thead>
-                            <tbody>
-                                {optimization.optimization.map((o, idx) => {
-                                    const flow = optimization.flowData?.flowBeats?.[idx];
-                                    return (
-                                    <tr key={o.beatId} style={{ borderBottom: '1px solid var(--color-border-200)' }}>
-                                        <td style={td}>{o.beatId}</td>
-                                        <td style={td}>{o.currentCrimes}</td>
-                                        <td style={td}>{o.currentOfficers}</td>
-                                        <td style={td}><strong>{o.recommendedOfficers}</strong></td>
-                                        <td style={td}>{o.loadRatio}</td>
-                                        <td style={td}>
-                                            <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600,
-                                                background: o.status === 'Overloaded' ? 'var(--color-surface-red)' : o.status === 'Underloaded' ? '#fffbeb' : 'var(--color-surface-green)',
-                                                color: o.status === 'Overloaded' ? 'var(--color-red)' : o.status === 'Underloaded' ? '#d97706' : 'var(--color-green)' }}>
-                                                {o.status}
-                                            </span>
-                                        </td>
-                                        {flow && <>
-                                            <td style={td}><span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: flow.flowRiskScore > 0.8 ? 'var(--color-surface-red)' : '#f0fdf4', color: flow.flowRiskScore > 0.8 ? 'var(--color-red)' : '#22c55e' }}>{Number(flow.flowRiskScore || 0).toFixed(2)}</span></td>
-                                            <td style={{ ...td, textTransform: 'capitalize', fontSize: '12px' }}>{flow.predictedTargetCrime}</td>
-                                            <td style={{ ...td, fontSize: '12px' }}>{flow.recommendedPatrolShift}</td>
-                                        </>}
-                                    </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    {optimization.flowMode && optimization.flowData && (
-                        <div style={{ marginTop: '20px', padding: '16px', background: '#f5f3ff', borderRadius: '10px', border: '1px solid #ddd6fe' }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0', color: '#6d28d9' }}>Criminal Flow Clusters</h3>
-                            <p style={{ fontSize: '12px', color: 'var(--color-gray-500)', marginBottom: '12px' }}>
-                                Beat boundaries adjusted for criminal residence and movement patterns — proactive coverage instead of reactive.
-                            </p>
-                            <div style={{ display: 'grid', gap: '8px' }}>
-                                {optimization.flowData.criminalClusters.map(c => (
-                                    <div key={c.clusterId} style={{ padding: '10px', background: 'white', borderRadius: '8px', border: '1px solid var(--color-indigo-100)' }}>
-                                        <div style={{ fontWeight: 600, fontSize: '13px' }}>Cluster {c.clusterId} — {c.criminalCount} criminals</div>
-                                        <div style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>Top crime: {c.topCrimeType} · Avg travel: {c.avgTravelKm}km</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </>
-            )}
-
-            {tab === 'patrol' && routes && (
-                <div style={{ display: 'grid', gap: '16px' }}>
-                    {routes.routes.map(r => (
-                        <div key={r.beatId} style={{ padding: '14px', background: 'var(--color-surface-50)', borderRadius: '10px', border: '1px solid var(--color-border-200)' }}>
-                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>{r.beatName} Patrol Route</div>
-                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
-                                {r.route.length} stops · ~{r.totalDistance}km · ~{r.estimatedMinutes}min
-                            </div>
-                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                {r.route.map((p, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#e0f2fe', borderRadius: '6px', fontSize: '12px' }}>
-                                        <span style={{ fontWeight: 700, color: 'var(--color-blue-500)' }}>#{i + 1}</span>
-                                        <span>{p.label}</span>
-                                        <span style={{ color: '#666', fontSize: '11px' }}>({Number(p.lat || 0).toFixed(2)}, {Number(p.lng || 0).toFixed(2)})</span>
-                                        {i < r.route.length - 1 && <span style={{ color: 'var(--color-gray-400)' }}>→</span>}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {tab !== 'beats' && !loading && (
-                tab === 'optimize' ? (!optimization && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-gray-400)' }}>Select a district to see optimization</div>)
-                : (!routes && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-gray-400)' }}>Select a district to see patrol routes</div>)
-            )}
-        </div>
-    );
+EmptyState.propTypes = {
+  icon: PropTypes.elementType.isRequired,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
 };
 
-const th = { textAlign: 'left', padding: '10px 12px', fontSize: '11px', color: '#64748b', fontWeight: 600 };
-const td = { padding: '10px 12px' };
+export default function BeatOptimizerPanel() {
+  const [districtId, setDistrictId] = useState(1);
+  const [districts, setDistricts] = useState(KARNATAKA_DISTRICTS);
+  const [beats, setBeats] = useState(null);
+  const [optimization, setOptimization] = useState(null);
+  const [routes, setRoutes] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState('');
+  const [tab, setTab] = useState('beats');
+  const [flowMode, setFlowMode] = useState(false);
+  const requestId = useRef(0);
 
-export default React.memo(BeatOptimizerPanel);
+  useEffect(() => {
+    let active = true;
+    fetchJson('/server/beat_optimizer/districts')
+      .then((payload) => {
+        const list = apiArray(payload, ['districts']).map((item, index) => ({
+          id: finiteNumber(item?.id ?? item?.districtId, index + 1),
+          name: displayText(item?.name ?? item?.districtName, `District ${index + 1}`),
+        }));
+        if (active && list.length > 0) setDistricts(list);
+      })
+      .catch(() => { if (active) setDistricts(KARNATAKA_DISTRICTS); });
+    return () => { active = false; };
+  }, []);
+
+  const load = useCallback(async () => {
+    const currentRequest = requestId.current + 1;
+    requestId.current = currentRequest;
+    setLoading(true);
+    setNotice('');
+    const fallback = syntheticPlanningData(districtId, flowMode);
+
+    const requests = await Promise.allSettled([
+      fetchJson(`/server/beat_optimizer/beats/${districtId}`).then(normalizeBeats),
+      fetchJson(`/server/beat_optimizer/optimize/${districtId}${flowMode ? '?flowMode=true' : ''}`).then(normalizeOptimization),
+      fetchJson(`/server/beat_optimizer/patrol/${districtId}`).then(normalizeRoutes),
+    ]);
+    if (requestId.current !== currentRequest) return;
+
+    const fallbackCount = requests.filter((result) => result.status === 'rejected').length;
+    setBeats(requests[0].status === 'fulfilled' ? requests[0].value : fallback.beats);
+    setOptimization(requests[1].status === 'fulfilled' ? requests[1].value : fallback.optimization);
+    setRoutes(requests[2].status === 'fulfilled' ? requests[2].value : fallback.routes);
+    if (fallbackCount > 0) setNotice(`${fallbackCount} planning service${fallbackCount === 1 ? '' : 's'} unavailable. Fixed synthetic fixtures fill the missing view${fallbackCount === 1 ? '' : 's'}.`);
+    setLoading(false);
+  }, [districtId, flowMode]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const flowClusters = apiArray(optimization?.flowData?.criminalClusters, ['criminalClusters']);
+  const flowBeats = apiArray(optimization?.flowData?.flowBeats, ['flowBeats']);
+
+  return (
+    <div className="panel" style={{ padding: 20, width: '100%', maxWidth: 1100, boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div><h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 5px', fontSize: 22 }}><PiMapTrifold weight="duotone" aria-hidden="true" /> Beat planning workspace</h2><p style={{ margin: 0, maxWidth: 720, color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55 }}>Compares workload assumptions and patrol sequences for planning discussion. It does not issue staffing or deployment orders.</p></div>
+        <span style={{ padding: '5px 9px', border: '1px solid var(--border-light)', borderRadius: 5, background: 'var(--surface-alt)', fontSize: 11, fontWeight: 700 }}>SYNTHETIC DEMO · HUMAN REVIEW</span>
+      </div>
+
+      <div style={{ display: 'flex', gap: 9, margin: '18px 0 12px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 650 }}>District
+          <select value={districtId} onChange={(event) => setDistrictId(Number(event.target.value))} style={{ minHeight: 36, padding: '6px 10px', borderRadius: 5, border: '1px solid var(--border-light)', background: 'var(--surface)', color: 'var(--text)' }}>{districts.map((district) => <option key={district.id} value={district.id}>{district.name}</option>)}</select>
+        </label>
+        <button type="button" onClick={load} disabled={loading} title="Refresh planning data" aria-label="Refresh planning data" style={{ width: 36, height: 36, display: 'grid', placeItems: 'center', border: '1px solid var(--border-light)', borderRadius: 5, background: '#191815', color: '#fff', cursor: loading ? 'wait' : 'pointer' }}><PiArrowClockwise aria-hidden="true" /></button>
+        <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-secondary)', fontSize: 12, fontWeight: 650 }}><input type="checkbox" checked={flowMode} onChange={(event) => setFlowMode(event.target.checked)} /> Association-flow overlay <span style={{ padding: '2px 5px', borderRadius: 4, background: 'var(--surface-alt)', color: 'var(--text)', fontSize: 10 }}>BETA</span></label>
+      </div>
+
+      <div role="tablist" aria-label="Beat planning views" style={{ display: 'flex', gap: 5, marginBottom: 15, paddingBottom: 10, borderBottom: '1px solid var(--border-light)', overflowX: 'auto' }}>
+        {[
+          { id: 'beats', label: 'Beat inputs', icon: PiChartBar },
+          { id: 'optimize', label: 'Allocation scenario', icon: PiUsersThree },
+          { id: 'patrol', label: 'Patrol sequence', icon: PiPath },
+        ].map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', padding: '8px 11px', border: '1px solid var(--border-light)', borderRadius: 5, background: tab === id ? '#191815' : 'var(--surface)', color: tab === id ? '#fff' : 'var(--text)', cursor: 'pointer', fontWeight: 650, fontSize: 12 }}><Icon aria-hidden="true" /> {label}</button>)}
+      </div>
+
+      {notice && <div role="status" style={{ display: 'flex', gap: 8, marginBottom: 14, padding: '10px 12px', border: '1px solid #e5cf9d', borderRadius: 6, background: '#fbf3db', color: '#6f4c17', fontSize: 12 }}><PiWarningCircle size={18} aria-hidden="true" /> {notice}</div>}
+      {loading && !beats && <p aria-busy="true" style={{ padding: '24px 0', color: 'var(--text-secondary)', fontSize: 13 }}>Loading planning data...</p>}
+
+      {tab === 'beats' && beats && (beats.beats.length > 0 ? (
+        <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', minWidth: 700, fontSize: 13, borderCollapse: 'collapse' }}><thead><tr style={{ background: 'var(--surface-alt)' }}><th style={th}>Beat</th><th style={th}>Recorded load</th><th style={th}>Area km²</th><th style={th}>Officers</th><th style={th}>Response min</th><th style={th}>Workload index</th></tr></thead><tbody>{beats.beats.map((beat) => <tr key={beat.id} style={{ borderTop: '1px solid var(--border-light)' }}><td style={td}><strong>{beat.name}</strong></td><td style={td}>{beat.totalCrimes}</td><td style={td}>{beat.areaKm2 || 'Not supplied'}</td><td style={td}>{beat.officersAssigned || 'Not supplied'}</td><td style={td}>{beat.responseTimeMin || 'Not supplied'}</td><td style={td}><span style={{ padding: '3px 7px', borderRadius: 4, background: beat.riskScore > 0.6 ? '#f8ece8' : '#eaf3ed', color: beat.riskScore > 0.6 ? '#8d3030' : '#31634a', fontWeight: 650 }}>{beat.riskScore.toFixed(2)}</span></td></tr>)}</tbody></table></div>
+      ) : <EmptyState icon={PiChartBar} title="No beat inputs" message="No beat-level records were returned for this district." />)}
+
+      {tab === 'optimize' && optimization && (optimization.optimization.length > 0 ? (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 9, marginBottom: 16 }}>{[
+            ['Total beats', optimization.summary.totalBeats], ['Review load', optimization.summary.overloaded], ['Balanced', optimization.summary.balanced], ['Average load', optimization.summary.avgLoad], ...(optimization.flowMode ? [['Flow clusters', flowClusters.length]] : []),
+          ].map(([label, value]) => <div key={label} style={{ padding: 12, border: '1px solid var(--border-light)', borderRadius: 6, background: 'var(--surface-alt)' }}><div style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{label}</div><div style={{ marginTop: 2, fontSize: 23, fontWeight: 750 }}>{value}</div></div>)}</div>
+          <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', minWidth: optimization.flowMode ? 920 : 670, fontSize: 13, borderCollapse: 'collapse' }}><thead><tr style={{ background: 'var(--surface-alt)' }}><th style={th}>Beat</th><th style={th}>Recorded load</th><th style={th}>Current staff</th><th style={th}>Scenario staff</th><th style={th}>Load ratio</th><th style={th}>Review state</th>{optimization.flowMode && <><th style={th}>Flow index</th><th style={th}>Pattern category</th><th style={th}>Review window</th></>}</tr></thead><tbody>{optimization.optimization.map((item, index) => { const flow = flowBeats[index] || {}; const rawFlowScore = finiteNumber(flow.flowRiskScore); return <tr key={item.beatId} style={{ borderTop: '1px solid var(--border-light)' }}><td style={td}>{item.beatName || item.beatId}</td><td style={td}>{item.currentCrimes}</td><td style={td}>{item.currentOfficers}</td><td style={td}><strong>{item.recommendedOfficers}</strong></td><td style={td}>{item.loadRatio.toFixed(1)}</td><td style={td}>{item.status}</td>{optimization.flowMode && <><td style={td}>{rawFlowScore.toFixed(2)}</td><td style={{ ...td, textTransform: 'capitalize' }}>{displayText(flow.predictedTargetCrime, 'Not supplied')}</td><td style={td}>{displayText(flow.recommendedPatrolShift, 'Not supplied')}</td></>}</tr>; })}</tbody></table></div>
+          {optimization.flowMode && <section style={{ marginTop: 18, paddingTop: 15, borderTop: '1px solid var(--border-light)' }}><h3 style={{ margin: '0 0 5px', fontSize: 14 }}>Association-flow scenario</h3><p style={{ margin: '0 0 10px', color: 'var(--text-secondary)', fontSize: 12 }}>Illustrative grouping only. Association does not establish criminal involvement, intent, or an operational need.</p>{flowClusters.length > 0 ? <div style={{ display: 'grid', gap: 7 }}>{flowClusters.map((cluster, index) => <div key={cluster.clusterId || index} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '9px 0', borderTop: index === 0 ? 0 : '1px solid var(--border-light)', fontSize: 12 }}><strong>Cluster {displayText(cluster.clusterId, index + 1)}</strong><span>{finiteNumber(cluster.criminalCount)} synthetic records · {displayText(cluster.topCrimeType, 'unclassified')} · {finiteNumber(cluster.avgTravelKm).toFixed(1)} km</span></div>)}</div> : <EmptyState icon={PiInfo} title="No flow clusters" message="The overlay returned no grouped records." />}</section>}
+        </>
+      ) : <EmptyState icon={PiUsersThree} title="No allocation scenario" message="No workload rows were available to compare." />)}
+
+      {tab === 'patrol' && routes && (routes.routes.length > 0 ? <div style={{ display: 'grid', gap: 0 }}>{routes.routes.map((route, routeIndex) => <article key={route.beatId} style={{ padding: '13px 0', borderTop: routeIndex === 0 ? 0 : '1px solid var(--border-light)' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 9 }}><div><strong>{route.beatName}</strong><div style={{ marginTop: 3, color: 'var(--text-secondary)', fontSize: 12 }}>{route.route.length} review stops · {route.totalDistance.toFixed(1)} km · {route.estimatedMinutes} min</div></div><PiPath size={20} aria-hidden="true" /></div>{route.route.length > 0 ? <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{route.route.map((stop, index) => <span key={`${stop.label}-${index}`} title={Number.isFinite(stop.lat) && Number.isFinite(stop.lng) ? `${stop.lat.toFixed(4)}, ${stop.lng.toFixed(4)}` : 'Coordinates unavailable'} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 8px', border: '1px solid var(--border-light)', borderRadius: 5, background: 'var(--surface-alt)', fontSize: 12 }}><PiMapPin aria-hidden="true" /> {index + 1}. {stop.label}</span>)}</div> : <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 12 }}>No route stops returned.</p>}</article>)}</div> : <EmptyState icon={PiPath} title="No patrol sequence" message="No route candidates were returned for this district." />)}
+
+      <p style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '18px 0 0', paddingTop: 14, borderTop: '1px solid var(--border-light)', color: 'var(--text-tertiary)', fontSize: 11, lineHeight: 1.5 }}><PiInfo size={16} aria-hidden="true" /> Validate demand, geography, staff availability, officer safety, legal authority, and local command judgment before changing a beat or patrol plan.</p>
+    </div>
+  );
+}
+
+const th = { textAlign: 'left', padding: '10px 11px', color: 'var(--text-secondary)', fontSize: 11, fontWeight: 650 };
+const td = { padding: '10px 11px' };

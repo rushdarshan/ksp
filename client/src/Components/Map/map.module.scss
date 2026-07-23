@@ -104,9 +104,9 @@
   .option_selector{
     display: flex;
     width: 100%;
-    justify-content: end;
+    justify-content: space-between;
     align-items: center;
-    gap:2rem;
+    gap:1rem;
     padding: 12px 14px;
     margin: 0;
     border-bottom: 1px solid var(--dashboard-border);
@@ -115,6 +115,19 @@
     font-size: 11px;
     font-weight: 600;
   }
+  .map_intro {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+  }
+  .map_intro > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .map_intro strong { font-size: 14px; }
+  .map_intro span { color: var(--muted); font-size: 11px; }
   .option_selector > select{
     padding : 10px 15px;
     background-color: var(--dashboard-sidebar);
@@ -123,10 +136,7 @@
     color: var(--text);
   }
   .fade_circle {
-    animation: fadeInOut 3s infinite;
-    transform: scale(1);
-    // animation : ping 1s cubic-bezier(0, 0, 0.2, 1) infinite
-    // position: relative;
+    transition: fill-opacity 160ms ease;
 }
 // .fade_circle::after{ 
 //   // content: '';
@@ -135,14 +145,17 @@
 //   background-color: pink;
 
 // }
-@keyframes fadeInOut {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
 @keyframes ping {
   75%, 100% {
     transform: scale(2);
     opacity: 0;
   }
   
+}
+
+@media (max-width: 640px) {
+  .option_selector {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
 }

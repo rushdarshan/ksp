@@ -1,7 +1,7 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
-const { VERACITY_CONFIG } = require('../shared/analyzer');
 const { getCached, setCached } = require('../shared/cache-utils');
+const { DEMO_GENERATED_AT, createSeededRandom, intBetween } = require('../shared/deterministic');
 
 const app = express();
 app.use(express.json());
@@ -36,14 +36,17 @@ const TRANSITION_MATRIX = {
     publicorder: { assault: 0.22, murder: 0.12, robbery: 0.12, publicorder: 0.10, property: 0.10, theft: 0.10, burglary: 0.08, extortion: 0.06, sexual: 0.04, drugs: 0.03, fraud: 0.03 }
 };
 
-function varyMatrix(base, factor) {
+function varyMatrix(base, factor, seed) {
+    const random = createSeededRandom(seed);
     const result = {};
     for (const [src, targets] of Object.entries(base)) {
         result[src] = {};
         let sum = 0;
         const entries = Object.entries(targets);
         for (const [tgt, prob] of entries) {
-            const varied = Math.max(0.01, prob * (1 + factor + (Math.random() * 0.1 - 0.05)));
+            const seasonalEffect = factor * (random() - 0.5) * 0.3;
+            const stableVariation = (random() - 0.5) * 0.1;
+            const varied = Math.max(0.01, prob * (1 + seasonalEffect + stableVariation));
             result[src][tgt] = varied;
             sum += varied;
         }
@@ -63,7 +66,7 @@ const MONTHLY_MATRICES = (() => {
     };
     const mats = {};
     for (const [month, factor] of Object.entries(factors)) {
-        mats[month] = varyMatrix(TRANSITION_MATRIX, factor);
+        mats[month] = varyMatrix(TRANSITION_MATRIX, factor, `topology:${month}:v2`);
     }
     return mats;
 })();
@@ -76,13 +79,22 @@ function computeFSC(transitionMatrix, crimeId) {
     return (sumSq - 1 / k) / (1 - 1 / k);
 }
 
+function generateDemoDistrictCounts(districtId) {
+    const random = createSeededRandom(`topology-counts:${districtId}:v2`);
+    const baselines = [45, 34, 38, 22, 31, 15, 28, 9, 14, 20, 18, 25];
+    return Object.fromEntries(baselines.map((baseline, index) => [
+        index + 1,
+        Math.max(3, baseline + intBetween(random, -7, 8))
+    ]));
+}
+
 app.get('/topology', async (req, res) => {
     try {
         const catalystApp = catalyst.initialize(req);
-        const districtId = req.query.districtId || 1;
-        const weightByVeracity = req.query.weightByVeracity === 'true';
+        const districtId = Math.max(1, parseInt(req.query.districtId) || 1);
+        const weightByVeracityRequested = req.query.weightByVeracity === 'true';
         const month = req.query.month || null;
-        const cacheKey = `panel:topology:topology:${districtId}:${weightByVeracity}:${month || 'all'}`;
+        const cacheKey = `panel:topology:topology:v2:${districtId}:${weightByVeracityRequested}:${month || 'all'}`;
         const cached = await getCached(catalystApp, cacheKey);
         if (cached) return res.status(200).json(cached);
 
@@ -90,9 +102,10 @@ app.get('/topology', async (req, res) => {
         const zcql = catalystApp.zcql();
 
         let districtCounts = {};
+        let syntheticCounts = false;
         try {
             const rows = await zcql.executeZCQLQuery(
-                `SELECT CrimeHeadID, COUNT(*) as cnt FROM CaseMaster GROUP BY CrimeHeadID`
+                `SELECT CrimeHeadID, COUNT(*) as cnt FROM CaseMaster WHERE DistrictID = ${districtId} GROUP BY CrimeHeadID`
             );
             for (const row of rows) {
                 const crimeId = row.CaseMaster?.CrimeHeadID || row.CrimeHeadID;
@@ -100,44 +113,9 @@ app.get('/topology', async (req, res) => {
                 if (crimeId) districtCounts[crimeId] = cnt;
             }
         } catch (e) {
-            console.warn('Data Store query failed, using synthetic distribution:', e.message);
-            districtCounts = {
-                1: 45, 3: 38, 4: 22, 5: 31, 6: 15, 7: 28,
-                10: 20, 11: 18, 14: 25, 15: 30, 17: 12
-            };
-        }
-
-        let weighted = false;
-        let skippedLanguageCount = 0;
-
-        if (weightByVeracity) {
-            try {
-                const veracityRows = await zcql.executeZCQLQuery(
-                    `SELECT CrimeHeadID, AVG(VeracityScore) as avgScore, COUNT(*) as cnt FROM FirVeracity WHERE VeracityScore IS NOT NULL GROUP BY CrimeHeadID`
-                );
-                const veracityMap = {};
-                for (const row of veracityRows) {
-                    const crimeId = parseInt(row.FirVeracity?.CrimeHeadID || row.CrimeHeadID || 0);
-                    const avgScore = parseFloat(row.FirVeracity?.avgScore || row.avgScore || 0);
-                    if (crimeId) veracityMap[crimeId] = avgScore;
-                }
-
-                try {
-                    const langRows = await zcql.executeZCQLQuery(
-                        `SELECT COUNT(*) as cnt FROM FirVeracity WHERE Language != 'latin'`
-                    );
-                    skippedLanguageCount = parseInt(langRows[0]?.FirVeracity?.cnt || langRows[0]?.cnt || 0);
-                } catch (e) { /* non-fatal */ }
-
-                for (const [crimeIdStr, count] of Object.entries(districtCounts)) {
-                    const crimeId = parseInt(crimeIdStr);
-                    const meanVeracity = veracityMap[crimeId] || 0.5;
-                    districtCounts[crimeId] = Math.round(count * meanVeracity);
-                }
-                weighted = true;
-            } catch (e) {
-                console.warn('FirVeracity query failed, falling back to unweighted:', e.message);
-            }
+            console.warn('Data Store query failed, using deterministic synthetic demo distribution:', e.message);
+            syntheticCounts = true;
+            districtCounts = generateDemoDistrictCounts(districtId);
         }
 
         const totalCrimes = Object.values(districtCounts).reduce((s, v) => s + v, 0) || 1;
@@ -173,13 +151,20 @@ app.get('/topology', async (req, res) => {
             edges,
             metadata: {
                 totalCrimes,
-                districtId: parseInt(districtId),
+                districtId,
                 crimeTypeCount,
-                weighted,
+                dataSource: syntheticCounts ? 'synthetic_demo' : 'catalyst_data_store',
+                synthetic: syntheticCounts,
+                weighted: false,
+                credibilityWeightingApplied: false,
+                credibilityWeightingRequestIgnored: weightByVeracityRequested,
                 month: month && MONTHLY_MATRICES[month] ? month : undefined,
-                temporalMode: month && MONTHLY_MATRICES[month],
-                skippedLanguageCount: weighted ? skippedLanguageCount : undefined,
-                generatedAt: new Date().toISOString()
+                temporalMode: Boolean(month && MONTHLY_MATRICES[month]),
+                transitionSource: 'fixed_demo_assumptions',
+                modelValidationStatus: 'not_established',
+                note: 'Node counts use the stated data source. Edge weights are deterministic illustrative assumptions, not learned offender transitions or evidence of future conduct.',
+                humanReviewRequired: true,
+                generatedAt: syntheticCounts ? DEMO_GENERATED_AT : new Date().toISOString()
             }
         };
 

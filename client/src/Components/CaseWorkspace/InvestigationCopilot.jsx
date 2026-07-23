@@ -10,6 +10,7 @@ import {
 } from 'react-icons/pi';
 import apiFetch from '../../utils/apiFetch';
 import { useCaseContext } from './caseContext';
+import { ACTIVE_CASE_FACTS } from './caseFacts';
 import './InvestigationCopilot.scss';
 
 const ACTIONS = [
@@ -27,6 +28,60 @@ const FALLBACK = {
   reasoning: [],
   limitations: ['No live reasoning response was available.'],
   mode: 'demo',
+};
+
+const ACTIVE_CASE_SOURCES = [
+  `FIR ${ACTIVE_CASE_FACTS.firId}`,
+  `Investigation record - ${ACTIVE_CASE_FACTS.investigatingOfficer}`,
+  'Evidence register E1-E5',
+];
+
+const ACTIVE_CASE_RESULTS = {
+  explain: {
+    answer: `${ACTIVE_CASE_FACTS.firId} records a robbery at ${ACTIVE_CASE_FACTS.location} on ${ACTIVE_CASE_FACTS.incidentDateLabel}. Mohan Kumar and Kiran Joseph are listed as accused, with Kiran Joseph still at large. Investigation readiness is ${ACTIVE_CASE_FACTS.readiness}%. The identified CCTV source has not yet been acquired, hashed, or supported by a BSA Section 63 certificate.`,
+    confidence: 0.67,
+    reasoning: [
+      { label: 'Readiness', value: '67%', impact: 'Evidence handling tasks prevent filing readiness.' },
+      { label: 'At-large status', value: 'Kiran Joseph', impact: 'Operational follow-up remains active.' },
+      { label: 'Filing window', value: '18 days', impact: 'The case is approaching its statutory filing date but is not overdue.' },
+    ],
+  },
+  evidence_gaps: {
+    answer: 'Three linked CCTV tasks remain open: acquire the identified SH-9 junction footage, generate and record its hash, and obtain the BSA Section 63 certificate. Do not describe the footage as collected or verified until those records exist.',
+    confidence: 0.8,
+    reasoning: [
+      { label: 'Acquisition', value: 'Pending', impact: 'No footage file is recorded in the evidence register.' },
+      { label: 'Integrity', value: 'Pending', impact: 'No cryptographic hash is recorded.' },
+      { label: 'Certification', value: 'Pending', impact: 'BSA Section 63 documentation is not recorded.' },
+    ],
+  },
+  next_lead: {
+    answer: 'Prioritise lawful CCTV acquisition and the corresponding integrity record. In parallel, continue the documented location and arrest follow-up for Kiran Joseph. Record both workstreams against the active FIR.',
+    confidence: 0.72,
+    reasoning: [
+      { label: 'Evidence priority', value: 'CCTV source', impact: 'The source is known, but the evidence is not yet secured.' },
+      { label: 'Operational priority', value: 'Kiran Joseph', impact: 'The second accused remains at large.' },
+      { label: 'Owner', value: 'PI Dharmendra', impact: 'The assigned IO should validate and record completion.' },
+    ],
+  },
+  similar_cases: {
+    answer: 'Two robbery records have pattern-level similarities for officer review. No direct person, device, vehicle, or financial linkage is established from the active-case record, so they must not be presented as connected cases without corroboration.',
+    confidence: 0.54,
+    reasoning: [
+      { label: 'KSP-2025-0098', value: '62% pattern match', impact: 'Offence pattern and urban-junction context only.' },
+      { label: 'KSP-2025-0301', value: '54% pattern match', impact: 'Shared offence category only.' },
+      { label: 'Direct linkage', value: 'Not established', impact: 'Cross-case access and officer validation are required.' },
+    ],
+  },
+  outcome: {
+    answer: `Investigation readiness is ${ACTIVE_CASE_FACTS.readiness}%. The statutory filing date is ${ACTIVE_CASE_FACTS.filingDueDays} days away, not overdue. Readiness should be recalculated after CCTV acquisition, hash verification, BSA Section 63 certification, and updated at-large follow-up.`,
+    confidence: 0.67,
+    reasoning: [
+      { label: 'Current readiness', value: '67%', impact: 'Material evidence-handling steps remain open.' },
+      { label: 'Deadline', value: 'Due in 18 days', impact: 'Prioritise blockers while preserving review time.' },
+      { label: 'Review indicator', value: '84%', impact: 'Narrative review support only; not an evidentiary finding.' },
+    ],
+  },
 };
 
 const sourceLabel = source => typeof source === 'string' ? source : source?.label || source?.table || 'Evidence record';
@@ -57,6 +112,16 @@ export default function InvestigationCopilot({ initialAction }) {
     setResult(null);
 
     try {
+      if (firId === ACTIVE_CASE_FACTS.firId && ACTIVE_CASE_RESULTS[actionId]) {
+        setResult(normalizeResult({
+          ...ACTIVE_CASE_RESULTS[actionId],
+          sources: ACTIVE_CASE_SOURCES,
+          limitations: ['Synthetic demonstration record. An authorised investigating officer must verify every source and action.'],
+          mode: 'case-record',
+          method: 'canonical-case-record',
+        }));
+        return;
+      }
       const response = await apiFetch('/crime_chat/query', {
         method: 'POST',
         body: JSON.stringify({
@@ -81,7 +146,7 @@ export default function InvestigationCopilot({ initialAction }) {
     runAction(initialAction);
   }, [actionMap, initialAction, runAction]);
 
-  const confidence = Math.round((result?.confidence || 0) * 100);
+  const sourceCoverage = Math.round((result?.confidence || 0) * 100);
 
   return (
     <section className="investigation-copilot" aria-label="Investigation copilot">
@@ -120,13 +185,13 @@ export default function InvestigationCopilot({ initialAction }) {
               <div className="investigation-copilot__result-head">
                 <div>
                   <span className={`investigation-copilot__mode investigation-copilot__mode--${result.mode || 'live'}`}>
-                    {result.mode === 'demo' ? 'Synthetic demo' : 'Live evidence'}
+                    {result.mode === 'demo' ? 'Synthetic demo' : result.mode === 'case-record' ? 'Case record' : 'Live evidence'}
                   </span>
                   <strong>{actionMap.get(activeAction)?.label || 'Copilot analysis'}</strong>
                 </div>
-                <div className="investigation-copilot__confidence" aria-label={`${confidence}% confidence`}>
-                  <span>{confidence}%</span>
-                  <i><b style={{ width: `${confidence}%` }} /></i>
+                <div className="investigation-copilot__confidence" aria-label={`${sourceCoverage}% source coverage`}>
+                  <span>{sourceCoverage}% coverage</span>
+                  <i><b style={{ width: `${sourceCoverage}%` }} /></i>
                 </div>
               </div>
 

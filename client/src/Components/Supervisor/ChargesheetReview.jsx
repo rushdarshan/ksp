@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { PiArrowCounterClockwise, PiCheckCircle } from 'react-icons/pi'
 import './ChargesheetReview.scss'
 
 const MOCK_CHARGESHEETS = [
-  { id: 'KSP-2026-0142', ioName: 'SI Ramesh K.', csmScore: 82, submittedDate: '2026-07-01', status: 'pending' },
+  { id: 'KSP-2026-0142', ioName: 'PI Dharmendra', csmScore: 67, submittedDate: '2026-07-21', status: 'pending' },
   { id: 'KSP-2026-0105', ioName: 'Inspector Priya M.', csmScore: 71, submittedDate: '2026-06-28', status: 'approved' },
   { id: 'KSP-2026-0133', ioName: 'ASI Ganesh B.', csmScore: 58, submittedDate: '2026-06-25', status: 'returned', feedback: 'Witness statements missing for accused #2. Re-examine and resubmit.' },
 ]
@@ -58,7 +59,7 @@ const ChargesheetReview = () => {
                   <span className="chargesheet-review__value">{s.ioName}</span>
                 </div>
                 <div className="chargesheet-review__field">
-                  <span className="chargesheet-review__label">CSM</span>
+                  <span className="chargesheet-review__label">Readiness</span>
                   <span className="chargesheet-review__value">{s.csmScore}</span>
                 </div>
                 <div className="chargesheet-review__field">
@@ -96,10 +97,10 @@ const ChargesheetReview = () => {
                   ) : (
                     <div className="chargesheet-review__action-btns">
                       <button className="chargesheet-review__btn chargesheet-review__btn--approve" onClick={() => handleApprove(s.id)}>
-                        ✓ Approve
+                        <PiCheckCircle aria-hidden="true" /> Approve
                       </button>
                       <button className="chargesheet-review__btn chargesheet-review__btn--return-init" onClick={() => setReturningId(s.id)}>
-                        ↩ Return with Feedback
+                        <PiArrowCounterClockwise aria-hidden="true" /> Return with Feedback
                       </button>
                     </div>
                   )}

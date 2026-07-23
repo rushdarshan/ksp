@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { countElements, getRandomColor } from "../../../utils/utility";
 // import FirStageSelect from './Select';
@@ -55,6 +55,8 @@ export function useFetchData(url, variables,config) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestBody = JSON.stringify(variables ?? {});
+  const requestHeaders = JSON.stringify(config?.headers ?? {});
 
   useEffect(() => {
     let targetUrl = url;
@@ -72,8 +74,8 @@ export function useFetchData(url, variables,config) {
       try {
         const response = await fetch(targetUrl, {
           method: 'POST',
-          headers: { ...config?.headers, 'Content-Type': 'application/json' },
-          body: JSON.stringify(variables)
+          headers: { ...JSON.parse(requestHeaders), 'Content-Type': 'application/json' },
+          body: requestBody,
         }).then(r => r.json());
         setData(response);
       } catch (err) {
@@ -84,7 +86,7 @@ export function useFetchData(url, variables,config) {
     };
 
     fetchData();
-  }, [url]);
+  }, [url, requestBody, requestHeaders]);
 
   return { data, isLoading, error };
 }
@@ -92,20 +94,6 @@ export function useFetchData(url, variables,config) {
 export default function ChartOne({data,isLoading,error}) {
   // const [firStageKeys,setFirStageKeys]=useState([])
   // const [firStageValues,setFirStageValues]=useState([]);
-  const [sample, setSample] = useState([]);
-  // let firStageKeys;
-  // let firStageValues;
-  const [state, setState] = useState({
-    series: [65, 34, 11, 57],
-  });
-
-  const handleReset = () => {
-    setState((prevState) => ({
-      ...prevState,
-      series: [65, 34, 12, 56],
-    }));
-  };
-  handleReset;
 // Replace with your API endpoint
 
   if (isLoading) {
@@ -124,9 +112,6 @@ export default function ChartOne({data,isLoading,error}) {
   const firStageCount = firStageValues.length;
   // console.log(countElements(data))
   // console.log(firStageKeys)
-  const totalCases= firStageValues.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-  const activeCases= firStageValues[0]+firStageValues[1]
-  const closedCases =  totalCases- activeCases
   return (
       <div id="chartThree" className="">
         <div className="donut_one_header">

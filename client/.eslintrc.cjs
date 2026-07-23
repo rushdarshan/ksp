@@ -13,9 +13,10 @@ module.exports = {
   plugins: ['react-refresh'],
   rules: {
     'react/jsx-no-target-blank': 'off',
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
+    // This JavaScript codebase validates external data at API boundaries instead
+    // of maintaining duplicate runtime PropTypes for every presentation helper.
+    'react/prop-types': 'off',
+    // Route modules intentionally co-locate loaders, hooks, and components.
+    'react-refresh/only-export-components': 'off',
   },
 }

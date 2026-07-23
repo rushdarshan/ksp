@@ -11,60 +11,10 @@ import {
   PiMagnifyingGlass,
   PiRobot,
 } from 'react-icons/pi';
+import { ACTIVE_CASE_BRIEF, ACTIVE_CASE_FACTS } from './caseFacts';
 import './AIIntelligenceBrief.scss';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
-
-const MOCK_BRIEF = {
-  narrative: 'FIR KSP-2026-0142 involves a robbery near MG Road metro station reported on 2026-03-15. Solvability analysis indicates strong witness and CCTV evidence. Veracity score is 84% (GENUINE). Network analysis links primary accused to the M G Road Snatchers gang with 2 co-offenders. The case is currently under investigation at Brigade Road PS with golden period expired but chargesheet deadline in 18 days.',
-  solvability: {
-    firNo: 'KSP-2026-0142', score: 0.67, label: 'SOLVABLE',
-    factors: [
-      { name: 'Witness availability', weight: 0.85, value: '2 witnesses identified' },
-      { name: 'Physical evidence', weight: 0.72, value: 'CCTV footage within 48hr window' },
-      { name: 'Suspect identification', weight: 0.60, value: 'Partial — scar description, no name' },
-      { name: 'Time to report', weight: 0.92, value: 'Reported within 4 hours' },
-      { name: 'Location specificity', weight: 0.88, value: 'Exact location identified' },
-    ],
-    recommendation: 'Prioritize for investigation. Strong witness and evidence indicators.',
-  },
-  veracity: {
-    score: 0.84, label: 'GENUINE',
-    flags: [
-      { type: 'specificity', weight: 0.8, description: 'Narrative contains specific temporal and spatial details' },
-      { type: 'coherence', weight: 0.7, description: 'Event sequence is logically ordered and internally consistent' },
-      { type: 'complainant_detail', weight: 0.9, description: 'Complainant identified by name' },
-      { type: 'delay_indicator', weight: 0.9, description: 'No delay in reporting' },
-      { type: 'property_claim', weight: 0.7, description: 'Property value within expected range' },
-    ],
-    methodology: 'VeriPol-inspired logistic regression + TF-IDF features + behavioral markers',
-  },
-  similarCases: [
-    { caseId: 89, similarity: 0.78, reason: 'Same MO — chain snatching with 2-wheeler getaway in nearby area' },
-    { caseId: 301, similarity: 0.65, reason: 'Linked accused, same gang affiliation (M G Road Snatchers)' },
-    { caseId: 255, similarity: 0.52, reason: 'Geographic proximity, similar time-of-day pattern' },
-  ],
-  entityLinks: [
-    { source: 'N1', target: 'N2', weight: 5, relation: 'co-offender' },
-    { source: 'N1', target: 'N3', weight: 3, relation: 'known-associate' },
-    { source: 'N2', target: 'N6', weight: 4, relation: 'family' },
-    { source: 'N1', target: 'N4', weight: 1, relation: 'perpetrator-victim' },
-  ],
-  recommendations: [
-    { priority: 'HIGH', action: 'Retrieve CCTV from SH-9 junction before 48h overwrite', deadline: '2026-07-12T09:00:00Z' },
-    { priority: 'HIGH', action: 'Issue lookout notice for accused Mohan Kumar', deadline: '2026-07-11T18:00:00Z' },
-    { priority: 'MEDIUM', action: 'Conduct victim statement re-examination for chain-of-custody evidence', deadline: '2026-07-13T18:00:00Z' },
-    { priority: 'LOW', action: 'Review BNS 309 and any applicable aggravated provision with the legal officer', deadline: '2026-07-25T18:00:00Z' },
-  ],
-  confidence: 0.82,
-  provenance: [
-    { function: 'solvability_index', methodology: 'Random Forest classifier on case features' },
-    { function: 'veracity_index', methodology: 'VeriPol-inspired logistic regression + TF-IDF' },
-    { function: 'network_analysis', methodology: 'Graph-based co-offender linkage' },
-    { function: 'daily_brief', methodology: 'Aggregate district crime statistics' },
-    { function: 'agentic_police', methodology: 'Multi-agent orchestration log' },
-  ],
-};
 
 // ── Skeleton loader (redaction-bar pattern) ────────────────
 function Skeleton() {
@@ -128,9 +78,9 @@ ScoreGauge.propTypes = {
   size: PropTypes.number,
 };
 
-// ── Veracity badge ─────────────────────────────────────────
-function VeracityBadge({ score, label }) {
-  const color = label === 'GENUINE' ? 'var(--color-green-alt)' : label === 'NEEDS REVIEW' ? '#facc15' : 'var(--color-red-soft)';
+// ── Narrative review badge ─────────────────────────────────
+function ReviewSupportBadge({ score, label }) {
+  const color = '#76531b';
   return (
     <span className="aib-veracity" style={{ background: `${color}20`, color, borderColor: `${color}60` }}>
       <span className="aib-veracity__dot" style={{ background: color }} />
@@ -139,7 +89,7 @@ function VeracityBadge({ score, label }) {
   );
 }
 
-VeracityBadge.propTypes = {
+ReviewSupportBadge.propTypes = {
   score: PropTypes.number.isRequired,
   label: PropTypes.string.isRequired,
 };
@@ -184,6 +134,12 @@ export default function AIIntelligenceBrief() {
     setData(null);
     setLatency(false);
 
+    if (firId === ACTIVE_CASE_FACTS.firId) {
+      setData(ACTIVE_CASE_BRIEF);
+      setLoading(false);
+      return () => { cancelled = true; };
+    }
+
     timerRef.current = setTimeout(() => {
       if (!cancelled) setLatency(true);
     }, 5000);
@@ -198,7 +154,7 @@ export default function AIIntelligenceBrief() {
         if (!cancelled) setData(d);
       })
       .catch(() => {
-        if (!cancelled) setData(MOCK_BRIEF);
+        if (!cancelled) setData(null);
       })
       .finally(() => {
         clearTimeout(timerRef.current);
@@ -232,6 +188,7 @@ export default function AIIntelligenceBrief() {
 
   if (!data) return null;
 
+  const narrativeReview = data.narrativeReview || data.veracity || {};
   const provMap = {};
   (data.provenance || []).forEach(p => { provMap[p.function] = p; });
 
@@ -285,8 +242,8 @@ export default function AIIntelligenceBrief() {
           <p className="aib__sub">{firId} — Multi-agent synthesis</p>
         </div>
         <div className="aib__header-scores">
-          <ScoreGauge score={data.solvability?.score || 0} label="Solvability" size={72} />
-          <ScoreGauge score={data.veracity?.score || 0} label="Veracity" size={72} />
+          <ScoreGauge score={data.solvability?.score || 0} label="Readiness" size={72} />
+          <ScoreGauge score={narrativeReview.score || 0} label="Review aid" size={72} />
           <button className="aib__export-btn" onClick={exportPDF} title="Export as PDF">
             <PiDownloadSimple size={14} /> Export PDF
           </button>
@@ -309,12 +266,12 @@ export default function AIIntelligenceBrief() {
         </div>
       </section>
 
-      {/* Solvability */}
+      {/* Investigation readiness */}
       <section className="aib__card">
         <div className="aib__card-head">
           <PiChartBar aria-hidden="true" />
-          <h3>Solvability Analysis</h3>
-          <VeracityBadge score={data.solvability?.score || 0} label={data.solvability?.label || '—'} />
+          <h3>Investigation Readiness</h3>
+          <ReviewSupportBadge score={data.solvability?.score || 0} label={data.solvability?.label || 'REVIEW REQUIRED'} />
           {provMap.solvability_index && <ProvenanceBadge {...provMap.solvability_index} />}
         </div>
         <div className="aib__card-body">
@@ -325,16 +282,17 @@ export default function AIIntelligenceBrief() {
         </div>
       </section>
 
-      {/* Veracity */}
+      {/* Narrative review support */}
       <section className="aib__card">
         <div className="aib__card-head">
           <PiMagnifyingGlass aria-hidden="true" />
-          <h3>Veracity Assessment</h3>
-          {provMap.veracity_index && <ProvenanceBadge {...provMap.veracity_index} />}
+          <h3>Narrative Review Support</h3>
+          <ReviewSupportBadge score={narrativeReview.score || 0} label={narrativeReview.label || 'REVIEW SUPPORT'} />
+          {provMap.narrative_review && <ProvenanceBadge {...provMap.narrative_review} />}
         </div>
         <div className="aib__card-body">
           <div className="aib__veracity-flags">
-            {(data.veracity?.flags || []).map((f, i) => {
+            {(narrativeReview.flags || []).map((f, i) => {
               const c = f.weight >= 0.7 ? 'var(--color-green-alt)' : f.weight >= 0.4 ? '#facc15' : 'var(--color-red-soft)';
               return (
                 <div key={i} className="aib__vflag">
@@ -345,8 +303,8 @@ export default function AIIntelligenceBrief() {
               );
             })}
           </div>
-          {data.veracity?.methodology && (
-            <div className="aib__method">{data.veracity.methodology}</div>
+          {narrativeReview.methodology && (
+            <div className="aib__method">{narrativeReview.methodology}</div>
           )}
         </div>
       </section>
@@ -407,9 +365,9 @@ export default function AIIntelligenceBrief() {
               <div key={i} className="aib__reco">
                 <span className="aib__reco-pri" style={{ background: `${pc}20`, color: pc }}>{r.priority}</span>
                 <span className="aib__reco-action">{r.action}</span>
-                {r.deadline && (
+                {(r.deadlineLabel || r.deadline) && (
                   <span className="aib__reco-date">
-                    by {new Date(r.deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                    {r.deadlineLabel || `by ${new Date(r.deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}`}
                   </span>
                 )}
               </div>

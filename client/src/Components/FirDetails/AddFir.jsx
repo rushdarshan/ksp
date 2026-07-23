@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useFetchData } from "./Firdetails";
+import { useState } from "react";
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 import toast from "react-hot-toast";
 import styles from "./firdetails.module.css";
@@ -47,7 +46,7 @@ const AddFir = () => {
       if (res.ok) {
         // Trigger agentic cross-check
         try {
-          const firId = data.firId || Math.floor(Math.random() * 1000) + 1;
+          const firId = data.firId || `draft-${Date.now()}`;
           fetch(`${apiUrl}/agentic/cross-check/${firId}/demo`, {
             method: 'POST',
             headers: {
@@ -57,12 +56,8 @@ const AddFir = () => {
           }).then(async crossCheckRes => {
             if (crossCheckRes.ok) {
               const crossCheckData = await crossCheckRes.json();
-              toast((t) => (
-                <span style={{ fontSize: '12px' }}>
-                  <strong>🤖 Agentic Cross-Check Complete</strong><br />
-                  Cross-checked new FIR against database. Found {crossCheckData.findings?.length || 0} MO similarities! Check the Proactive Alerts feed.
-                </span>
-              ), { duration: 6000 });
+              const findingCount = crossCheckData.findings?.length || 0;
+              toast.success(`Cross-case review ready: ${findingCount} item${findingCount === 1 ? '' : 's'} require officer verification.`, { duration: 6000 });
             }
           }).catch(err => console.warn('Cross-check trigger failed:', err));
         } catch (crossCheckErr) {

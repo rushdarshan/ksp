@@ -1,14 +1,31 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { ACTIVE_CASE_FACTS } from './caseFacts';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
+const ACTIVE_CASE_READINESS = {
+  overallScore: ACTIVE_CASE_FACTS.readiness,
+  grade: 'Needs action',
+  explanation: `Investigation readiness is ${ACTIVE_CASE_FACTS.readiness}%. CCTV acquisition and integrity documentation are the main blockers; statutory filing is due in ${ACTIVE_CASE_FACTS.filingDueDays} days.`,
+  factors: [
+    { name: 'Core case record', score: 100 },
+    { name: 'Accused follow-up', score: 65 },
+    { name: 'CCTV acquisition', score: 25 },
+    { name: 'Digital integrity', score: 10 },
+  ],
+};
+
 export default function CaseStrengthMeter({ firId, expanded: controlledExpanded, onToggle }) {
-  const [score, setScore] = useState(null);
+  const [score, setScore] = useState(() => firId === ACTIVE_CASE_FACTS.firId ? ACTIVE_CASE_READINESS : null);
   const [expanded, setExpanded] = useState(controlledExpanded ?? false);
 
   useEffect(() => {
     if (!firId) return;
+    if (firId === ACTIVE_CASE_FACTS.firId) {
+      setScore(ACTIVE_CASE_READINESS);
+      return;
+    }
     fetch(`${apiUrl}/zia/case_strength/${firId}`)
       .then(r => r.json())
       .then(d => setScore(d))
@@ -19,48 +36,31 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
 
   if (!score) return null;
 
-  const color = score.overallScore >= 70 ? 'var(--color-green-alt)' : score.overallScore >= 40 ? '#facc15' : 'var(--color-red-soft)';
+  const color = score.overallScore >= 70 ? 'var(--color-green-alt)' : score.overallScore >= 40 ? '#a76617' : 'var(--color-red-soft)';
   const factors = score.factors || score.weightedFactors || [];
 
   return (
-    <div className="case-strength" style={{ position: 'relative' }}>
+    <div className="case-strength">
       <button
         className="case-strength__button"
         onClick={toggle}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '8px 16px', background: `${color}15`,
-          border: `1px solid ${color}40`, borderRadius: '999px',
-          cursor: 'pointer', color: 'inherit',
-        }}
-        title="Case Strength Meter — click for full breakdown"
+        style={{ '--readiness-color': color }}
+        title="Investigation readiness - click for the factor breakdown"
+        aria-expanded={expanded}
       >
-        <div className="case-strength__gauge" style={{
-          width: 32, height: 32, borderRadius: '50%',
-          background: `conic-gradient(${color} ${score.overallScore * 3.6}deg, var(--border) 0deg)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{
-            width: 24, height: 24, borderRadius: '50%', background: 'var(--surface)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '11px', fontWeight: 800, color,
-          }}>{score.overallScore}</div>
+        <div className="case-strength__gauge" style={{ background: `conic-gradient(${color} ${score.overallScore * 3.6}deg, var(--border) 0deg)` }}>
+          <div style={{ color }}>{score.overallScore}</div>
         </div>
-        <div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1 }}>Case Strength</div>
-          <div style={{ fontSize: '13px', fontWeight: 700, color, lineHeight: 1.3 }}>Grade {score.grade}</div>
+        <div className="case-strength__summary">
+          <span>Readiness</span>
+          <strong style={{ color }}>{score.grade}</strong>
         </div>
       </button>
 
       {expanded && (
-        <div className="case-strength__details" style={{
-          position: 'absolute', top: '100%', right: 0, marginTop: 8,
-          width: 340, padding: '16px', background: 'var(--surface)',
-          border: '1px solid var(--border-light)', borderRadius: 8,
-          boxShadow: '0px 4px 20px rgba(0,0,0,0.06)', zIndex: 50,
-        }}>
-          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: 12, color: 'var(--text)' }}>
-            Case Strength Breakdown
+        <div className="case-strength__details">
+          <div className="case-strength__details-title">
+            Investigation readiness
           </div>
           {score.explanation && (
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>
@@ -70,7 +70,7 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
           {factors.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {factors.map((f, i) => {
-                const fColor = f.score >= 70 ? 'var(--color-green-alt)' : f.score >= 40 ? '#facc15' : 'var(--color-red-soft)';
+                const fColor = f.score >= 70 ? 'var(--color-green-alt)' : f.score >= 40 ? '#a76617' : 'var(--color-red-soft)';
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ flex: 1, fontSize: '12px', color: 'var(--text-secondary)' }}>{f.name || f.label}</div>

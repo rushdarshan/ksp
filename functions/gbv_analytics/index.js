@@ -1,5 +1,6 @@
 const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
+const { createSeededRandom, intBetween, pick } = require('../shared/deterministic');
 
 const app = express();
 app.use(express.json());
@@ -22,16 +23,73 @@ const GBV_KEYWORDS = [
     'stalking', 'voyeurism', 'cruelty by husband', 'dowry death'
 ];
 
-function getDefaultAnalytics() {
-    const years = [2024, 2025, 2026, 2027];
-    const allTypes = GBV_CRIME_TYPES.map(t => t.id);
+function allocateTotal(total, itemCount, random) {
+    const weights = Array.from({ length: itemCount }, () => 0.6 + random());
+    const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+    const values = weights.map(weight => Math.floor((weight / weightTotal) * total));
+    let remainder = total - values.reduce((sum, value) => sum + value, 0);
+    for (let index = 0; remainder > 0; index = (index + 1) % values.length) {
+        values[index] += 1;
+        remainder -= 1;
+    }
+    return values;
+}
+
+function percentChange(current, previous) {
+    if (previous <= 0) return 0;
+    return +(((current - previous) / previous) * 100).toFixed(1);
+}
+
+function getDefaultAnalytics(seed = 'gbv-analytics:v2') {
+    const random = createSeededRandom(seed);
+    const allTypes = GBV_CRIME_TYPES.map(type => type.id);
+    const byMonth = Array.from({ length: 18 }, (_, index) => {
+        const date = new Date(Date.UTC(2025, index, 1));
+        return {
+            year: date.getUTCFullYear(),
+            month: date.getUTCMonth() + 1,
+            cases: intBetween(random, 14, 29),
+            type: pick(random, allTypes)
+        };
+    });
+    const totalCases = byMonth.reduce((sum, item) => sum + item.cases, 0);
+    const typeCounts = allocateTotal(totalCases, GBV_CRIME_TYPES.length, random);
+    const districtCounts = allocateTotal(totalCases, 10, random);
+    const latestSixMonths = byMonth.slice(-6).reduce((sum, item) => sum + item.cases, 0);
+    const previousSixMonths = byMonth.slice(-12, -6).reduce((sum, item) => sum + item.cases, 0);
+
     return {
-        summary: { totalCases: 0, changePercent: 12.3, districtsAffected: 0 },
-        byType: GBV_CRIME_TYPES.map(t => ({ type: t.id, label: t.label, count: Math.floor(Math.random() * 30) + 5, trend: (Math.random() - 0.3) * 20 })),
-        byDistrict: Array.from({ length: 10 }, (_, i) => ({ districtId: i + 1, count: Math.floor(Math.random() * 40) + 3, gbvShare: +(Math.random() * 0.3 + 0.05).toFixed(3) })),
-        byMonth: years.flatMap(y => Array.from({ length: 12 }, (_, m) => ({ year: y, month: m + 1, cases: Math.floor(Math.random() * 15) + 1, type: allTypes[Math.floor(Math.random() * allTypes.length)] }))),
-        repeatVictims: Array.from({ length: 8 }, (_, i) => ({ districtId: (i % 10) + 1, count: Math.floor(Math.random() * 20) + 1, victimCount: Math.floor(Math.random() * 8) + 1 })),
-        convictionRate: { overall: 0.26, byDistrict: Array.from({ length: 10 }, (_, i) => ({ districtId: i + 1, rate: +(Math.random() * 0.5 + 0.05).toFixed(3) })) }
+        summary: {
+            totalCases,
+            changePercent: percentChange(latestSixMonths, previousSixMonths),
+            districtsAffected: districtCounts.filter(Boolean).length
+        },
+        byType: GBV_CRIME_TYPES.map((type, index) => ({
+            type: type.id,
+            label: type.label,
+            count: typeCounts[index],
+            trend: intBetween(random, -9, 11)
+        })),
+        byDistrict: districtCounts.map((count, index) => ({
+            districtId: index + 1,
+            count,
+            gbvShare: +(count / totalCases).toFixed(3)
+        })),
+        byMonth,
+        repeatVictims: districtCounts.slice(0, 8).map((count, index) => ({
+            districtId: index + 1,
+            count: Math.max(1, Math.round(count * 0.12)),
+            victimCount: Math.max(1, Math.round(count * 0.08))
+        })),
+        convictionRate: { overall: 0, byDistrict: [], available: false },
+        metadata: {
+            dataSource: 'synthetic_demo',
+            synthetic: true,
+            periodStart: '2025-01',
+            periodEnd: '2026-06',
+            note: 'Deterministic synthetic records for interface demonstration. No outcome or conviction inference is available.',
+            humanReviewRequired: true
+        }
     };
 }
 
@@ -53,6 +111,7 @@ app.get('/analytics', async (req, res) => {
             );
 
             const cases = data.map(r => ({
+                victimId: r.v?.VictimID || r.VictimID,
                 crimeHeadId: parseInt(r.v?.CrimeHeadID || r.CrimeHeadID),
                 gender: r.v?.Gender || r.Gender,
                 age: parseInt(r.v?.Age || r.Age || 0),
@@ -61,25 +120,33 @@ app.get('/analytics', async (req, res) => {
                 firNo: r.c?.FIRNo || r.FIRNo
             })).filter(c => c.firNo);
 
-            const byType = GBV_CRIME_TYPES.map(t => ({
-                type: t.id,
-                label: t.label,
-                count: cases.filter(c => t.crimeHeads.includes(c.crimeHeadId)).length,
-                trend: +(Math.random() * 30 - 10).toFixed(1)
-            }));
+            const validDates = cases.map(item => new Date(item.date)).filter(date => !Number.isNaN(date.getTime()));
+            const latestDate = validDates.reduce((latest, date) => date > latest ? date : latest, new Date(0));
+            const currentStart = latestDate.getTime() > 0 ? new Date(latestDate.getTime() - 90 * 86400000) : null;
+            const previousStart = currentStart ? new Date(currentStart.getTime() - 90 * 86400000) : null;
+            const byType = GBV_CRIME_TYPES.map(t => {
+                const matching = cases.filter(c => t.crimeHeads.includes(c.crimeHeadId));
+                const currentCount = currentStart ? matching.filter(c => new Date(c.date) >= currentStart).length : 0;
+                const previousCount = previousStart ? matching.filter(c => {
+                    const date = new Date(c.date);
+                    return date >= previousStart && date < currentStart;
+                }).length : 0;
+                return {
+                    type: t.id,
+                    label: t.label,
+                    count: matching.length,
+                    trend: percentChange(currentCount, previousCount)
+                };
+            });
 
             const districtSet = new Set(cases.map(c => c.districtId));
             const byMonth = {};
-            const repeatVictimMap = {};
 
             for (const c of cases) {
                 if (c.date) {
                     const d = new Date(c.date);
                     const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
                     byMonth[key] = (byMonth[key] || 0) + 1;
-                }
-                if (c.districtId) {
-                    repeatVictimMap[c.districtId] = (repeatVictimMap[c.districtId] || 0) + 1;
                 }
             }
 
@@ -88,7 +155,7 @@ app.get('/analytics', async (req, res) => {
                 return {
                     districtId: did,
                     count: dCases.length,
-                    gbvShare: +((dCases.length / Math.max(cases.length, 1)) * (0.5 + Math.random() * 0.3)).toFixed(3)
+                    gbvShare: +(dCases.length / Math.max(cases.length, 1)).toFixed(3)
                 };
             }).sort((a, b) => b.count - a.count);
 
@@ -97,31 +164,48 @@ app.get('/analytics', async (req, res) => {
                 return { year: y, month: m, cases: v };
             }).sort((a, b) => a.year - b.year || a.month - b.month);
 
+            const currentTotal = currentStart ? cases.filter(c => new Date(c.date) >= currentStart).length : 0;
+            const previousTotal = previousStart ? cases.filter(c => {
+                const date = new Date(c.date);
+                return date >= previousStart && date < currentStart;
+            }).length : 0;
+
             analytics = {
                 summary: {
                     totalCases: cases.length,
-                    changePercent: byType.reduce((s, t) => s + t.trend, 0) / byType.length,
+                    changePercent: percentChange(currentTotal, previousTotal),
                     districtsAffected: districtSet.size
                 },
                 byType,
                 byDistrict,
                 byMonth: byMonthArray,
-                repeatVictims: [...districtSet].map(did => ({
-                    districtId: did,
-                    count: repeatVictimMap[did] || 0,
-                    victimCount: cases.filter(c => c.districtId === did).length
-                })).sort((a, b) => b.count - a.count),
-                convictionRate: {
-                    overall: 0.26,
-                    byDistrict: [...districtSet].map(did => ({
+                repeatVictims: [...districtSet].map(did => {
+                    const victimCounts = {};
+                    for (const item of cases.filter(c => c.districtId === did && c.victimId)) {
+                        victimCounts[item.victimId] = (victimCounts[item.victimId] || 0) + 1;
+                    }
+                    const repeatCounts = Object.values(victimCounts).filter(count => count > 1);
+                    return {
                         districtId: did,
-                        rate: +(Math.random() * 0.5 + 0.05).toFixed(3)
-                    }))
+                        count: repeatCounts.reduce((sum, count) => sum + count, 0),
+                        victimCount: repeatCounts.length
+                    };
+                }).sort((a, b) => b.count - a.count),
+                convictionRate: {
+                    overall: 0,
+                    byDistrict: [],
+                    available: false
+                },
+                metadata: {
+                    dataSource: 'catalyst_data_store',
+                    synthetic: false,
+                    note: 'Counts reflect available FIR and victim rows. Outcome rates are unavailable because no denominator-safe court outcome data was queried.',
+                    humanReviewRequired: true
                 }
             };
         } catch (e) {
-            console.warn('Data Store query failed, using synthetic data:', e.message);
-            analytics = getDefaultAnalytics();
+            console.warn('Data Store query failed, using deterministic synthetic demo data:', e.message);
+            analytics = getDefaultAnalytics('gbv-analytics:v2');
         }
 
         res.status(200).json(analytics);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { formatString } from "../../utils/utility";
 import { useFetchData } from "./Firdetails";
 import styles from "./firdetails.module.css";
@@ -8,6 +8,10 @@ import SolvabilityBadge from '../SolvabilityBadge';
 import VeracityPanel from '../VeracityPanel';
 import CoAccusedNetworkPanel from '../CoAccusedNetworkPanel';
 import CrimeGenomePanel from './CrimeGenomePanel';
+import {
+  PiClipboardText, PiClockCounterClockwise, PiFlask, PiUsersThree, PiShieldCheck,
+  PiShareNetwork, PiDna, PiSparkle, PiTimer, PiListChecks, PiUser, PiWarning,
+} from 'react-icons/pi';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 
@@ -15,7 +19,7 @@ function QualityBadge({ firData }) {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const fetchScore = async () => {
+    const fetchScore = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -42,8 +46,8 @@ function QualityBadge({ firData }) {
         } finally {
             setLoading(false);
         }
-    };
-    useEffect(() => { if (firData) fetchScore(); }, [firData]);
+    }, [firData]);
+    useEffect(() => { if (firData) fetchScore(); }, [firData, fetchScore]);
     if (loading) return <div style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--surface-alt)' }}>
         <div style={{ height: '16px', width: '200px', background: 'var(--border)', borderRadius: '8px', marginBottom: '8px' }} />
     </div>;
@@ -112,7 +116,7 @@ function DetailedFir() {
     }
   );
 
-  const firData = data?.[0] || null;
+  const firData = Array.isArray(data) ? data[0] : data?.data?.[0] || data?.record || null;
 
   // Determine current active basepath (support role-based layouts)
   const basePath = useMemo(() => {
@@ -132,9 +136,9 @@ function DetailedFir() {
       { text: 'Secure bystander/witness contacts', checked: false },
       { text: 'Request CCTV footage from intersection', checked: false },
       { text: 'Send digital devices to forensic laboratory', checked: false },
-      { text: 'Draft section 161 statements', checked: false },
-      { text: 'Review Solvability index suggestions', checked: false },
-      { text: 'Complete VeriPol linguistic check', checked: false },
+      { text: 'Document witness examinations under BNSS 180', checked: false },
+      { text: 'Review case-readiness evidence gaps', checked: false },
+      { text: 'Complete narrative documentation review', checked: false },
       { text: 'Compile final chargesheet report', checked: false },
     ];
   });
@@ -155,9 +159,9 @@ function DetailedFir() {
     const saved = sessionStorage.getItem(evidenceKey);
     if (saved) return JSON.parse(saved);
     return [
-      { name: 'CCTV Footage (Intersection)', type: 'Digital', source: 'MG Road Traffic Pole #4', status: 'Under Analysis', date: '2026-03-16' },
-      { name: 'Latent Fingerprints', type: 'Forensic', source: 'Shop Counter', status: 'Matched', date: '2026-03-16' },
-      { name: 'Gold Chain (Recovered)', type: 'Property', source: 'Suspect Custody Search', status: 'Verified', date: '2026-03-24' }
+      { name: 'Junction CCTV reference', type: 'Digital', source: 'SH-9 junction camera', status: 'Acquisition pending', date: '2026-03-16' },
+      { name: 'Latent fingerprints', type: 'Forensic', source: 'Reported scene', status: 'Certification pending', date: '2026-03-16' },
+      { name: 'Stolen chain', type: 'Property', source: 'Recovery ledger', status: 'Not recovered', date: '2026-03-15' }
     ];
   });
 
@@ -198,8 +202,8 @@ function DetailedFir() {
     { label: 'FIR Registered', detail: 'CCTNS logged' },
     { label: 'IO Assigned', detail: 'Officer appointed' },
     { label: 'Evidence Collection', detail: 'Forensics & CCTV' },
-    { label: 'Witness Exam', detail: 'Sec 161 statements' },
-    { label: 'Chargesheet Clock', detail: 'Sec 173 CrPC' },
+    { label: 'Witness Exam', detail: 'BNSS 180 record' },
+    { label: 'Chargesheet Clock', detail: 'BNSS 193 report' },
     { label: 'Case Closed', detail: 'Court submitted' }
   ];
 
@@ -234,16 +238,16 @@ function DetailedFir() {
       {/* Tabs Switcher */}
       <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid var(--border-light)', paddingBottom: '1px', flexWrap: 'wrap' }}>
         {[
-          { id: 'overview', label: 'Overview', icon: '📋' },
-          { id: 'timeline', label: 'Timeline', icon: '⏱️' },
-          { id: 'evidence', label: 'Evidence', icon: '🔬' },
-          { id: 'people', label: 'People', icon: '👥' },
-          { id: 'veracity', label: 'Veracity', icon: '🛡️' },
-          { id: 'network', label: 'Crime Links', icon: '🕸️' },
-          { id: 'genome', label: 'Crime Genome', icon: '🧬' },
-          { id: 'aibrief', label: 'AI Brief', icon: '🤖' },
-          { id: 'chargesheet', label: 'Chargesheet Clock', icon: '⚖️' },
-          { id: 'audit', label: 'Audit Trail', icon: '📑' }
+          { id: 'overview', label: 'Overview', icon: PiClipboardText },
+          { id: 'timeline', label: 'Timeline', icon: PiClockCounterClockwise },
+          { id: 'evidence', label: 'Evidence', icon: PiFlask },
+          { id: 'people', label: 'People', icon: PiUsersThree },
+          { id: 'veracity', label: 'Narrative review', icon: PiShieldCheck },
+          { id: 'network', label: 'Crime Links', icon: PiShareNetwork },
+          { id: 'genome', label: 'Crime Genome', icon: PiDna },
+          { id: 'aibrief', label: 'AI Brief', icon: PiSparkle },
+          { id: 'chargesheet', label: 'Filing Clock', icon: PiTimer },
+          { id: 'audit', label: 'Audit Trail', icon: PiListChecks }
         ].map(tab => (
           <button
             key={tab.id}
@@ -263,7 +267,7 @@ function DetailedFir() {
               transition: 'all 0.15s ease'
             }}
           >
-            <span>{tab.icon}</span>
+            {React.createElement(tab.icon, { size: 16, 'aria-hidden': true })}
             <span>{tab.label}</span>
           </button>
         ))}
@@ -314,7 +318,7 @@ function DetailedFir() {
             </div>
 
             {/* Grid Layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '24px' }}>
               
               {/* Core Details */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -335,7 +339,7 @@ function DetailedFir() {
                   <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
                     <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: 600 }}>FIR Incident Narrative</h3>
                     <p style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text)', background: 'var(--surface-alt)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-light)', margin: 0 }}>
-                      "{firData.Narrative}"
+                      {firData.Narrative}
                     </p>
                   </div>
                 )}
@@ -376,7 +380,7 @@ function DetailedFir() {
                 { date: firData.Fir_Date || '2026-03-15', title: 'FIR Registered', desc: `Case registered under ${firData.CrimeHead_Name || 'theft sections'} at ${firData.UnitName || 'station'}.` },
                 { date: firData.Fir_Date ? new Date(new Date(firData.Fir_Date).getTime() + 86400000).toISOString().split('T')[0] : '2026-03-16', title: 'Officer Appointed', desc: `PI Dharmendra (KG1841136) assigned as Investigating Officer.` },
                 { date: firData.Fir_Date ? new Date(new Date(firData.Fir_Date).getTime() + 172800000).toISOString().split('T')[0] : '2026-03-17', title: 'Scene Assessment', desc: 'SOP scene visit completed. Physical evidence log generated.' },
-                { date: firData.Fir_Date ? new Date(new Date(firData.Fir_Date).getTime() + 345600000).toISOString().split('T')[0] : '2026-03-19', title: 'Complainant Interviewed', desc: `Complainant ${firData.complainantName || 'Rajesh Kumar'} statement logged under Section 161 CrPC.` },
+                { date: firData.Fir_Date ? new Date(new Date(firData.Fir_Date).getTime() + 345600000).toISOString().split('T')[0] : '2026-03-19', title: 'Complainant Interviewed', desc: `Complainant ${firData.complainantName || 'Rajesh Kumar'} examination recorded under BNSS 180.` },
                 { date: '2026-07-09', title: 'Linguistic Audit Checked', desc: 'VerPol analysis executed automatically on incident description.' }
               ].map((ev, index) => (
                 <div key={index} style={{ position: 'relative' }}>
@@ -516,19 +520,23 @@ function DetailedFir() {
               <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '11px', background: 'var(--pastel-red)', color: 'var(--pastel-red-text)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>ACCUSED</span>
-                  <span style={{ fontSize: '11px', background: 'var(--pastel-yellow)', color: 'var(--pastel-yellow-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: 500 }}>Absconding</span>
+                  <span style={{ fontSize: '11px', background: 'var(--pastel-yellow)', color: 'var(--pastel-yellow-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: 500 }}>Mixed status</span>
                 </div>
                 <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Identified Suspects:</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {firData.accusedName && firData.accusedName !== 'Unknown' ? (
                     firData.accusedName.split(',').map((name, idx) => (
-                      <Link
-                        key={idx}
-                        to={`${basePath}/person/${encodeURIComponent(name.trim())}`}
-                        style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}
-                      >
-                        👤 {name.trim()} →
-                      </Link>
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <Link
+                          to={`${basePath}/person/${encodeURIComponent(name.trim())}`}
+                          style={{ fontSize: '15px', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        >
+                          <PiUser aria-hidden="true" /> {name.trim()}
+                        </Link>
+                        <span style={{ fontSize: 11, color: name.trim() === 'Kiran Joseph' ? 'var(--pastel-red-text)' : 'var(--pastel-green-text)' }}>
+                          {name.trim() === 'Kiran Joseph' ? 'At large · verify warrant' : 'In custody'}
+                        </span>
+                      </div>
                     ))
                   ) : (
                     <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>Unknown (Under Investigation)</span>
@@ -624,28 +632,28 @@ function DetailedFir() {
             {/* AI Generated Legal Assistant recommendations */}
             <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🤖</span>
+                <PiSparkle size={20} aria-hidden="true" />
                 <h3 style={{ margin: '0', fontSize: '16px', fontWeight: 700 }}>ZIA Case Advisor Brief</h3>
               </div>
               <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 
                 <div style={{ padding: '12px 16px', borderTop: '2px solid var(--pastel-yellow-text)', background: 'var(--surface-alt)', borderRadius: '8px' }}>
-                  <strong style={{ color: 'var(--pastel-yellow-text)' }}>⚠️ CRITICAL GAPS IDENTIFIED</strong>
+                  <strong style={{ color: 'var(--pastel-yellow-text)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><PiWarning /> CRITICAL GAPS IDENTIFIED</strong>
                   <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
                     <li>Vague suspect description in narrative: lacks height, weight, identifying clothes.</li>
-                    <li>No weapon registration: Narrative indicates a "sharp object" but does not define dimensions or material.</li>
+                    <li>No weapon registration: the narrative indicates a sharp object but does not define dimensions or material.</li>
                     <li>Witness Statements Pending: Two bystanders are mentioned in narrative, but formal statements are not yet registered.</li>
                   </ul>
                 </div>
 
                 <div style={{ padding: '12px 16px', borderTop: '2px solid var(--pastel-green-text)', background: 'var(--surface-alt)', borderRadius: '8px' }}>
-                  <strong style={{ color: 'var(--pastel-green-text)' }}>⚖️ LEGAL PRECEDENTS & RECOMMENDATIONS</strong>
+                  <strong style={{ color: 'var(--pastel-green-text)' }}>LEGAL RETRIEVAL NOTES</strong>
                   <p style={{ margin: '8px 0 0 0' }}>
                     Based on crime code <strong>{firData.CrimeHead_Name || 'Theft'}</strong>, ZIA retrieved the following legal precedents:
                   </p>
                   <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                    <li><strong>State of Karnataka v. Raju (2022)</strong>: CCTV video evidence holds absolute primary value if backed by a forensic certificate. (Ensure Sec 65B Certificate is generated for traffic CCTV).</li>
-                    <li><strong>CrPC Section 161 Guidelines</strong>: Secure independent witness statements immediately. Reluctance must be noted but formal statements must be logged to avoid hostile witness retraction later.</li>
+                    <li>Obtain the CCTV through the approved evidence process, preserve its hash, and ask the legal officer whether the applicable electronic-record certificate is complete.</li>
+                    <li>Complete witness documentation using the current BNSS workflow. Exact sections and admissibility must be verified against the official text before filing.</li>
                   </ul>
                 </div>
 
@@ -658,18 +666,16 @@ function DetailedFir() {
         {/* TAB 8: CHARGESHEET */}
         {activeTab === 'chargesheet' && (
           <div style={{ background: 'var(--surface)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 600 }}>CrPC Section 173 SLA Tracker</h3>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 600 }}>Statutory Filing Review</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              Statutory limit demands chargesheet filing within 90 days for major cases. Overdue cases risk court rejection.
+              Deadline shown from the current case-order metadata. Verify the applicable BNSS provision, custody status, and court order before relying on it.
             </p>
 
             {(() => {
               const limit = 90;
-              const registeredDate = new Date(firData.Fir_Date || '2026-03-15');
-              const elapsedMs = Date.now() - registeredDate.getTime();
-              const elapsedDays = Math.max(0, Math.floor(elapsedMs / (1000 * 60 * 60 * 24)));
-              const remaining = Math.max(0, limit - elapsedDays);
-              const isOverdue = elapsedDays > limit;
+              const remaining = Number.isFinite(Number(firData.filingDaysRemaining)) ? Number(firData.filingDaysRemaining) : 18;
+              const isOverdue = remaining < 0;
+              const elapsedDays = isOverdue ? limit + Math.abs(remaining) : Math.max(0, limit - remaining);
               const status = isOverdue ? 'overdue' : remaining <= 15 ? 'at_risk' : 'safe';
               const color = status === 'overdue' ? 'var(--pastel-red-text)' : status === 'at_risk' ? 'var(--pastel-yellow-text)' : 'var(--pastel-green-text)';
               
@@ -701,7 +707,7 @@ function DetailedFir() {
                         {status === 'overdue' ? 'SLA BREACHED' : status === 'at_risk' ? 'AT RISK' : 'ON TRACK'}
                       </div>
                       <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                        Registered: {firData.Fir_Date || 'N/A'} · Limit: 90 Days ({limit} Days)
+                        FIR date: {firData.Fir_Date || 'N/A'} · Current filing date: {firData.filingDeadline || 'Verify in court-order record'}
                       </div>
                     </div>
                   </div>
@@ -718,7 +724,7 @@ function DetailedFir() {
                         </>
                       ) : (
                         <>
-                          <li style={{ color: 'var(--pastel-green-text)', fontWeight: 600 }}>Timeline complies with CrPC Section 173 specifications.</li>
+                          <li style={{ color: 'var(--pastel-green-text)', fontWeight: 600 }}>Current case-order date has not passed.</li>
                           <li>Complete FSL collection by day 60.</li>
                           <li>Draft legal indictment by day 80.</li>
                         </>

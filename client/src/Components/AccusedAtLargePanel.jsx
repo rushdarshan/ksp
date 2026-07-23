@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
+import { Link } from 'react-router-dom';
 
-const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: 'var(--color-red)' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: 'var(--color-amber)' }, recent: { label: 'RECENT', color: 'var(--color-green)' } }
+const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: 'var(--color-red)' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: 'var(--color-amber)' }, warrant_verification: { label: 'VERIFY WARRANT', color: 'var(--color-amber)' }, recent: { label: 'RECENT', color: 'var(--color-green)' } }
 
 export default function AccusedAtLargePanel() {
   const [data, setData] = useState(null)
@@ -26,8 +27,7 @@ export default function AccusedAtLargePanel() {
       <div className="panel-box">
         <h2 style={{ marginBottom: 4 }}>Accused-at-Large Ledger</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--size-sub)', marginBottom: 20, maxWidth: 600 }}>
-          Persistent roll of every accused who evades process — absconders, bailable-warrant holders, and
-          recently identified fugitives across Karnataka.
+          Process-status ledger for accused records without a confirmed arrest or surrender event. Verify the live warrant register before any field action.
         </p>
 
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -38,8 +38,8 @@ export default function AccusedAtLargePanel() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {data.entries.map(a => {
-            const badge = STATUS_BADGES[a.status]
+          {(Array.isArray(data.entries) ? data.entries : []).map(a => {
+            const badge = STATUS_BADGES[a.status] || { label: 'VERIFY STATUS', color: 'var(--color-amber)' }
             return (
               <div key={a.id} style={{
                 padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)',
@@ -47,7 +47,7 @@ export default function AccusedAtLargePanel() {
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <strong style={{ fontSize: 'var(--size-sub)' }}>{a.name}</strong>
+                    <Link to={`../person/${encodeURIComponent(a.name)}`} style={{ fontSize: 'var(--size-sub)', fontWeight: 700, color: 'var(--text)', textDecoration: 'none' }}>{a.name}</Link>
                     <span style={{ fontSize: 11, color: badge.color, fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', background: `${badge.color}12`, border: `1px solid ${badge.color}30` }}>
                       {badge.label}
                     </span>

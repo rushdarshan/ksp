@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PanelCard, PanelHeader, PanelTable, PanelBadge } from './panels';
 
 const PRESET_FIRS = {
-  genuine: {
+  detailed: {
     narrative: 'On 15 March 2026 at approximately 8:30 PM, I was returning home from my shop on MG Road. Two men on a motorcycle approached me. One of them pointed a knife at me and demanded my bag. I clearly saw their faces — one had a scar on his left cheek, the other was wearing a red helmet. They took my bag containing Rs. 15,000 cash and my phone. I immediately went to the nearest police station and filed this report. I remember the motorcycle registration started with KA-01.',
     complainantName: 'Rajesh Kumar',
     accusedCount: 2,
@@ -10,7 +10,7 @@ const PRESET_FIRS = {
     delayReason: '',
     propertyValue: 25000
   },
-  fabricated: {
+  sparse: {
     narrative: 'Someone stole my phone yesterday. I think it was the guy who lives next door. He has been bothering me for a while. He is a bad person. The phone is expensive and I need it back. The police should do something about it. This is a serious matter and I want action taken immediately.',
     complainantName: 'Anonymous',
     accusedCount: 0,
@@ -79,7 +79,15 @@ const VeracityPanel = ({
         propertyValue: parseInt(initialPropertyValue) || 0
       });
     }
-  }, [autoAnalyze, initialNarrative]);
+  }, [
+    autoAnalyze,
+    initialAccusedCount,
+    initialComplainantName,
+    initialDelayReason,
+    initialHasWitnesses,
+    initialNarrative,
+    initialPropertyValue,
+  ]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -109,13 +117,13 @@ const VeracityPanel = ({
   };
 
   return (
-    <PanelCard title="FIR Veracity Index" badge="LINGUISTIC ANALYSIS">
+    <PanelCard title="FIR Narrative Quality" badge="DECISION SUPPORT">
       <PanelHeader
-        subtitle="VeriPol-style analysis — 14 linguistic markers detect fabricated or exaggerated police reports"
+        subtitle="Reviews documentation specificity and completeness. It does not determine whether a report is true or whether a person is guilty."
         action={
           <div className="veracity-presets" style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => loadPreset('genuine')} style={btnStyle}>Genuine</button>
-            <button onClick={() => loadPreset('fabricated')} style={{ ...btnStyle, color: 'var(--pastel-red-text)' }}>Fabricated</button>
+            <button onClick={() => loadPreset('detailed')} style={btnStyle}>Detailed sample</button>
+            <button onClick={() => loadPreset('sparse')} style={{ ...btnStyle, color: 'var(--pastel-red-text)' }}>Sparse sample</button>
           </div>
         }
       />
@@ -139,7 +147,7 @@ const VeracityPanel = ({
         </div>
         <input aria-label="Delay reason" value={delayReason} onChange={e => setDelayReason(e.target.value)} placeholder="Delay reason (if any)" style={inputStyle} />
         <button type="submit" disabled={loading} style={{ ...btnStyle, color: 'var(--accent)', fontWeight: 600 }}>
-          {loading ? 'Analyzing...' : 'Analyze veracity'}
+          {loading ? 'Reviewing...' : 'Review narrative quality'}
         </button>
       </form>
 
@@ -160,9 +168,13 @@ const VeracityPanel = ({
                 {Math.round(finalScore * 100)}%
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', marginBottom: '4px' }}>Veracity Score</div>
-                <PanelBadge status={scoreStatus(finalScore)} label={finalScore >= 0.7 ? 'GENUINE' : finalScore >= 0.45 ? 'NEEDS REVIEW' : 'FABRICATED'} />
+                <div style={{ fontWeight: 600, fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)', color: 'var(--text-secondary)', marginBottom: '4px' }}>Documentation signal</div>
+                <PanelBadge status={scoreStatus(finalScore)} label={finalScore >= 0.7 ? 'MORE COMPLETE' : finalScore >= 0.45 ? 'NEEDS REVIEW' : 'SPARSE RECORD'} />
               </div>
+            </div>
+
+            <div style={{ marginBottom: '16px', padding: '12px', background: 'var(--pastel-yellow)', color: 'var(--pastel-yellow-text)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--size-sub)' }}>
+              Human review required. A sparse narrative may reflect trauma, language, disability, or limited access to information and must never reduce investigative attention by itself.
             </div>
 
             {result.flags && result.flags.length > 0 && (
@@ -198,7 +210,7 @@ const VeracityPanel = ({
 
             {result.ziaAssessment && (
               <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--size-sub)', fontFamily: 'var(--font-body)' }}>
-                ZIA ASSESSMENT: {result.ziaAssessment}
+                ZIA REVIEW NOTE: {result.ziaAssessment}
               </div>
             )}
           </div>

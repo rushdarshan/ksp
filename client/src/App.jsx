@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import PropTypes from 'prop-types';
 import './App.scss';
 import './styles/components.css';
 import './styles/mobile.css';
@@ -9,7 +10,11 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
-import AuthProvider, { useAuth } from './AuthContext';
+import AuthProvider, {
+  canAccessArea,
+  getRoleHome,
+  useAuth,
+} from './AuthContext';
 import { FilterProvider } from './FilterContext';
 import PanelGuard from './PanelGuard';
 import Loader from './ui/Dropdown/Loader';
@@ -64,6 +69,10 @@ const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoar
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
 
+Lazy.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 const AppFrame = ({ children, showChat = true }) => (
   <>
     {children}
@@ -74,6 +83,11 @@ const AppFrame = ({ children, showChat = true }) => (
     )}
   </>
 );
+
+AppFrame.propTypes = {
+  children: PropTypes.node.isRequired,
+  showChat: PropTypes.bool,
+};
 
 const sharedChildren = [
   {
@@ -121,85 +135,126 @@ const sharedChildren = [
   { index: true, path: "network", element: <Lazy><NetworkGraph/></Lazy> },
 ];
 
-const ProtectedRoute = ({ element: Element }) => {
-  const { isAuthenticated, setIsAuthenticated, setUser } = useAuth();
-  const jwt_token = localStorage.getItem("token");
-  const [valid, setValid] = React.useState(null);
+const ProtectedRoute = ({ element: Element, requiredArea }) => {
+  const {
+    authenticate,
+    isAuthenticated,
+    logout,
+    token,
+    user,
+  } = useAuth();
+  const isDevelopmentDemo = import.meta.env.DEV && token?.startsWith('mock-jwt-');
+  const hasUser = Boolean(user);
+  const [verification, setVerification] = React.useState(
+    isDevelopmentDemo ? 'valid' : 'checking',
+  );
 
   React.useEffect(() => {
-    if (isAuthenticated || !jwt_token) {
-      setValid(null);
+    if (!token) {
+      setVerification('anonymous');
+      return undefined;
+    }
+
+    if (isDevelopmentDemo) {
+      setVerification(hasUser ? 'valid' : 'invalid');
+      if (!hasUser) logout();
       return undefined;
     }
 
     const controller = new AbortController();
+    setVerification('checking');
     fetch(`${import.meta.env.VITE_API_URL || '/server'}/verify`, {
-      headers: { jwt_token },
+      headers: { jwt_token: token },
       signal: controller.signal,
     }).then(async (response) => {
       if (!response.ok) {
-        setValid(false);
-        return;
+        throw new Error('Session verification failed');
       }
 
       const data = await response.json().catch(() => ({}));
-      if (data.user) {
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
+      if (!data.user) {
+        throw new Error('Session verification did not return an officer profile');
       }
-      setValid(true);
-      setIsAuthenticated(true);
+
+      authenticate(token, data.user);
+      setVerification('valid');
     }).catch((error) => {
-      if (error.name !== 'AbortError') setValid(false);
+      if (error.name !== 'AbortError') {
+        logout();
+        setVerification('invalid');
+      }
     });
 
     return () => controller.abort();
-  }, [isAuthenticated, jwt_token, setIsAuthenticated, setUser]);
+  }, [authenticate, hasUser, isDevelopmentDemo, logout, token]);
 
-  if (isAuthenticated && jwt_token) {
-    return Element;
+  if (verification === 'checking') return <Loader />;
+
+  if (verification !== 'valid' || !isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
-  if (!isAuthenticated && jwt_token) {
-    if (valid === null) return <Loader />;
-    if (valid === true) return Element;
+  if (requiredArea && !canAccessArea(user, requiredArea)) {
+    return <Navigate to={getRoleHome(user)} replace />;
   }
 
-  return <Navigate to="/" />;
+  return Element;
+};
+
+ProtectedRoute.propTypes = {
+  element: PropTypes.node.isRequired,
+  requiredArea: PropTypes.oneOf(['command', 'inspector', 'subinspector', 'supervisor']).isRequired,
+};
+
+const GuestOnlyRoute = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+  if (isAuthenticated) return <Navigate to={getRoleHome(user)} replace />;
+  return children;
+};
+
+GuestOnlyRoute.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 const router = createHashRouter([
   { path: "/", element: <AppFrame showChat={false}><Lazy><LandingPage/></Lazy></AppFrame> },
-  { path: "/login", element: <AppFrame><Lazy><Login/></Lazy></AppFrame> },
-  { path: "/register", element: <AppFrame><Lazy><Register/></Lazy></AppFrame> },
+  { path: "/login", element: <AppFrame showChat={false}><GuestOnlyRoute><Lazy><Login/></Lazy></GuestOnlyRoute></AppFrame> },
+  { path: "/register", element: <AppFrame showChat={false}><GuestOnlyRoute><Lazy><Register/></Lazy></GuestOnlyRoute></AppFrame> },
   {
     path: "/dashboard",
-    element: <AppFrame><ProtectedRoute element={<Lazy><Dashboard /></Lazy>} /></AppFrame>,
+    element: <AppFrame><ProtectedRoute requiredArea="command" element={<Lazy><Dashboard /></Lazy>} /></AppFrame>,
     children: [{ index: true, element: <Navigate to="home" replace /> }, { path: "home", element: <Lazy><Body /></Lazy> }, ...sharedChildren,
       { path: "details", element: <Lazy><Details/></Lazy> },
     ]
   },
   {
     path: "/inspector",
-    element: <AppFrame><ProtectedRoute element={<Lazy><InspectorDash/></Lazy>} /></AppFrame>,
-    children: [{ path: "home", element: <Lazy><InspectorBody/></Lazy>, index: true }, ...sharedChildren]
+    element: <AppFrame><ProtectedRoute requiredArea="inspector" element={<Lazy><InspectorDash/></Lazy>} /></AppFrame>,
+    children: [{ index: true, element: <Navigate to="home" replace /> }, { path: "home", element: <Lazy><InspectorBody/></Lazy> }, ...sharedChildren]
   },
   {
     path: "/subinspector",
-    element: <AppFrame><ProtectedRoute element={<Lazy><SubinspectorDash /></Lazy>} /></AppFrame>,
-    children: [{ path: "home", element: <Lazy><SubinspectorBody/></Lazy> }, ...sharedChildren]
+    element: <AppFrame><ProtectedRoute requiredArea="subinspector" element={<Lazy><SubinspectorDash /></Lazy>} /></AppFrame>,
+    children: [{ index: true, element: <Navigate to="home" replace /> }, { path: "home", element: <Lazy><SubinspectorBody/></Lazy> }, ...sharedChildren]
   },
   {
     path: "/supervisor",
-    element: <AppFrame><ProtectedRoute element={<InspectorDash />} /></AppFrame>,
+    element: <AppFrame><ProtectedRoute requiredArea="supervisor" element={<Lazy><InspectorDash /></Lazy>} /></AppFrame>,
     children: [
+      { index: true, element: <Navigate to="station-overview" replace /> },
       { path: "station-overview", element: <Lazy><StationOverview/></Lazy> },
       { path: "chargesheet-review", element: <Lazy><ChargesheetReview/></Lazy> },
       ...sharedChildren,
     ]
   },
-  { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> }
-]);
+  { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> },
+  { path: "*", element: <Navigate to="/" replace /> },
+], {
+  future: {
+    v7_relativeSplatPath: true,
+    v7_startTransition: true,
+  },
+});
 
 function App() {
   return (

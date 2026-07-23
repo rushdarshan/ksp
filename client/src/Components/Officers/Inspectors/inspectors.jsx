@@ -1,54 +1,9 @@
-import React from "react";
 import "./inspect.scss";
-import person from "./Person.png";
 import inspector from "../../Details/Inspector.png";
 // import Top from './Top Section/Top'
 // import Listing from './Listing Section/Listing'
 // import Activity from './Activity Section/Activity'
 import { Link } from "react-router-dom";
-const InspectorData = [
-  {
-    logo: inspector,
-    name: "Abdul Kareem",
-    visitors: 3.5,
-    rank: "PSI",
-    sales: 590,
-    conversion: 4.8,
-  },
-  {
-    logo: inspector,
-    name: "Abdul H.M",
-    visitors: 2.2,
-    rank: "PSI",
-    sales: 467,
-    conversion: 4.3,
-  },
-  
-  {
-    logo: inspector,
-    name: "Adbul gaful",
-    visitors: 2.1,
-    rank: "PSI",
-    sales: 420,
-    conversion: 3.7,
-  },
-  {
-    logo: inspector,
-    name: "Addhi narayan",
-    visitors: 1.5,
-    rank: "PSI",
-    sales: 389,
-    conversion: 2.5,
-  },
-  {
-    logo: inspector,
-    name: "Dasharatha P",
-    visitors: 3.5,
-    rank: "PSI",
-    sales: 390,
-    conversion: 4.2,
-  },
-];
 const Inspectors = ({ piArray ,title}) => {
   return (
     <>

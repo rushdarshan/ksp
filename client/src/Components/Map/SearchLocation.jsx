@@ -1,16 +1,12 @@
-import { BiSearchAlt } from "react-icons/bi";
-import React, { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
+import { PiMagnifyingGlass } from "react-icons/pi";
+import { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L, { routing } from "leaflet";
-import { Icon } from "leaflet";
+import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 import "leaflet-control-geocoder/dist/Control.Geocoder.js";
 // Import marker icons
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import styles from './map.module.scss';
 
 const NavigationControl = ({ userLocation, destination }) => {
@@ -43,9 +39,12 @@ const NavigationControl = ({ userLocation, destination }) => {
       routingControlRef.current = routingControl;
 
       routingControl.on("routesfound", (e) => {
-        // console.log(e);
+        void e;
       });
     }
+    return () => {
+      if (routingControlRef.current) map.removeControl(routingControlRef.current);
+    };
   }, [userLocation, destination, map]);
 
   return null;
@@ -53,8 +52,9 @@ const NavigationControl = ({ userLocation, destination }) => {
 
 const SearchLocation = ({userLocation,setUserLocation}) => {
     const [location , setLocation]=useState('')
-    const [position, setPosition] = useState([28.7041, 77.1025]);
+    const [position, setPosition] = useState([12.9719, 77.6067]);
     const [isLocationFound, setIsLocationFound] = useState(false);
+    const [searchError, setSearchError] = useState('');
 
         const getCoordinates = async (location) => {
         try {
@@ -68,12 +68,14 @@ const SearchLocation = ({userLocation,setUserLocation}) => {
           if (response.length > 0) {
             const { lat, lon } = response[0];
             setPosition([ lat, lon ]);
+            setIsLocationFound(true);
+            setSearchError('');
           } else {
-
+            setSearchError('Destination not found. Add a Bengaluru locality or landmark.');
           }
         } catch (error) {
           console.error('Error fetching coordinates:', error);
-        //   alert('An error occurred while fetching coordinates');
+          setSearchError('Route lookup is unavailable. Try again when map services reconnect.');
         }
       };
 
@@ -81,7 +83,7 @@ const SearchLocation = ({userLocation,setUserLocation}) => {
         if (location.trim()) {
           getCoordinates(location);
         } else {
-          alert('Please enter a location');
+          setSearchError('Enter a destination before searching.');
         }
       };
 
@@ -100,19 +102,20 @@ const SearchLocation = ({userLocation,setUserLocation}) => {
             }
           );
         }
-      }, []);
+      }, [setUserLocation]);
     
   return (
         <div className={styles.topSection}>
         <div className={styles.headerSection}>
             <div className={styles.searchBar}>
-            <input type="text" placeholder="Search Dashboard"  value={location} onChange={(e)=>setLocation(e.target.value)}/>
-            <BiSearchAlt className={styles.icon} onClick={handleSearch} />
+            <input aria-label="Route destination" type="text" placeholder="Destination in Karnataka" value={location} onChange={(e)=>setLocation(e.target.value)} onKeyDown={(event) => event.key === 'Enter' && handleSearch()}/>
+            <button type="button" onClick={handleSearch} aria-label="Find route" title="Find route" style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'inherit' }}><PiMagnifyingGlass size={20} /></button>
             </div>
         </div>
+        {searchError && <p role="alert" style={{ margin: '0', padding: '10px 16px', color: 'var(--status-critical-text)', background: 'var(--status-critical-bg)', fontSize: 13 }}>{searchError}</p>}
         <MapContainer
         center={userLocation}
-        zoom={isLocationFound ? 13 : 7}
+        zoom={13}
         style={{ height: "clamp(440px, calc(100vh - 190px), 720px)", width: "100%" }}
       >
         <TileLayer

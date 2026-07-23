@@ -17,6 +17,7 @@ import ChargesheetIntelligence from './ChargesheetIntelligence';
 import InvestigationCopilot from './InvestigationCopilot';
 import InvestigationReportButton from './InvestigationReportButton';
 import { CaseContext } from './caseContext';
+import { ACTIVE_CASE_FACTS, getActiveCaseData } from './caseFacts';
 import { buildCaseWorkspaceSearch, getRouteTab } from './caseWorkspaceRouting';
 import './CaseWorkspace.scss';
 
@@ -69,11 +70,19 @@ export default function CaseWorkspace() {
     fetch(`${apiUrl}/fir_api/firs?year=2026`)
       .then(r => r.json())
       .then(data => {
-        const firs = Array.isArray(data) ? data : [];
+        const firs = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
         const found = firs.find(f => f.FIRNo === firId || f.FirNo === firId);
-        setCaseData(found || { FIRNo: firId, UnitName: 'Brigade Road PS', DistrictName: 'Bengaluru', CrimeGroup_Name: 'robbery', fir_stage: 'Under Investigation' });
+        setCaseData(
+          firId === ACTIVE_CASE_FACTS.firId
+            ? getActiveCaseData(found)
+            : found || { FIRNo: firId, UnitName: 'Brigade Road PS', DistrictName: 'Bengaluru', CrimeGroup_Name: 'Robbery', fir_stage: 'Under Investigation' },
+        );
       })
-      .catch(() => setCaseData({ FIRNo: firId, UnitName: 'Brigade Road PS', DistrictName: 'Bengaluru', CrimeGroup_Name: 'Robbery', fir_stage: 'Under Investigation' }))
+      .catch(() => setCaseData(
+        firId === ACTIVE_CASE_FACTS.firId
+          ? getActiveCaseData()
+          : { FIRNo: firId, UnitName: 'Brigade Road PS', DistrictName: 'Bengaluru', CrimeGroup_Name: 'Robbery', fir_stage: 'Under Investigation' },
+      ))
       .finally(() => setLoading(false));
   }, [firId]);
 
@@ -114,9 +123,19 @@ export default function CaseWorkspace() {
                 )}
               </div>
               {caseData && (
-                <p className="case-meta">
-                  {caseData.CrimeGroup_Name || 'Robbery'} · {caseData.UnitName} · {caseData.DistrictName}
-                </p>
+                <>
+                  <p className="case-meta">
+                    {caseData.CrimeGroup_Name || 'Robbery'} · {caseData.UnitName} · {caseData.DistrictName}
+                  </p>
+                  {firId === ACTIVE_CASE_FACTS.firId && (
+                    <dl className="case-facts" aria-label="Active case facts">
+                      <div><dt>Incident</dt><dd>{ACTIVE_CASE_FACTS.incidentDateLabel}</dd></div>
+                      <div><dt>Location</dt><dd>{ACTIVE_CASE_FACTS.location}</dd></div>
+                      <div><dt>IO</dt><dd>{ACTIVE_CASE_FACTS.investigatingOfficer}</dd></div>
+                      <div><dt>Filing</dt><dd>Due in {ACTIVE_CASE_FACTS.filingDueDays} days</dd></div>
+                    </dl>
+                  )}
+                </>
               )}
             </div>
 

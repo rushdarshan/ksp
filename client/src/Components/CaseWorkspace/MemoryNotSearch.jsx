@@ -4,27 +4,19 @@ import { useNavigate } from 'react-router-dom';
 // ponytail: hardcoded mock, swap for API when backend is ready
 const MOCK_SIMILAR_CASES = [
   {
-    caseId: 'KSP-2025-0098',
-    crimeType: 'Armed Robbery',
+    caseId: 'KSP-2026-0098',
+    crimeType: 'Robbery',
     station: 'Koramangala PS',
-    overlapCount: 4,
-    overlapEntities: ['Ravi Kumar', '98450XXXXX', 'KA-01-AB-1234', 'Deepak S.'],
+    overlapCount: 3,
+    overlapEntities: ['Robbery pattern', 'Urban junction', 'Evening patrol zone'],
     crossStation: false,
   },
   {
-    caseId: 'KSP-2024-0217',
-    crimeType: 'Vehicle Theft',
-    station: 'HSR Layout PS',
-    overlapCount: 2,
-    overlapEntities: ['98450XXXXX', 'KA-01-AB-1234'],
-    crossStation: true,
-  },
-  {
-    caseId: 'KSP-2025-0301',
+    caseId: 'KSP-2026-0301',
     crimeType: 'Robbery',
     station: 'Whitefield PS',
-    overlapCount: 1,
-    overlapEntities: ['SH-9 Junction'],
+    overlapCount: 2,
+    overlapEntities: ['Offence category', 'Urban corridor'],
     crossStation: true,
   },
 ];
@@ -53,9 +45,9 @@ export default function MemoryNotSearch({ firId = 'KSP-2026-0142' }) {
         padding: '12px 16px', borderBottom: '1px solid var(--border-light)',
         background: 'var(--surface)',
       }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Memory Not Search</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Similar case review</div>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
-          Auto-surfaced similar cases ranked by entity overlap
+          Pattern signals for officer review; no direct relationship is established
         </div>
       </div>
 

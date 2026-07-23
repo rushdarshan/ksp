@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 
 function CrimeBar({ crimeType, actual, lowerBound, upperBound }) {
-    const maxVal = Math.max(upperBound, actual);
-    const barWidth = maxVal > 0 ? 300 : 0;
+    const safeLower = Number(lowerBound) || 0;
+    const safeUpper = Number(upperBound) || Math.max(Number(actual) || 0, 1);
+    const maxVal = Math.max(safeUpper, Number(actual) || 0, 1);
 
     return (
         <div style={{ marginBottom: '12px' }}>
             <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px', textTransform: 'capitalize' }}>{crimeType}</div>
-            <div style={{ position: 'relative', height: '24px', background: '#f3f4f6', borderRadius: '4px', width: `${Math.min(barWidth, 300)}px` }}>
+            <div style={{ position: 'relative', height: '28px', background: 'var(--surface-alt)', borderRadius: '4px', width: '100%', minWidth: '180px' }}>
                 <div style={{
                     position: 'absolute', left: 0, top: 0, height: '100%',
                     width: `${(actual / (maxVal || 1)) * 100}%`,
@@ -18,8 +19,8 @@ function CrimeBar({ crimeType, actual, lowerBound, upperBound }) {
                     <span style={{ fontSize: '11px', color: '#fff' }}>{actual}</span>
                 </div>
                 <div style={{
-                    position: 'absolute', left: `${(lowerBound / (maxVal || 1)) * 100}%`,
-                    width: `${((upperBound - lowerBound) / (maxVal || 1)) * 100}%`,
+                    position: 'absolute', left: `${(safeLower / maxVal) * 100}%`,
+                    width: `${Math.max(2, ((safeUpper - safeLower) / maxVal) * 100)}%`,
                     top: '4px', height: '16px',
                     background: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(239,68,68,0.3) 3px, rgba(239,68,68,0.3) 6px)',
                     border: '1px dashed #ef4444', borderRadius: '2px'
@@ -58,7 +59,7 @@ export default function DarkFigurePanel() {
     const totalEstimated = data ? Object.values(data.estimatedTotals || {}).reduce((s, v) => s + v.estimated, 0) : 0;
 
     const crimeTypes = data ? Object.entries(data.estimatedTotals || {})
-        .map(([ct, v]) => ({ crimeType: ct, ...v }))
+        .map(([ct, v]) => ({ crimeType: ct, ...v, lowerBound: v.lowerBound ?? v.lower, upperBound: v.upperBound ?? v.upper }))
         .sort((a, b) => (b.estimated - (data.firCounts[b.crimeType] || 0)) - (a.estimated - (data.firCounts[a.crimeType] || 0)))
     : [];
 
@@ -94,7 +95,7 @@ export default function DarkFigurePanel() {
         <div className="panel" style={{ padding: '1rem' }}>
             <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700 }}>Dark Figure Layer</h2>
             <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--color-gray-500)' }}>
-                Estimated unreported crime based on Karnataka Crime Victimisation Survey 2019
+                Scenario estimate for potentially unreported incidents. Synthetic demonstration assumptions; not an official prevalence estimate.
             </p>
 
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -103,7 +104,7 @@ export default function DarkFigurePanel() {
                     <div style={{ fontSize: '24px', fontWeight: 700, color: '#1e40af' }}>{totalReported}</div>
                 </div>
                 <div style={{ padding: '12px 16px', background: 'var(--color-surface-red)', borderRadius: '8px', border: '1px solid var(--color-red-200)' }}>
-                    <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}>Estimated Actual (±35%)</div>
+                    <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 500 }}>Scenario estimate</div>
                     <div style={{ fontSize: '24px', fontWeight: 700, color: '#991b1b' }}>{totalEstimated}</div>
                 </div>
                 <div style={{ padding: '12px 16px', background: 'var(--color-surface-green)', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
@@ -166,7 +167,7 @@ export default function DarkFigurePanel() {
             </div>
 
             <p style={{ marginTop: '16px', fontSize: '12px', color: '#9ca3af', fontStyle: 'italic' }}>
-                Underreporting estimates based on Karnataka Crime Victimisation Survey 2019. Estimates shown with ±35% uncertainty band for 7-year projection gap.
+                Demonstration only. Validate assumptions against an approved victimisation survey and publish uncertainty, sample size, and methodology before operational use.
             </p>
         </div>
     );

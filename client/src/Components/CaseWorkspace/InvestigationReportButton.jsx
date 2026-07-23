@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PiDownloadSimple, PiSpinnerGap } from 'react-icons/pi';
 import apiFetch from '../../utils/apiFetch';
 import { useCaseContext } from './caseContext';
+import { ACTIVE_CASE_BRIEF, ACTIVE_CASE_FACTS } from './caseFacts';
 
 const addText = (parent, tag, text, className) => {
   const element = document.createElement(tag);
@@ -46,19 +47,20 @@ async function downloadReport(firId, caseData, brief) {
   report.appendChild(header);
 
   addSection(report, 'Executive summary', [brief.narrative]);
-  addSection(report, 'Readiness and risk', [
-    `Solvability: ${Math.round((brief.solvability?.score || 0) * 100)}% · ${brief.solvability?.label || 'not classified'}`,
-    `Narrative veracity: ${Math.round((brief.veracity?.score || 0) * 100)}% · ${brief.veracity?.label || 'not classified'}`,
-    `Synthesis confidence: ${Math.round((brief.confidence || 0) * 100)}%`,
+  const narrativeReview = brief.narrativeReview || brief.veracity || {};
+  addSection(report, 'Readiness and review support', [
+    `Investigation readiness: ${Math.round((brief.solvability?.score || 0) * 100)}% · ${brief.solvability?.label || 'not classified'}`,
+    `Narrative review-support indicator: ${Math.round((narrativeReview.score || 0) * 100)}% · ${narrativeReview.label || 'review required'}`,
+    brief.confidence != null ? `Synthesis confidence: ${Math.round(brief.confidence * 100)}%` : null,
   ]);
   addSection(report, 'Evidence assessment', (brief.solvability?.factors || []).map(factor => `${factor.name}: ${factor.value} (${Math.round(factor.weight * 100)}% contribution)`));
-  addSection(report, 'Veracity explanation', (brief.veracity?.flags || []).map(flag => `${flag.type.replace(/_/g, ' ')}: ${flag.description} (${Math.round(flag.weight * 100)}%)`));
+  addSection(report, 'Narrative review explanation', (narrativeReview.flags || []).map(flag => `${flag.type.replace(/_/g, ' ')}: ${flag.description} (${Math.round(flag.weight * 100)}%)`));
   addSection(report, 'Suspect and relationship indicators', (brief.entityLinks || []).map(link => `${link.source} → ${link.target}: ${link.relation.replace(/-/g, ' ')} (weight ${link.weight})`));
   addSection(report, 'Similar historical cases', (brief.similarCases || []).map(item => `KSP-2026-${String(item.caseId).padStart(4, '0')}: ${Math.round(item.similarity * 100)}% match · ${item.reason}`));
-  addSection(report, 'Recommended investigative actions', (brief.recommendations || []).map(item => `${item.priority}: ${item.action}${item.deadline ? ` · review by ${new Date(item.deadline).toLocaleDateString('en-IN')}` : ''}`));
+  addSection(report, 'Recommended investigative actions', (brief.recommendations || []).map(item => `${item.priority}: ${item.action}${item.deadlineLabel ? ` · ${item.deadlineLabel}` : item.deadline ? ` · review by ${new Date(item.deadline).toLocaleDateString('en-IN')}` : ''}`));
   addSection(report, 'Evidence trail', (brief.provenance || []).map(item => `${item.function}: ${item.methodology} · ${item.validationStatus || 'status unavailable'}`));
   const footer = document.createElement('footer');
-  footer.textContent = 'Decision-support document generated from synthetic CCTNS demonstration records. Correlations are not proof of causation or guilt. An authorized investigating officer must verify every record, legal provision, deadline, and recommendation before operational or judicial use.';
+  footer.textContent = 'Decision-support document generated from synthetic CCTNS demonstration records. Narrative indicators and correlations are review aids, not evidentiary findings. An authorized investigating officer must verify every record, legal provision, deadline, and recommendation before operational or judicial use.';
   report.appendChild(footer);
   document.body.appendChild(report);
 
@@ -90,6 +92,12 @@ export default function InvestigationReportButton() {
     if (status === 'loading') return;
     setStatus('loading');
     try {
+      if (firId === ACTIVE_CASE_FACTS.firId) {
+        await downloadReport(firId, caseData, ACTIVE_CASE_BRIEF);
+        setStatus('done');
+        setTimeout(() => setStatus('idle'), 2200);
+        return;
+      }
       const response = await apiFetch('/zia_brief/zia_brief', {
         method: 'POST',
         body: JSON.stringify({ caseId: firId }),

@@ -1,4 +1,3 @@
-import React from 'react';
 
 const RISK_METRICS = [
   { label: 'Recidivism Risk', value: 84, level: 'High', color: 'var(--color-red-soft)' },

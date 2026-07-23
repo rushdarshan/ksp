@@ -57,7 +57,7 @@ const SECTIONS = [
     label: 'Intelligence',
     collapsible: true,
     items: [
-      { to: 'veracity', icon: PiShieldCheck, label: 'FIR veracity' },
+      { to: 'veracity', icon: PiShieldCheck, label: 'Narrative quality' },
       { to: 'chargesheet-clock', icon: PiTimer, label: 'Chargesheet clock' },
       { to: 'accused-at-large', icon: PiUserFocus, label: 'Accused at large' },
       { to: 'arrest-vector', icon: PiLightning, label: 'Arrest vector' },

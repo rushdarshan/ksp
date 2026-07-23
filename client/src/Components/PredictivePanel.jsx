@@ -1,172 +1,220 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-    PiClock, PiFirstAid, PiHouseLine, PiLaptop, PiLockOpen, PiMapPin,
-    PiMegaphone, PiMoney, PiShield, PiSiren, PiSkull, PiSword, PiUsers, PiWarning, PiWrench
+  PiArrowClockwise, PiClock, PiFirstAid, PiHouseLine, PiInfo, PiLaptop,
+  PiLockOpen, PiMapPin, PiMegaphone, PiMoney, PiShield, PiSiren, PiSkull,
+  PiSword, PiUsers, PiWarning, PiWrench,
 } from 'react-icons/pi';
+import {
+  apiArray, apiObject, clampNumber, displayText, fetchJson, finiteNumber, KARNATAKA_DISTRICTS,
+} from '../utils/apiData';
 
-const CONFIDENCE_TIERS = [
-    { min: 0.7, label: 'High', color: 'var(--color-red)', bg: '#fef2f2', border: '#fecaca' },
-    { min: 0.4, label: 'Medium', color: 'var(--color-amber)', bg: '#fffbeb', border: '#fde68a' },
-    { min: 0, label: 'Low', color: '#16a34a', bg: 'var(--color-surface-green)', border: '#bbf7d0' },
+const SIGNAL_TIERS = [
+  { min: 0.7, label: 'Strong', color: '#8d3030', bg: '#f8ece8', border: '#dfb8aa' },
+  { min: 0.4, label: 'Moderate', color: '#8a5b16', bg: '#fbf3db', border: '#e5cf9d' },
+  { min: 0, label: 'Exploratory', color: '#31634a', bg: '#eaf3ed', border: '#bfd5c7' },
 ];
 
-function getTier(confidence) {
-    return CONFIDENCE_TIERS.find(t => confidence >= t.min) || CONFIDENCE_TIERS[2];
-}
-
 const CRIME_ICONS = {
-    theft: PiLockOpen, burglary: PiHouseLine, robbery: PiSword, assault: PiFirstAid, murder: PiSkull,
-    sexual: PiShield, fraud: PiMoney, cyber: PiLaptop, drugs: PiWarning, property: PiWrench,
-    extortion: PiMegaphone, publicorder: PiUsers
+  theft: PiLockOpen, burglary: PiHouseLine, robbery: PiSword, assault: PiFirstAid,
+  murder: PiSkull, sexual: PiShield, fraud: PiMoney, cyber: PiLaptop, drugs: PiWarning,
+  property: PiWrench, extortion: PiMegaphone, publicorder: PiUsers,
 };
 
-export default function PredictivePanel() {
-    const [data, setData] = useState(null);
-    const [districtId, setDistrictId] = useState('1');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+function syntheticScenario(districtId) {
+  const district = KARNATAKA_DISTRICTS.find((item) => item.id === Number(districtId))?.name || `District ${districtId}`;
+  return {
+    predictions: [
+      { crimeType: 'theft', location: `${district} transit corridor`, timeWindow: '18:00-22:00', confidence: 0.62, reasoning: 'Fixed demo fixture illustrating an evening concentration signal.' },
+      { crimeType: 'assault', location: `${district} mixed-use zone`, timeWindow: '22:00-02:00', confidence: 0.51, reasoning: 'Fixed demo fixture illustrating a late-night review window.' },
+      { crimeType: 'cyber', location: `${district} district-wide`, timeWindow: '10:00-14:00', confidence: 0.43, reasoning: 'Fixed demo fixture illustrating a daytime reporting pattern.' },
+    ],
+    topCrimes: [['theft', 18], ['assault', 13], ['cyber', 9]],
+    firCount: 40,
+    generatedAt: null,
+    method: 'Fixed synthetic fixture',
+  };
+}
 
-    const fetchData = async (dId) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const res = await fetch(`/server/predictive_mode/predict?districtId=${dId}`);
-            if (!res.ok) throw new Error('Prediction service unavailable');
-            const json = await res.json();
-            setData(json);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+function normalizeTopCrimes(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      if (Array.isArray(item)) return [displayText(item[0], 'Other'), finiteNumber(item[1])];
+      return [displayText(item?.crimeType ?? item?.type ?? item?.label, 'Other'), finiteNumber(item?.count ?? item?.value)];
+    }).filter(([, count]) => count > 0);
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).map(([label, count]) => [label, finiteNumber(count)]).filter(([, count]) => count > 0);
+  }
+  return [];
+}
+
+function normalizeResponse(payload) {
+  const source = apiObject(payload, ['predictions', 'firCount', 'topCrimes'], ['prediction']);
+  if (!Object.prototype.hasOwnProperty.call(source, 'predictions')) {
+    throw new Error('Prediction service returned an unsupported response.');
+  }
+
+  const predictions = apiArray(source.predictions, ['predictions']).map((item) => {
+    const rawConfidence = finiteNumber(item?.confidence ?? item?.score ?? item?.probability, 0);
+    return {
+      crimeType: displayText(item?.crime_type ?? item?.crimeType ?? item?.type, 'Unclassified'),
+      location: displayText(item?.location ?? item?.area, 'Location not specified'),
+      timeWindow: displayText(item?.time_window ?? item?.timeWindow, 'Time window not specified'),
+      confidence: clampNumber(rawConfidence > 1 ? rawConfidence / 100 : rawConfidence),
+      reasoning: displayText(item?.reasoning ?? item?.explanation, 'No explanation supplied by the service.'),
     };
+  });
 
-    useEffect(() => {
-        fetchData(districtId);
-        const interval = setInterval(() => fetchData(districtId), 900000);
-        return () => clearInterval(interval);
-    }, [districtId]);
+  return {
+    predictions,
+    topCrimes: normalizeTopCrimes(source.topCrimes),
+    firCount: Math.max(0, finiteNumber(source.firCount)),
+    generatedAt: source.generatedAt || source.metadata?.generatedAt || null,
+    method: displayText(source.method ?? source.metadata?.method, 'Prototype analytics service'),
+  };
+}
 
-    if (loading) {
-        return (
-            <div className="panel" style={{ padding: '1rem' }}>
-                <div style={{ height: '20px', width: '250px', background: 'var(--color-gray-200)', borderRadius: '4px', marginBottom: '16px' }} />
-                {[1, 2, 3].map(i => (
-                    <div key={i} style={{ height: '120px', background: '#f3f4f6', borderRadius: '8px', marginBottom: '12px' }} />
-                ))}
-            </div>
-        );
+function getTier(confidence) {
+  return SIGNAL_TIERS.find((tier) => confidence >= tier.min) || SIGNAL_TIERS[2];
+}
+
+export default function PredictivePanel() {
+  const [data, setData] = useState(null);
+  const [districtId, setDistrictId] = useState('1');
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState('');
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  const fetchData = useCallback(async (selectedDistrict) => {
+    setLoading(true);
+    setNotice('');
+    try {
+      const payload = await fetchJson(`/server/predictive_mode/predict?districtId=${selectedDistrict}`);
+      setData(normalizeResponse(payload));
+      setUsingFallback(false);
+    } catch {
+      setData(syntheticScenario(selectedDistrict));
+      setUsingFallback(true);
+      setNotice('Analytics service is unavailable. Showing a fixed synthetic scenario so the workflow remains reviewable.');
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    if (error) {
-        return (
-            <div className="panel" style={{ padding: '1rem' }}>
-                <div style={{ padding: '12px', border: '1px solid #fca5a5', borderRadius: '8px', background: 'var(--color-surface-red)', marginBottom: '12px' }}>
-                    <p style={{ color: 'var(--color-red)', margin: '0 0 8px 0', fontSize: '14px' }}>{error}</p>
-                    <button onClick={() => fetchData(districtId)} style={{ padding: '4px 12px', background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>Retry</button>
-                </div>
-            </div>
-        );
-    }
+  useEffect(() => {
+    fetchData(districtId);
+    const interval = window.setInterval(() => fetchData(districtId), 900000);
+    return () => window.clearInterval(interval);
+  }, [districtId, fetchData]);
 
-    const predictions = data?.predictions || [];
-
+  if (loading && !data) {
     return (
-        <div className="panel" style={{ padding: '1rem' }}>
-            <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700 }}>Predictive Intelligence</h2>
-            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--color-gray-500)' }}>
-                AI-driven crime predictions based on 30-day FIR patterns · {data?.method === 'heuristic' ? 'Heuristic model' : 'QuickML Qwen 2.5-14B'}
-            </p>
-
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
-                <select value={districtId} onChange={e => setDistrictId(e.target.value)}
-                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', cursor: 'pointer' }}
-                    aria-label="Select district for predictions">
-                    {Array.from({ length: 20 }, (_, i) => (
-                        <option key={i + 1} value={i + 1}>District {i + 1}</option>
-                    ))}
-                </select>
-                <span style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>
-                    {data?.firCount || 0} FIRs analyzed · {data?.topCrimes?.length || 0} crime types detected
-                </span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                {predictions.map((p, i) => {
-                    const tier = getTier(p.confidence);
-                    const CrimeIcon = CRIME_ICONS[p.crime_type?.toLowerCase()] || PiSiren;
-                    return (
-                        <div key={i} style={{
-                            padding: '16px',
-                            borderRadius: '12px',
-                            background: tier.bg,
-                            border: `1px solid ${tier.border}`,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px'
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span className="prediction-icon"><CrimeIcon weight="duotone" /></span>
-                                <span style={{
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    padding: '3px 8px',
-                                    borderRadius: '999px',
-                                    background: tier.color,
-                                    color: '#fff',
-                                    textTransform: 'uppercase'
-                                }}>
-                                    {tier.label} {Math.round(p.confidence * 100)}%
-                                </span>
-                            </div>
-                            <div style={{ fontSize: '15px', fontWeight: 700, textTransform: 'capitalize', color: tier.color }}>
-                                {p.crime_type || 'Unknown'}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#4b5563' }}>
-                                <div className="prediction-meta"><PiMapPin /> {p.location || 'Unknown location'}</div>
-                                <div className="prediction-meta"><PiClock /> {p.time_window || 'Unknown time'}</div>
-                            </div>
-                            <p style={{ fontSize: '12px', color: 'var(--color-gray-500)', margin: 0, fontStyle: 'italic' }}>
-                                {p.reasoning || 'No reasoning provided'}
-                            </p>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {predictions.length === 0 && (
-                <div className="prediction-empty">
-                    <span><PiSiren weight="duotone" /></span>
-                    <div>
-                        <strong>No elevated signals in this district</strong>
-                        <p>The current 30-day FIR window does not contain enough activity to produce a deployment forecast.</p>
-                    </div>
-                </div>
-            )}
-
-            {data?.topCrimes && data.topCrimes.length > 0 && (
-                <div style={{ padding: '12px', background: '#f9fafb', borderRadius: '8px', border: '1px solid var(--color-gray-200)' }}>
-                    <h3 style={{ margin: '0 0 8px 0', fontSize: '13px', fontWeight: 600 }}>30-Day Crime Distribution</h3>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {data.topCrimes.map(([ct, count]) => (
-                            <span key={ct} style={{
-                                fontSize: '12px',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                background: 'var(--color-gray-200)',
-                                textTransform: 'capitalize'
-                            }}>
-                                {ct}: {count}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <p style={{ marginTop: '16px', fontSize: '11px', color: '#9ca3af', fontStyle: 'italic' }}>
-                Predictions are AI-generated based on historical FIR patterns. Use as decision support only — not as sole basis for deployment.
-                Generated at {data?.generatedAt ? new Date(data.generatedAt).toLocaleString() : 'unknown'}.
-            </p>
-        </div>
+      <div className="panel" style={{ padding: 20, width: '100%', boxSizing: 'border-box' }} aria-busy="true">
+        <div style={{ height: 20, width: 'min(250px, 70%)', background: 'var(--border-light)', borderRadius: 4, marginBottom: 16 }} />
+        {[1, 2, 3].map((item) => (
+          <div key={item} style={{ height: 100, background: 'var(--surface-alt)', borderRadius: 6, marginBottom: 12 }} />
+        ))}
+      </div>
     );
+  }
+
+  const predictions = data?.predictions || [];
+
+  return (
+    <div className="panel" style={{ padding: 20, width: '100%', maxWidth: 1100, boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div>
+          <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700 }}>Predictive intelligence</h2>
+          <p style={{ margin: 0, maxWidth: 680, fontSize: 13, lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+            Prototype pattern signals for analyst review. This view does not predict individual behavior or authorize deployment.
+          </p>
+        </div>
+        <span style={{ padding: '5px 9px', border: '1px solid var(--border-light)', borderRadius: 5, background: 'var(--surface-alt)', fontSize: 11, fontWeight: 700 }}>
+          SYNTHETIC DEMO · HUMAN REVIEW
+        </span>
+      </div>
+
+      <div style={{
+        display: 'flex', gap: 10, margin: '18px 0 14px', alignItems: 'center', flexWrap: 'wrap',
+        padding: '10px 12px', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)',
+      }}>
+        <select
+          value={districtId}
+          onChange={(event) => setDistrictId(event.target.value)}
+          aria-label="Select district for scenario signals"
+          style={{ minHeight: 36, padding: '6px 10px', borderRadius: 5, border: '1px solid var(--border-light)', background: 'var(--surface)', color: 'var(--text)', fontSize: 13 }}
+        >
+          {KARNATAKA_DISTRICTS.map((district) => <option key={district.id} value={district.id}>{district.name}</option>)}
+        </select>
+        <span style={{ flex: 1, minWidth: 180, fontSize: 12, color: 'var(--text-secondary)' }}>
+          {data?.firCount || 0} synthetic FIR records · {data?.topCrimes?.length || 0} categories · {data?.method}
+        </span>
+        <button
+          type="button"
+          onClick={() => fetchData(districtId)}
+          disabled={loading}
+          aria-label="Refresh scenario signals"
+          title="Refresh scenario signals"
+          style={{ width: 36, height: 36, display: 'grid', placeItems: 'center', border: '1px solid var(--border-light)', borderRadius: 5, background: '#191815', color: '#fff', cursor: loading ? 'wait' : 'pointer' }}
+        >
+          <PiArrowClockwise size={17} aria-hidden="true" />
+        </button>
+      </div>
+
+      {notice && (
+        <div role="status" style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 14, padding: '10px 12px', border: '1px solid #e5cf9d', borderRadius: 6, background: '#fbf3db', color: '#6f4c17', fontSize: 12, lineHeight: 1.5 }}>
+          <PiInfo size={18} aria-hidden="true" /> {notice}
+        </div>
+      )}
+
+      {predictions.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 12, marginBottom: 16 }}>
+          {predictions.map((prediction, index) => {
+            const tier = getTier(prediction.confidence);
+            const CrimeIcon = CRIME_ICONS[prediction.crimeType.toLowerCase()] || PiSiren;
+            return (
+              <article key={`${prediction.crimeType}-${index}`} style={{ padding: 15, borderRadius: 7, background: tier.bg, border: `1px solid ${tier.border}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                  <CrimeIcon size={22} weight="duotone" aria-hidden="true" />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: tier.color }}>{tier.label} signal · {Math.round(prediction.confidence * 100)}%</span>
+                </div>
+                <h3 style={{ margin: '0 0 8px', fontSize: 15, textTransform: 'capitalize' }}>{prediction.crimeType}</h3>
+                <div style={{ display: 'grid', gap: 4, marginBottom: 9, color: 'var(--text-secondary)', fontSize: 12 }}>
+                  <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}><PiMapPin aria-hidden="true" /> {prediction.location}</span>
+                  <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}><PiClock aria-hidden="true" /> {prediction.timeWindow}</span>
+                </div>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>{prediction.reasoning}</p>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 10, padding: '22px 14px', border: '1px dashed var(--border-light)', borderRadius: 6, color: 'var(--text-secondary)' }}>
+          <PiSiren size={22} weight="duotone" aria-hidden="true" />
+          <div><strong style={{ color: 'var(--text)' }}>No scenario signals returned</strong><p style={{ margin: '4px 0 0', fontSize: 12 }}>The selected dataset has no model output. No conclusion should be inferred from an empty result.</p></div>
+        </div>
+      )}
+
+      {data?.topCrimes?.length > 0 && (
+        <section style={{ paddingTop: 14, borderTop: '1px solid var(--border-light)' }}>
+          <h3 style={{ margin: '0 0 9px', fontSize: 13 }}>Synthetic 30-day distribution</h3>
+          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+            {data.topCrimes.map(([crimeType, count]) => (
+              <span key={crimeType} style={{ padding: '5px 9px', borderRadius: 5, background: 'var(--surface-alt)', border: '1px solid var(--border-light)', fontSize: 12, textTransform: 'capitalize' }}>
+                {crimeType}: {count}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <p style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '16px 0 0', fontSize: 11, lineHeight: 1.5, color: 'var(--text-tertiary)' }}>
+        <PiInfo size={15} aria-hidden="true" />
+        <span>
+          {usingFallback ? 'Fixed synthetic fixture. ' : ''}Correlations are not proof of causation. An authorized analyst must verify source records, model validity, and legal basis before any operational decision.
+          {data?.generatedAt ? ` Service timestamp: ${new Date(data.generatedAt).toLocaleString()}.` : ''}
+        </span>
+      </p>
+    </div>
+  );
 }

@@ -1,123 +1,167 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  PiChartLine, PiInfo, PiMapPin, PiPhoneCall, PiShieldCheckered, PiTrendUp, PiWarningCircle,
+} from 'react-icons/pi';
+import {
+  apiArray, apiObject, displayText, fetchJson, finiteNumber, KARNATAKA_DISTRICTS,
+} from '../utils/apiData';
 
-const DeterrenceDashboard = () => {
-    const [districtId, setDistrictId] = useState(1);
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const DISTRICTS = [
-        { id: 1, name: 'Bengaluru City' },
-        { id: 2, name: 'Mysuru City' },
-        { id: 3, name: 'Mangaluru City' },
-        { id: 4, name: 'Hubballi-Dharwad City' },
-        { id: 5, name: 'Belagavi City' },
-        { id: 6, name: 'Kalaburagi City' },
-        { id: 7, name: 'Shivamogga' },
-        { id: 8, name: 'Tumakuru' },
-        { id: 9, name: 'Davanagere' },
-        { id: 10, name: 'Ballari' },
-        { id: 11, name: 'Vijayapura' },
-        { id: 12, name: 'Bidar' },
-        { id: 13, name: 'Hassan' },
-        { id: 14, name: 'Udupi' },
-        { id: 15, name: 'Dharwad' },
-        { id: 16, name: 'Kolar' },
-        { id: 17, name: 'Chikkamagaluru' },
-        { id: 18, name: 'Mandya' },
-        { id: 19, name: 'Bagalkote' },
-        { id: 20, name: 'Chitradurga' }
-    ];
-
-    const load = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const [exceedRes, darkRes, transitRes] = await Promise.all([
-                fetch(`/server/exceedance_curve/exceedance?district=${districtId}`).then(r => r.json()),
-                fetch(`/server/dark_figure/dark-figure?district=${districtId}`).then(r => r.json()),
-                fetch(`/server/transit_detection/transit-detection?district=${districtId}&crimeType=theft`).then(r => r.json())
-            ]);
-            setData({ exceedance: exceedRes, darkFigure: darkRes.data, transit: transitRes });
-        } catch (err) { setError(err.message); }
-        finally { setLoading(false); }
-    };
-
-    useEffect(() => { load(); }, [districtId]);
-
-    const getTrend = (val) => val > 50 ? { label: 'Worsening', color: 'var(--color-red)' } : val > 25 ? { label: 'Stable', color: 'var(--color-amber)' } : { label: 'Improving', color: 'var(--color-green)' };
-
-    return (
-        <div className="panel deterrence-panel" style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '22px', margin: '0 0 4px 0' }}>Crime Genome — Public Dashboard</h2>
-                <p style={{ fontSize: '13px', color: 'var(--color-gray-500)', margin: '0' }}>Karnataka State Police · Crime Intelligence for Citizen Awareness</p>
-            </div>
-            <div className="deterrence-filter" style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center', justifyContent: 'center' }}>
-                <label style={{ fontWeight: 600, fontSize: '13px' }}>District:</label>
-                <select value={districtId} onChange={e => setDistrictId(Number(e.target.value))}
-                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db' }}>
-                    {DISTRICTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-            </div>
-            {error && <div style={{ color: 'var(--color-red)', marginBottom: '16px', textAlign: 'center' }}>Error: {error}</div>}
-            {loading && <div style={{ textAlign: 'center', color: '#666' }}>Loading...</div>}
-            {data && (
-                <>
-                    <div className="deterrence-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
-                        <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--color-gray-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Crime Index</div>
-                            <div style={{ fontSize: '36px', fontWeight: 700, color: data.exceedance.worstOffense.exceedanceCurve.find(e => e.returnPeriodYears === 1).thresholdExceedance > 30 ? 'var(--color-red)' : '#d97706' }}>
-                                {data.exceedance.worstOffense.exceedanceCurve.find(e => e.returnPeriodYears === 1).thresholdExceedance}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-gray-400)' }}>monthly avg</div>
-                        </div>
-                        <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--color-gray-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Crime</div>
-                            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-blue-500)', textTransform: 'capitalize', marginTop: '4px' }}>{data.exceedance.worstOffense.crimeType}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-gray-400)', marginTop: '4px' }}>highest risk type</div>
-                        </div>
-                        <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--color-border-200)' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--color-gray-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trend</div>
-                            <div style={{ fontSize: '20px', fontWeight: 700, color: getTrend(data.darkFigure?.gapPercent || 0).color, marginTop: '4px' }}>
-                                {getTrend(data.darkFigure?.gapPercent || 0).label}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-gray-400)', marginTop: '4px' }}>vs prior period</div>
-                        </div>
-                    </div>
-                    <div className="deterrence-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-                        <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', border: '1px solid var(--color-border-200)' }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Risk Outlook</h3>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                {data.exceedance.worstOffense.exceedanceCurve.map((ep, i) => (
-                                    <span key={i} style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, background: ep.returnPeriodYears <= 2 ? 'var(--color-surface-green)' : ep.returnPeriodYears <= 5 ? '#fffbeb' : 'var(--color-surface-red)', color: ep.returnPeriodYears <= 2 ? '#16a34a' : ep.returnPeriodYears <= 5 ? 'var(--color-amber)' : 'var(--color-red)' }}>
-                                        {ep.returnPeriodYears}yr ≥ {ep.thresholdExceedance}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                        <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', border: '1px solid var(--color-border-200)' }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 12px 0' }}>Active Transits</h3>
-                            <div style={{ fontSize: '28px', fontWeight: 700, color: '#0891b2' }}>{data.transit.detectedTransits.length}</div>
-                            <div style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>detected crime sprees (7 days)</div>
-                        </div>
-                    </div>
-                    <div style={{ padding: '20px', background: 'var(--color-surface-50)', borderRadius: '12px', border: '1px solid var(--color-border-200)' }}>
-                        <h3 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 8px 0' }}>Prevention Tips</h3>
-                        <ul style={{ margin: '0', padding: '0 0 0 16px', fontSize: '13px', color: '#4b5563', lineHeight: '1.8' }}>
-                            <li>Secure vehicles with steering locks — auto theft is the most common crime in this district</li>
-                            <li>Report suspicious activity to your local police station or dial 112</li>
-                            <li>Install CCTV cameras at entry points — visible cameras deter burglary</li>
-                            <li>Avoid sharing OTPs and banking passwords — cyber fraud cases are rising</li>
-                        </ul>
-                    </div>
-                    <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '11px', color: 'var(--color-gray-400)' }}>
-                        Data source: Karnataka State Police · Updated daily · No personally identifiable information shown
-                    </div>
-                </>
-            )}
-        </div>
-    );
+const CATEGORY_GUIDANCE = {
+  theft: ['Lock vehicles and secure valuables out of sight.', 'Record serial numbers for high-value property.', 'Report suspicious activity through an approved police channel.'],
+  burglary: ['Use functioning locks and adequate entry lighting.', 'Ask a trusted contact to monitor an empty property.', 'Preserve the scene and avoid touching disturbed objects.'],
+  cyber: ['Never share OTPs, PINs, or account passwords.', 'Verify payment requests through a second channel.', 'Preserve messages, transaction IDs, and screenshots when reporting fraud.'],
+  fraud: ['Verify identities before transferring money.', 'Do not install remote-access software at a caller’s request.', 'Contact the relevant bank promptly after a suspicious transaction.'],
+  default: ['Use well-lit routes and remain aware of local advisories.', 'Preserve relevant details when reporting an incident.', 'Call 112 when immediate emergency assistance is required.'],
 };
 
-export default DeterrenceDashboard;
+function syntheticPublicData(districtId) {
+  const crimeTypes = ['theft', 'burglary', 'cyber', 'fraud'];
+  const crimeType = crimeTypes[(Number(districtId) - 1) % crimeTypes.length];
+  const baseline = 24 + Number(districtId);
+  return {
+    exceedance: {
+      worstOffense: {
+        crimeType,
+        exceedanceCurve: [
+          { returnPeriodYears: 1, thresholdExceedance: baseline },
+          { returnPeriodYears: 2, thresholdExceedance: baseline + 5 },
+          { returnPeriodYears: 5, thresholdExceedance: baseline + 11 },
+          { returnPeriodYears: 10, thresholdExceedance: baseline + 16 },
+        ],
+      },
+      metadata: { note: 'Fixed synthetic public-dashboard fixture' },
+    },
+    darkFigure: { gapPercent: 28 + (Number(districtId) % 5) * 4 },
+    transit: {
+      detectedTransits: Number(districtId) % 3 === 0 ? [] : [
+        { startDate: '2026-06-04', endDate: '2026-06-10', significance: 1.8 },
+        { startDate: '2026-06-18', endDate: '2026-06-22', significance: 1.6 },
+      ],
+      metadata: { note: 'Fixed synthetic pattern windows' },
+    },
+  };
+}
+
+function normalizeExceedance(payload) {
+  const source = apiObject(payload, ['worstOffense', 'curves'], ['exceedance']);
+  const worst = apiObject(source.worstOffense, ['crimeType', 'exceedanceCurve']);
+  if (!Object.prototype.hasOwnProperty.call(worst, 'exceedanceCurve')) throw new Error('Unsupported exceedance response');
+  return {
+    worstOffense: {
+      crimeType: displayText(worst.crimeType, 'unclassified'),
+      exceedanceCurve: apiArray(worst.exceedanceCurve, ['exceedanceCurve']).map((item) => ({
+        returnPeriodYears: Math.max(1, finiteNumber(item?.returnPeriodYears, 1)),
+        thresholdExceedance: Math.max(0, finiteNumber(item?.thresholdExceedance ?? item?.threshold)),
+      })).sort((a, b) => a.returnPeriodYears - b.returnPeriodYears),
+    },
+    metadata: apiObject(source.metadata),
+  };
+}
+
+function normalizeDarkFigure(payload) {
+  const source = apiObject(payload, ['gapPercent', 'firCounts'], ['darkFigure']);
+  if (!Object.prototype.hasOwnProperty.call(source, 'gapPercent')) throw new Error('Unsupported reporting-gap response');
+  return { gapPercent: Math.max(0, finiteNumber(source.gapPercent)), recommendation: displayText(source.recommendation, '') };
+}
+
+function normalizeTransit(payload) {
+  const source = apiObject(payload, ['detectedTransits', 'timeSeries'], ['transit']);
+  if (!Object.prototype.hasOwnProperty.call(source, 'detectedTransits')) throw new Error('Unsupported pattern-window response');
+  return { detectedTransits: apiArray(source.detectedTransits, ['detectedTransits']), metadata: apiObject(source.metadata) };
+}
+
+export default function DeterrenceDashboard() {
+  const [districtId, setDistrictId] = useState(1);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState('');
+  const requestId = useRef(0);
+
+  const load = useCallback(async () => {
+    const currentRequest = requestId.current + 1;
+    requestId.current = currentRequest;
+    setLoading(true);
+    setNotice('');
+    const fallback = syntheticPublicData(districtId);
+    const responses = await Promise.allSettled([
+      fetchJson(`/server/exceedance_curve/exceedance?district=${districtId}`).then(normalizeExceedance),
+      fetchJson(`/server/dark_figure/dark-figure?district=${districtId}`).then(normalizeDarkFigure),
+      fetchJson(`/server/transit_detection/transit-detection?district=${districtId}&crimeType=theft`).then(normalizeTransit),
+    ]);
+    if (requestId.current !== currentRequest) return;
+
+    const fallbackCount = responses.filter((response) => response.status === 'rejected').length;
+    setData({
+      exceedance: responses[0].status === 'fulfilled' ? responses[0].value : fallback.exceedance,
+      darkFigure: responses[1].status === 'fulfilled' ? responses[1].value : fallback.darkFigure,
+      transit: responses[2].status === 'fulfilled' ? responses[2].value : fallback.transit,
+    });
+    if (fallbackCount > 0) setNotice(`${fallbackCount} data service${fallbackCount === 1 ? '' : 's'} unavailable. Fixed synthetic values fill the missing indicator${fallbackCount === 1 ? '' : 's'}.`);
+    setLoading(false);
+  }, [districtId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const curve = data?.exceedance?.worstOffense?.exceedanceCurve || [];
+  const oneYearPoint = curve.find((point) => point.returnPeriodYears === 1) || curve[0];
+  const topCategory = data?.exceedance?.worstOffense?.crimeType || 'unclassified';
+  const guidance = CATEGORY_GUIDANCE[topCategory.toLowerCase()] || CATEGORY_GUIDANCE.default;
+  const patternWindows = data?.transit?.detectedTransits || [];
+
+  return (
+    <div className="panel deterrence-panel" style={{ padding: 20, width: '100%', maxWidth: 1000, margin: '0 auto', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 5px', fontSize: 22 }}><PiShieldCheckered weight="duotone" aria-hidden="true" /> Public safety indicators</h2>
+          <p style={{ margin: 0, maxWidth: 680, color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55 }}>District-level demonstration of aggregated statistical indicators. This is not real-time incident data or a personal safety guarantee.</p>
+        </div>
+        <span style={{ padding: '5px 9px', border: '1px solid var(--border-light)', borderRadius: 5, background: 'var(--surface-alt)', fontSize: 11, fontWeight: 700 }}>SYNTHETIC DEMO · NO PII</span>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, margin: '18px 0 14px', alignItems: 'center', flexWrap: 'wrap', padding: '10px 0', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)' }}>
+        <PiMapPin size={18} aria-hidden="true" />
+        <label htmlFor="public-district" style={{ fontSize: 13, fontWeight: 650 }}>District</label>
+        <select id="public-district" value={districtId} onChange={(event) => setDistrictId(Number(event.target.value))} style={{ minHeight: 36, maxWidth: '100%', padding: '6px 10px', borderRadius: 5, border: '1px solid var(--border-light)', background: 'var(--surface)', color: 'var(--text)' }}>{KARNATAKA_DISTRICTS.map((district) => <option key={district.id} value={district.id}>{district.name}</option>)}</select>
+      </div>
+
+      {notice && <div role="status" style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 14, padding: '10px 12px', border: '1px solid #e5cf9d', borderRadius: 6, background: '#fbf3db', color: '#6f4c17', fontSize: 12 }}><PiWarningCircle size={18} aria-hidden="true" /> {notice}</div>}
+      {loading && !data && <p aria-busy="true" style={{ padding: '26px 0', color: 'var(--text-secondary)', fontSize: 13 }}>Loading district indicators...</p>}
+
+      {data && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 10, marginBottom: 20 }}>
+            <div style={metricStyle}><PiChartLine size={20} weight="duotone" aria-hidden="true" /><span style={metricLabel}>One-year threshold</span><strong style={metricValue}>{oneYearPoint?.thresholdExceedance ?? 'N/A'}</strong><small style={metricNote}>synthetic incidents / month</small></div>
+            <div style={metricStyle}><PiTrendUp size={20} weight="duotone" aria-hidden="true" /><span style={metricLabel}>Category under review</span><strong style={{ ...metricValue, fontSize: 20, textTransform: 'capitalize' }}>{topCategory.replaceAll('_', ' ')}</strong><small style={metricNote}>illustrative highest threshold</small></div>
+            <div style={metricStyle}><PiInfo size={20} weight="duotone" aria-hidden="true" /><span style={metricLabel}>Reporting-gap model</span><strong style={metricValue}>{finiteNumber(data.darkFigure?.gapPercent)}%</strong><small style={metricNote}>estimate, not observed incidents</small></div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 18, marginBottom: 20 }}>
+            <section>
+              <h3 style={sectionTitle}>Threshold curve</h3>
+              {curve.length > 0 ? <div style={{ display: 'grid', gap: 7 }}>{curve.map((point) => <div key={point.returnPeriodYears} style={{ display: 'grid', gridTemplateColumns: '70px 1fr auto', gap: 9, alignItems: 'center', fontSize: 12 }}><span>{point.returnPeriodYears}-year</span><div style={{ height: 7, overflow: 'hidden', borderRadius: 3, background: 'var(--surface-alt)' }}><div style={{ width: `${Math.min(100, (point.thresholdExceedance / Math.max(1, ...curve.map((item) => item.thresholdExceedance))) * 100)}%`, height: '100%', borderRadius: 3, background: '#736c5e' }} /></div><strong>{point.thresholdExceedance}</strong></div>)}</div> : <div style={emptyStyle}>No threshold curve was returned.</div>}
+            </section>
+            <section>
+              <h3 style={sectionTitle}>Pattern windows for review</h3>
+              <div style={{ fontSize: 30, fontWeight: 750 }}>{patternWindows.length}</div>
+              <p style={{ margin: '3px 0 0', color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>Statistical windows flagged in the synthetic series. A flag does not establish a crime spree or forecast future incidents.</p>
+            </section>
+          </div>
+
+          <section style={{ paddingTop: 17, borderTop: '1px solid var(--border-light)' }}>
+            <h3 style={{ ...sectionTitle, display: 'flex', alignItems: 'center', gap: 7 }}><PiPhoneCall aria-hidden="true" /> General prevention guidance</h3>
+            <ul style={{ margin: 0, paddingLeft: 19, color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.75 }}>{guidance.map((tip) => <li key={tip}>{tip}</li>)}</ul>
+          </section>
+
+          <p style={{ display: 'flex', gap: 7, alignItems: 'flex-start', margin: '18px 0 0', paddingTop: 14, borderTop: '1px solid var(--border-light)', color: 'var(--text-tertiary)', fontSize: 11, lineHeight: 1.5 }}><PiInfo size={16} aria-hidden="true" /> Fixed demonstration and unvalidated model outputs may be present. Verify current official advisories and contact local authorities for operational information.</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+const metricStyle = { minHeight: 132, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 14, border: '1px solid var(--border-light)', borderRadius: 7, background: 'var(--surface-alt)' };
+const metricLabel = { marginTop: 10, color: 'var(--text-secondary)', fontSize: 11 };
+const metricValue = { marginTop: 2, fontSize: 28, fontWeight: 750 };
+const metricNote = { marginTop: 'auto', paddingTop: 8, color: 'var(--text-tertiary)', fontSize: 10 };
+const sectionTitle = { margin: '0 0 11px', fontSize: 14, fontWeight: 700 };
+const emptyStyle = { padding: '20px 12px', border: '1px dashed var(--border-light)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12 };
