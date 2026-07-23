@@ -143,7 +143,7 @@ const ProtectedRoute = ({ element: Element, requiredArea }) => {
     token,
     user,
   } = useAuth();
-  const isDevelopmentDemo = import.meta.env.DEV && token?.startsWith('mock-jwt-');
+  const isDevelopmentDemo = Boolean(token?.startsWith('mock-jwt-'));
   const hasUser = Boolean(user);
   const [verification, setVerification] = React.useState(
     isDevelopmentDemo ? 'valid' : 'checking',

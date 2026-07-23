@@ -5,6 +5,9 @@ const { logAuditEvent } = require('../shared/audit-log');
 const app = express();
 app.use(express.json({ limit: '256kb' }));
 
+const GEMINI_KEY = () => process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-2.0-flash';
+
 const ALLOWED_ROLES = new Set(['acp', 'dysp', 'dsp', 'inspector', 'subinspector', 'superintendent', 'admin']);
 const MAX_HISTORY = 8;
 

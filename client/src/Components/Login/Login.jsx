@@ -137,9 +137,9 @@ const Login = () => {
               <PiArrowRightBold className="icon" aria-hidden="true" />
             </button>
 
-            {import.meta.env.DEV && (
+            {true && (
               <div className="demo-hint" aria-label="Development demo accounts">
-                <span>Demo access:</span>
+                <span>Demo Access (Datathon Evaluation):</span>
                 <button type="button" onClick={() => fillDemo('anjumala')} className="demo-link">ACP</button>
                 <button type="button" onClick={() => fillDemo('dharmendra')} className="demo-link">Inspector</button>
                 <button type="button" onClick={() => fillDemo('marutig')} className="demo-link">Sub-Inspector</button>
