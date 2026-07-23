@@ -22,7 +22,7 @@ const capabilities = [
     className: 'feature-card feature-card--intelligence',
     eyebrow: '01 / Case intelligence',
     title: 'See the next useful move.',
-    copy: 'Solvability, evidence gaps, and deadline risk stay attached to the case instead of living in separate reports.',
+    copy: 'Case readiness, evidence gaps, and deadline risk stay attached to the case instead of living in separate reports.',
     icon: FiActivity,
     illustration: '/assets/landing/case-intelligence.webp',
     alt: 'Case evidence converging into a single prioritized action',
@@ -81,7 +81,9 @@ const LandingPage = () => {
     intro
       .from('.landing-nav', { y: -24, opacity: 0, duration: 0.7 })
       .from('.hero-reveal', { y: 36, opacity: 0, duration: 0.85, stagger: 0.09 }, '-=0.35')
-      .from('.hero-console', { y: 56, rotate: 1.2, opacity: 0, duration: 1 }, '-=0.45');
+      .from('.hero-console', { y: 56, rotate: 1.2, opacity: 0, duration: 1 }, '-=0.45')
+      .from('.hero-primary', { scale: 0.92, opacity: 0, duration: 0.5 }, '-=0.3')
+      .to('.hero-primary', { scale: 1.04, duration: 1.2, repeat: -1, yoyo: true, ease: 'sine.inOut' }, '+=1.5');
 
     gsap.from('.feature-card', {
       y: 48,
@@ -169,7 +171,7 @@ const LandingPage = () => {
             </div>
             <div className="console-metrics">
               <div className="console-metric console-metric--focus">
-                <span>Solvability</span><strong>84</strong><small>+7.4 this week</small>
+                <span>Case readiness</span><strong>67</strong><small>3 evidence tasks open</small>
               </div>
               <div className="console-metric">
                 <span>Evidence ready</span><strong>18/23</strong><small>5 items pending</small>
