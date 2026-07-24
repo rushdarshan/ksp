@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PiArrowRight, PiBellRinging, PiShieldWarning } from 'react-icons/pi';
 
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
+
 const LoadingBlock = () => (
   <div className="railSkeleton" aria-hidden="true">
     <span /><span /><span />
@@ -18,8 +20,8 @@ export default function RightSidebar() {
   useEffect(() => {
     let active = true;
     Promise.all([
-      fetch('/server/fir_api/alerts').then((response) => response.ok ? response.json() : []),
-      fetch('/server/case_management/case-management/notifications').then((response) => response.ok ? response.json() : { notifications: [] }),
+      fetch(`${apiUrl}/fir_api/alerts`).then((response) => response.ok ? response.json() : []),
+      fetch(`${apiUrl}/case_management/case-management/notifications`).then((response) => response.ok ? response.json() : { notifications: [] }),
     ]).then(([alertData, notificationData]) => {
       if (!active) return;
       setAlerts((Array.isArray(alertData) ? alertData : []).slice(0, 3));
