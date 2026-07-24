@@ -1,5 +1,85 @@
 /* Case workspace */
 
+@keyframes evp-spin { to { transform: rotate(360deg); } }
+
+.evp-root {
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.evp-toggle {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--text);
+  font: 650 13px var(--font-body);
+  padding: 8px 0;
+  gap: 8px;
+}
+
+.evp-toggle-label { display: flex; align-items: center; gap: 6px; }
+.evp-toggle-icon { display: grid; place-items: center; color: var(--text-secondary); }
+.evp-toggle-icon svg { width: 14px; height: 14px; }
+
+.evp-stages {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 0 0 14px;
+  overflow-x: auto;
+}
+
+.evp-stage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.evp-stage-status {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+}
+
+.evp-stage-status:hover { border-color: var(--accent); }
+.evp-stage-status svg { width: 16px; height: 16px; }
+.evp-stage-status--complete { border-color: var(--pastel-green-text); background: var(--pastel-green); }
+.evp-stage-status--active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.evp-stage-status--pending { border-color: var(--border-light); }
+
+.evp-spinner { animation: evp-spin 1s linear infinite; }
+
+.evp-stage-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.evp-stage-label { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.evp-stage-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+.evp-stage-badge--complete { color: var(--pastel-green-text); }
+.evp-stage-badge--active { color: var(--accent); }
+.evp-stage-badge--pending { color: var(--text-secondary); }
+
+.evp-connector {
+  flex: 1;
+  min-width: 16px;
+  height: 2px;
+  background: var(--border-light);
+  margin: 0 4px;
+  align-self: center;
+}
+
 .case-workspace {
   display: flex;
   flex-direction: column;

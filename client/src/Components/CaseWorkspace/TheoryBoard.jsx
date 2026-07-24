@@ -89,7 +89,7 @@ const INITIAL_NOTES = {
 
 const confidenceColor = value => value >= 0.75 ? 'var(--color-green-alt)' : value >= 0.5 ? '#a76617' : 'var(--color-red-soft)';
 
-export default function TheoryBoard({ firId }) {
+export default function TheoryBoard({ firId, onLinkEvidence }) {
   const [theories, setTheories] = useState(INITIAL_THEORIES);
   const [activeTheory, setActiveTheory] = useState(INITIAL_THEORIES[0].id);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -98,6 +98,8 @@ export default function TheoryBoard({ firId }) {
   const [confirming, setConfirming] = useState(null);
   const [theoryNotes, setTheoryNotes] = useState(INITIAL_NOTES);
   const [noteText, setNoteText] = useState('');
+  const [draggedEvidenceId, setDraggedEvidenceId] = useState(null);
+  const [dragOverTheoryId, setDragOverTheoryId] = useState(null);
 
   const current = theories.find(theory => theory.id === activeTheory);
 
@@ -138,6 +140,28 @@ export default function TheoryBoard({ firId }) {
     console.log('[AUDIT] Theory evidence review', { firId, theoryId: activeTheory, evidenceId, action, timestamp: new Date().toISOString() });
   };
 
+  const moveEvidence = (targetTheoryId, evidenceId) => {
+    if (!evidenceId) return;
+    setTheories(prev => {
+      const sourceTheory = prev.find(t => t.evidence.some(e => e.id === evidenceId));
+      if (!sourceTheory || sourceTheory.id === targetTheoryId) return prev;
+      const evItem = sourceTheory.evidence.find(e => e.id === evidenceId);
+      return prev.map(t => {
+        if (t.id === sourceTheory.id) return { ...t, evidence: t.evidence.filter(e => e.id !== evidenceId) };
+        if (t.id === targetTheoryId) return { ...t, evidence: [...t.evidence, { ...evItem }] };
+        return t;
+      });
+    });
+  };
+
+  const handleDrop = (theoryId) => {
+    if (!draggedEvidenceId) return;
+    moveEvidence(theoryId, draggedEvidenceId);
+    onLinkEvidence?.(theoryId, draggedEvidenceId);
+    setDraggedEvidenceId(null);
+    setDragOverTheoryId(null);
+  };
+
   const addNote = () => {
     if (!noteText.trim()) return;
     setTheoryNotes(previous => ({
@@ -153,11 +177,27 @@ export default function TheoryBoard({ firId }) {
   const renderEvidenceColumn = (classification, title, Icon, color) => {
     const evidence = current.evidence.filter(item => item.classification === classification);
     return (
-      <div>
+      <div
+        className={`tb-ev-col-wrapper ${dragOverTheoryId === current.id ? 'tb-ev-col-wrapper--drag-over' : ''}`}
+        onDragOver={e => { e.preventDefault(); }}
+        onDragEnter={() => setDragOverTheoryId(current.id)}
+        onDragLeave={() => setDragOverTheoryId(null)}
+        onDrop={() => handleDrop(current.id)}
+      >
         <p className="tb-ev-col-title" style={{ color }}><Icon aria-hidden="true" /> {title} ({evidence.length})</p>
         <div className="tb-ev-col">
           {evidence.length
-            ? evidence.map(item => <EvidenceClassification key={item.id} item={item} onAction={handleEvidenceAction} />)
+            ? evidence.map(item => (
+              <div
+                key={item.id}
+                draggable="true"
+                className={`tb-ev-card-wrapper ${draggedEvidenceId === item.id ? 'tb-ev-card-wrapper--dragging' : ''}`}
+                onDragStart={() => setDraggedEvidenceId(item.id)}
+                onDragEnd={() => setDraggedEvidenceId(null)}
+              >
+                <EvidenceClassification item={item} onAction={handleEvidenceAction} />
+              </div>
+            ))
             : <p className="tb-ev-empty">No {title.toLowerCase()} records</p>}
         </div>
       </div>
@@ -174,7 +214,15 @@ export default function TheoryBoard({ firId }) {
       <div className="tb-body">
         <div className="tb-theory-tabs">
           {theories.map(theory => (
-            <button key={theory.id} className={`tb-theory-tab ${activeTheory === theory.id ? 'tb-theory-tab--active' : ''}`} onClick={() => setActiveTheory(theory.id)}>
+            <button
+              key={theory.id}
+              className={`tb-theory-tab ${activeTheory === theory.id ? 'tb-theory-tab--active' : ''} ${dragOverTheoryId === theory.id ? 'tb-theory-tab--drag-over' : ''}`}
+              onClick={() => setActiveTheory(theory.id)}
+              onDragOver={e => { e.preventDefault(); }}
+              onDragEnter={() => setDragOverTheoryId(theory.id)}
+              onDragLeave={() => setDragOverTheoryId(null)}
+              onDrop={() => handleDrop(theory.id)}
+            >
               <span className="tb-theory-dot" style={{ background: confidenceColor(theory.confidence) }} />
               {theory.title}
               <span className="tb-conf-badge" style={{ background: `${confidenceColor(theory.confidence)}20`, color: confidenceColor(theory.confidence) }}>{Math.round(theory.confidence * 100)}%</span>
@@ -239,4 +287,5 @@ export default function TheoryBoard({ firId }) {
 
 TheoryBoard.propTypes = {
   firId: PropTypes.string.isRequired,
+  onLinkEvidence: PropTypes.func,
 };

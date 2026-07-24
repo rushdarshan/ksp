@@ -1,13 +1,16 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
 import toast from "react-hot-toast";
 import styles from "./firdetails.module.css";
 import { formatString, smapleFirValues } from "../../utils/utility";
 
 const AddFir = () => {
+  const location = useLocation();
+  const prefill = location.state?.prefill || {};
   // Step 1: Initialize state for form data
   const [isPending, setIsPending] = useState(false);
-  const [formData, setFormData] = useState(smapleFirValues);
+  const [formData, setFormData] = useState({ ...smapleFirValues, ...prefill });
 
   // Step 2: Generic change handler
   const handleChange = (e) => {

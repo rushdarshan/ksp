@@ -22,9 +22,14 @@ import { installFetchInterceptor } from './utils/fetchInterceptor';
 import { startWarmup, registerWarmupProgress } from './utils/apiWarmup';
 import { toast } from 'react-hot-toast';
 import { I18nProvider } from './utils/i18n';
+import { setupOfflineDemo } from './utils/offlineDemo';
 
 // Install global fetch hook to queue calls during function cold starts and auto-retry
 installFetchInterceptor();
+
+if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('offline') === 'true') {
+  setupOfflineDemo();
+}
 
 
 const Body = React.lazy(() => import('./Components/Dashboard/Components/Body Section/Body'));

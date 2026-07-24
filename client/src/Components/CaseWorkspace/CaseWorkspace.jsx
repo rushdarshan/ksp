@@ -17,6 +17,7 @@ import ChargesheetIntelligence from './ChargesheetIntelligence';
 import InvestigationCopilot from './InvestigationCopilot';
 import InvestigationReportButton from './InvestigationReportButton';
 import DecisionLog from './DecisionLog';
+import EvidencePipeline from './EvidencePipeline';
 import { CaseContext } from './caseContext';
 import { ACTIVE_CASE_FACTS, getActiveCaseData } from './caseFacts';
 import { buildCaseWorkspaceSearch, getRouteTab } from './caseWorkspaceRouting';
@@ -184,6 +185,8 @@ export default function CaseWorkspace() {
             );
           })}
         </div>
+
+        <EvidencePipeline />
 
         <InvestigationCopilot initialAction={initialCopilotAction} />
 

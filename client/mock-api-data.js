@@ -1311,6 +1311,90 @@ export function defineMockApi() {
     }),
 
     // === ZIA Synthesis Brief ===
+    // === Entity Graph Cross-FIR ===
+    'POST /server/entity_graph/cross-ref': ({ body }) => {
+      const caseId = body?.caseId || 'KSP-2026-0142';
+      const graphs = {
+        'KSP-2026-0142': {
+          nodes: [
+            { id: 'fir-142', type: 'case', label: 'KSP-2026-0142' },
+            { id: 'fir-89', type: 'case', label: 'KSP-2026-0089' },
+            { id: 'fir-301', type: 'case', label: 'KSP-2026-0301' },
+            { id: 'person-mohan', type: 'person', label: 'Mohan Kumar' },
+            { id: 'person-kiran', type: 'person', label: 'Kiran Joseph' },
+            { id: 'person-ravi', type: 'person', label: 'Ravi Shetty' },
+            { id: 'person-ajay', type: 'person', label: 'Ajay Rao' },
+            { id: 'phone-9845', type: 'phone', label: '9845012345' },
+            { id: 'vehicle-ka01', type: 'vehicle', label: 'KA-01-MN-1234' },
+            { id: 'location-brigade', type: 'location', label: 'Brigade Road' },
+            { id: 'location-sh9', type: 'location', label: 'SH-9 junction' },
+          ],
+          links: [
+            { source: 'fir-142', target: 'person-mohan', label: 'accused' },
+            { source: 'fir-142', target: 'person-kiran', label: 'accused' },
+            { source: 'fir-142', target: 'location-sh9', label: 'occurred at' },
+            { source: 'fir-89', target: 'person-ravi', label: 'accused' },
+            { source: 'fir-301', target: 'person-mohan', label: 'accused' },
+            { source: 'fir-301', target: 'person-ajay', label: 'accused' },
+            { source: 'person-mohan', target: 'phone-9845', label: 'known number' },
+            { source: 'person-ravi', target: 'phone-9845', label: 'known number' },
+            { source: 'person-mohan', target: 'vehicle-ka01', label: 'linked vehicle' },
+            { source: 'person-ajay', target: 'vehicle-ka01', label: 'linked vehicle' },
+            { source: 'fir-89', target: 'location-brigade', label: 'occurred at' },
+            { source: 'fir-301', target: 'location-brigade', label: 'occurred near' },
+            { source: 'fir-142', target: 'fir-89', label: 'shared phone 9845012345' },
+            { source: 'fir-142', target: 'fir-301', label: 'shared accused Mohan Kumar' },
+            { source: 'fir-89', target: 'fir-301', label: 'shared vehicle KA-01-MN-1234' },
+          ],
+        },
+      };
+      return graphs[caseId] || { nodes: [], links: [], caseId };
+    },
+
+    // === Accused At Large — Search by Name ===
+    'GET /server/accused_at_large/search-by-name': ({ query }) => {
+      const q = (query?.name || '').toLowerCase().trim();
+      if (q.length < 2) return { error: 'Name query must be at least 2 characters' };
+      const all = [
+        { caseId: 142, firNo: 'KSP-2026-0142', accusedName: 'Mohan Kumar', crimeType: 'robbery', status: 'Under Investigation', date: '2026-03-15' },
+        { caseId: 301, firNo: 'KSP-2026-0301', accusedName: 'Mohan Kumar', crimeType: 'robbery', status: 'Under Investigation', date: '2026-05-10' },
+        { caseId: 142, firNo: 'KSP-2026-0142', accusedName: 'Kiran Joseph', crimeType: 'robbery', status: 'At large', date: '2026-03-15' },
+        { caseId: 89, firNo: 'KSP-2026-0089', accusedName: 'Ravi Shetty', crimeType: 'burglary', status: 'Under Investigation', date: '2026-02-28' },
+        { caseId: 211, firNo: 'KSP-2026-0211', accusedName: 'Ravi Shetty', crimeType: 'burglary', status: 'Under Investigation', date: '2026-03-05' },
+        { caseId: 201, firNo: 'KSP-2026-0201', accusedName: 'Venkatesh Gowda', crimeType: 'assault', status: 'Under Investigation', date: '2026-01-10' },
+        { caseId: 198, firNo: 'KSP-2026-0198', accusedName: 'Venkatesh Gowda', crimeType: 'burglary', status: 'Under Investigation', date: '2026-02-14' },
+        { caseId: 255, firNo: 'KSP-2026-0255', accusedName: 'Venkatesh Gowda', crimeType: 'burglary', status: 'Under Investigation', date: '2026-04-01' },
+        { caseId: 190, firNo: 'KSP-2026-0190', accusedName: 'Suresh Patil', crimeType: 'robbery', status: 'Under Investigation', date: '2026-02-10' },
+        { caseId: 198, firNo: 'KSP-2026-0198', accusedName: 'Suresh Patil', crimeType: 'burglary', status: 'Under Investigation', date: '2026-02-14' },
+        { caseId: 211, firNo: 'KSP-2026-0211', accusedName: 'Suresh Patil', crimeType: 'burglary', status: 'Under Investigation', date: '2026-03-05' },
+        { caseId: 255, firNo: 'KSP-2026-0255', accusedName: 'Suresh Patil', crimeType: 'burglary', status: 'Under Investigation', date: '2026-04-01' },
+        { caseId: 234, firNo: 'KSP-2026-0234', accusedName: 'Arun Nair', crimeType: 'fraud', status: 'Under Investigation', date: '2026-03-20' },
+        { caseId: 211, firNo: 'KSP-2026-0211', accusedName: 'Arun Nair', crimeType: 'burglary', status: 'Under Investigation', date: '2026-03-05' },
+        { caseId: 267, firNo: 'KSP-2026-0267', accusedName: 'Imran Khan', crimeType: 'burglary', status: 'Under Investigation', date: '2026-05-20' },
+        { caseId: 255, firNo: 'KSP-2026-0255', accusedName: 'Imran Khan', crimeType: 'burglary', status: 'Under Investigation', date: '2026-04-01' },
+        { caseId: 388, firNo: 'KSP-2026-0388', accusedName: 'Prakash Acharya', crimeType: 'fraud', status: 'Under Investigation', date: '2026-06-22' },
+        { caseId: 390, firNo: 'KSP-2026-0390', accusedName: 'Prakash Acharya', crimeType: 'fraud', status: 'Under Investigation', date: '2026-06-25' },
+        { caseId: 412, firNo: 'KSP-2026-0412', accusedName: 'Prakash Acharya', crimeType: 'fraud', status: 'Under Investigation', date: '2026-07-05' },
+        { caseId: 388, firNo: 'KSP-2026-0388', accusedName: 'Manjunath Hegde', crimeType: 'fraud', status: 'Under Investigation', date: '2026-06-22' },
+        { caseId: 390, firNo: 'KSP-2026-0390', accusedName: 'Manjunath Hegde', crimeType: 'fraud', status: 'Under Investigation', date: '2026-06-25' },
+        { caseId: 156, firNo: 'KSP-2026-0156', accusedName: 'Nadeem Pasha', crimeType: 'theft', status: 'Under Investigation', date: '2026-04-01' },
+        { caseId: 201, firNo: 'KSP-2026-0201', accusedName: 'Girish Poojary', crimeType: 'assault', status: 'Under Investigation', date: '2026-01-10' },
+        { caseId: 198, firNo: 'KSP-2026-0198', accusedName: 'Girish Poojary', crimeType: 'burglary', status: 'Under Investigation', date: '2026-02-14' },
+        { caseId: 333, firNo: 'KSP-2026-0333', accusedName: 'Deepa Shetty', crimeType: 'assault', status: 'Under Investigation', date: '2026-06-01' },
+        { caseId: 359, firNo: 'KSP-2026-0359', accusedName: 'Basavaraj Patil', crimeType: 'theft', status: 'Under Investigation', date: '2026-06-15' },
+        { caseId: 425, firNo: 'KSP-2026-0425', accusedName: 'Basavaraj Patil', crimeType: 'assault', status: 'Under Investigation', date: '2026-07-10' },
+        { caseId: 402, firNo: 'KSP-2026-0402', accusedName: 'Shantamma Naik', crimeType: 'fraud', status: 'Under Investigation', date: '2026-07-01' },
+        { caseId: 267, firNo: 'KSP-2026-0267', accusedName: 'Shantamma Naik', crimeType: 'burglary', status: 'Under Investigation', date: '2026-05-20' },
+      ];
+      const matches = all.filter(r => r.accusedName.toLowerCase().includes(q));
+      return {
+        matches,
+        repeatCount: matches.length,
+        uniqueNames: [...new Set(matches.map(m => m.accusedName))],
+        metadata: { mode: 'mock', method: 'Name-based repeat offender search across FIR records' },
+      };
+    },
+
     'POST /server/zia_brief/zia_brief': ({ body }) => {
       const requestedCase = String(body?.caseId || '142');
       const caseId = requestedCase.match(/(\d+)$/)?.[1] || '142';

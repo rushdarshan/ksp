@@ -1,8 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { PiKeyboard, PiMicrophone, PiSpinner, PiStop, PiSpeakerHigh } from 'react-icons/pi';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { PiKeyboard, PiMicrophone, PiSpinner, PiStop, PiSpeakerHigh, PiFileText } from 'react-icons/pi';
 import apiFetch from '../utils/apiFetch';
 
 const VoiceQuery = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const basePath = location.pathname.replace(/\/voice$/, '');
     const [status, setStatus] = useState('Idle');
     const [transcript, setTranscript] = useState('');
     const [ragAnswer, setRagAnswer] = useState('');
@@ -10,6 +14,7 @@ const VoiceQuery = () => {
     const [textQuery, setTextQuery] = useState('');
     const [audioUrl, setAudioUrl] = useState('');
     const [mode, setMode] = useState('voice'); // 'voice' or 'text'
+    const [firMode, setFirMode] = useState(false);
     
     // Recording Refs & State
     const [isRecording, setIsRecording] = useState(false);
@@ -43,7 +48,15 @@ const VoiceQuery = () => {
                 recognition.onresult = async (event) => {
                     const spokenText = event.results?.[0]?.[0]?.transcript || '';
                     setTranscript(spokenText);
-                    if (spokenText) await queryLegalRag(spokenText);
+                    if (spokenText) {
+                        if (firMode) {
+                            navigate(`${basePath}/addfir`, {
+                                state: { voiceTranscription: spokenText, prefill: { place_of_offence: spokenText, Complaint_Mode: 'Voice' } }
+                            });
+                        } else {
+                            await queryLegalRag(spokenText);
+                        }
+                    }
                 };
                 recognition.onerror = (event) => setStatus(`Kannada speech recognition unavailable: ${event.error}`);
                 recognition.onend = () => {
@@ -134,6 +147,12 @@ const VoiceQuery = () => {
             const sttData = await sttRes.json();
             
             setTranscript(sttData.text);
+            if (firMode) {
+                navigate(`${basePath}/addfir`, {
+                    state: { voiceTranscription: sttData.text, prefill: { place_of_offence: sttData.text, Complaint_Mode: 'Voice' } }
+                });
+                return;
+            }
             await queryLegalRag(sttData.text);
         } catch (err) {
             console.error('Audio processing failed:', err);
@@ -223,13 +242,13 @@ const VoiceQuery = () => {
                 </h2>
                 <div style={{ display: 'flex', gap: '8px', background: 'var(--bg)', padding: '4px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
                     <button 
-                        onClick={() => setMode('voice')} 
+                        onClick={() => { setMode('voice'); setFirMode(false); }} 
                         style={{
                             padding: '6px 12px',
                             borderRadius: 'var(--radius-sm)',
                             border: 'none',
-                            background: mode === 'voice' ? 'var(--surface)' : 'transparent',
-                            color: mode === 'voice' ? 'var(--accent)' : 'var(--text-secondary)',
+                            background: mode === 'voice' && !firMode ? 'var(--surface)' : 'transparent',
+                            color: mode === 'voice' && !firMode ? 'var(--accent)' : 'var(--text-secondary)',
                             fontWeight: 600,
                             fontSize: '11px',
                             cursor: 'pointer',
@@ -238,16 +257,16 @@ const VoiceQuery = () => {
                             gap: '4px'
                         }}
                     >
-                        <PiMicrophone /> Voice (Kannada)
+                        <PiMicrophone /> Legal Query
                     </button>
                     <button 
-                        onClick={() => setMode('text')} 
+                        onClick={() => { setMode('text'); setFirMode(false); }} 
                         style={{
                             padding: '6px 12px',
                             borderRadius: 'var(--radius-sm)',
                             border: 'none',
-                            background: mode === 'text' ? 'var(--surface)' : 'transparent',
-                            color: mode === 'text' ? 'var(--accent)' : 'var(--text-secondary)',
+                            background: mode === 'text' && !firMode ? 'var(--surface)' : 'transparent',
+                            color: mode === 'text' && !firMode ? 'var(--accent)' : 'var(--text-secondary)',
                             fontWeight: 600,
                             fontSize: '11px',
                             cursor: 'pointer',
@@ -256,13 +275,33 @@ const VoiceQuery = () => {
                             gap: '4px'
                         }}
                     >
-                        <PiKeyboard /> Text Input
+                        <PiKeyboard /> Text Query
+                    </button>
+                    <button 
+                        onClick={() => { setMode('voice'); setFirMode(true); }}
+                        style={{
+                            padding: '6px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: 'none',
+                            background: firMode ? 'var(--surface)' : 'transparent',
+                            color: firMode ? 'var(--accent)' : 'var(--text-secondary)',
+                            fontWeight: 600,
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <PiFileText /> File FIR by Voice
                     </button>
                 </div>
             </div>
             
             <p style={{ margin: '0 0 20px 0', fontSize: 'var(--size-sub)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', lineHeight: 1.4 }}>
-              Query the CCTNS Legal Knowledge Base. Retrieve relevant Bharatiya Nyaya Sanhita (BNS) and IT Act provisions mapped to incident patterns using AI semantic retrieval.
+              {firMode
+                ? 'Speak the incident details in Kannada to auto-fill an FIR form. Zia transcribes your voice and pre-fills the Add FIR page with the transcribed complaint.'
+                : 'Query the CCTNS Legal Knowledge Base. Retrieve relevant Bharatiya Nyaya Sanhita (BNS) and IT Act provisions mapped to incident patterns using AI semantic retrieval.'}
             </p>
 
             {mode === 'voice' ? (
@@ -328,8 +367,8 @@ const VoiceQuery = () => {
                             >
                                 <PiMicrophone />
                             </button>
-                            <span style={{ fontSize: '13px', fontWeight: 600 }}>Click to speak query (in Kannada)</span>
-                            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>E.g. &quot;ಖೂನಿಗೆ ಶಿಕ್ಷೆ ಏನು?&quot; (What is the punishment for murder?)</span>
+                            <span style={{ fontSize: '13px', fontWeight: 600 }}>{firMode ? 'Click to describe the incident (in Kannada)' : 'Click to speak query (in Kannada)'}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{firMode ? 'E.g. describe what happened, where, and when' : 'E.g. &quot;ಖೂನಿಗೆ ಶಿಕ್ಷೆ ಏನು?&quot; (What is the punishment for murder?)'}</span>
                         </div>
                     )}
                 </div>

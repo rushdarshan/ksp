@@ -5,12 +5,15 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { PiArrowSquareOut, PiCursorClick } from 'react-icons/pi';
 import { ACTIVE_CASE_FACTS } from './caseFacts';
 
-// Canvas APIs cannot resolve CSS custom properties, so graph colors are explicit.
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
+
 const ENTITY_COLORS = {
   case: '#26231f',
   person: '#315f91',
   evidence: '#8a5d13',
   location: '#397159',
+  phone: '#7a4b8c',
+  vehicle: '#b86b3a',
   status: '#a34545',
 };
 
@@ -19,10 +22,12 @@ const ENTITY_LABELS = {
   person: 'Person',
   evidence: 'Evidence source',
   location: 'Location',
+  phone: 'Phone',
+  vehicle: 'Vehicle',
   status: 'Operational status',
 };
 
-const GRAPH_DATA = {
+const FALLBACK_GRAPH = {
   nodes: [
     { id: 'fir', label: ACTIVE_CASE_FACTS.firId, type: 'case', firId: ACTIVE_CASE_FACTS.firId, fx: 0, fy: 0 },
     { id: 'mohan', label: 'Mohan Kumar', type: 'person', firId: ACTIVE_CASE_FACTS.firId, personId: 'mohan-kumar', fx: -145, fy: -105 },
@@ -82,11 +87,44 @@ export default function EntityGraphPanel({ firId = ACTIVE_CASE_FACTS.firId }) {
   const viewportRef = useRef(null);
   const [selected, setSelected] = useState(null);
   const [graphSize, setGraphSize] = useState({ width: 640, height: 500 });
+  const [apiNodes, setApiNodes] = useState(null);
+  const [apiLinks, setApiLinks] = useState(null);
 
-  const graphData = useMemo(() => ({
-    nodes: GRAPH_DATA.nodes.map(node => ({ ...node, firId })),
-    links: GRAPH_DATA.links.map(link => ({ ...link })),
-  }), [firId]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${apiUrl}/entity_graph/cross-ref`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caseId: firId }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        if (!cancelled && data?.nodes) {
+          setApiNodes(data.nodes);
+          setApiLinks(data.links);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setApiNodes(null);
+          setApiLinks(null);
+        }
+      });
+    return () => { cancelled = true; };
+  }, [firId]);
+
+  const graphData = useMemo(() => {
+    if (apiNodes) {
+      return {
+        nodes: apiNodes.map(n => ({ ...n, firId })),
+        links: apiLinks.map(l => ({ ...l })),
+      };
+    }
+    return {
+      nodes: FALLBACK_GRAPH.nodes.map(node => ({ ...node, firId })),
+      links: FALLBACK_GRAPH.links.map(link => ({ ...link })),
+    };
+  }, [firId, apiNodes, apiLinks]);
 
   const fitGraph = useCallback(() => {
     graphRef.current?.zoomToFit(260, 64);
@@ -188,8 +226,10 @@ export default function EntityGraphPanel({ firId = ACTIVE_CASE_FACTS.firId }) {
             <h4>{selected.label}</h4>
             <dl>
               <div><dt>FIR</dt><dd>{selected.firId}</dd></div>
-              {selected.id === 'kiran' && <div><dt>Status</dt><dd>At large</dd></div>}
-              {selected.id === 'cctv' && <div><dt>Status</dt><dd>Acquisition pending</dd></div>}
+              {selected.type === 'status' && <div><dt>Status</dt><dd>{selected.label}</dd></div>}
+              {selected.type === 'evidence' && <div><dt>Status</dt><dd>Acquisition pending</dd></div>}
+              {selected.type === 'phone' && <div><dt>Type</dt><dd>Phone number</dd></div>}
+              {selected.type === 'vehicle' && <div><dt>Type</dt><dd>Vehicle</dd></div>}
             </dl>
             {selected.type === 'person' && (
               <button type="button" onClick={openProfile}>
