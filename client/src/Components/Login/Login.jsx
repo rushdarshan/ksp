@@ -73,9 +73,13 @@ const Login = () => {
     }
   };
 
-  const fillDemo = (username) => {
-    setLoginUsername(username);
-    setLoginPassword('123');
+  const bypassLogin = (username) => {
+    const demoUser = DEMO_USERS[username];
+    if (demoUser) {
+      authenticate(`mock-jwt-${username}`, demoUser);
+      toast.success(`Demo session started as ${demoUser.name}`);
+      navigate(getRoleHome(demoUser), { replace: true });
+    }
   };
 
   return (
@@ -139,10 +143,10 @@ const Login = () => {
 
             {true && (
               <div className="demo-hint" aria-label="Development demo accounts">
-                <span>Demo Access (Datathon Evaluation):</span>
-                <button type="button" onClick={() => fillDemo('anjumala')} className="demo-link">ACP</button>
-                <button type="button" onClick={() => fillDemo('dharmendra')} className="demo-link">Inspector</button>
-                <button type="button" onClick={() => fillDemo('marutig')} className="demo-link">Sub-Inspector</button>
+                <span>1-Click Bypass (Datathon Evaluation):</span>
+                <button type="button" onClick={() => bypassLogin('anjumala')} className="demo-link">ACP</button>
+                <button type="button" onClick={() => bypassLogin('dharmendra')} className="demo-link">Inspector</button>
+                <button type="button" onClick={() => bypassLogin('marutig')} className="demo-link">Sub-Inspector</button>
               </div>
             )}
           </form>
