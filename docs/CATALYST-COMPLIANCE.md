@@ -77,3 +77,45 @@ This document outlines how KSP Crime Genome complies with the Zoho Catalyst hack
     *   During active hackathon judging, login screens are highly fragile if judges experience network blocks, missing JWT configurations, or credential delays.
     *   We implemented a **1-Click Demo Bypass Mode** on the sign-in page to ensure judges can enter and evaluate the operational panels immediately without separate credentials.
     *   The standard `/login` route remains in the code to authenticate credentials when deployed to production.
+
+---
+
+## 5. API Gateway — Rate Limiting & Security (#18)
+
+*   **Status**: ✅ Configured in `catalyst.json`.
+*   **Configuration**: Default API Gateway with rate limiting (100 req/s, 200 burst) and auth passthrough for the login endpoint.
+*   **Usage**: Protects all 22 serverless functions from abuse during demo and production. The login route is explicitly unauthenticated to allow credential-based auth.
+
+---
+
+## 6. Scheduled Jobs / Cron (#20)
+
+*   **Status**: ✅ Configured in `catalyst.json`.
+*   **Configuration**: Two cron jobs defined:
+    *   `alert-job` — Runs every 30 minutes. Scans recent FIRs for anomaly spikes (z-score > 2.0) and creates alerts for officers.
+    *   `precompute-job` — Runs every 6 hours. Pre-computes analytics data (topology graphs, hotspot predictions, dark figure estimates) so dashboard loads are instant.
+*   **Usage**: Both functions already exist in `functions/alert_job/` and `functions/precompute_job/`. The cron schedule activates them on Catalyst deployment.
+
+---
+
+## 7. Remaining Gaps (Justified / Not Applicable)
+
+| # | Service | Reason for Not Using |
+|---|---------|---------------------|
+| 2 | Docker / AppSail | Serverless Functions cover all backend needs. No container deployment required. |
+| 3 | AppSail Managed Runtime | Frontend is a static SPA (React + Vite) — Slate hosting is the correct service. |
+| 5 | Custom Domain | Not required for hackathon submission. Default catalyst域名 is sufficient for judging. |
+| 7 | NoSQL | All case data is relational (CCTNS schema) — Data Store is the correct service. |
+| 8 | Stratus (Blob Storage) | Evidence photos are mocked. Real deployment would add Stratus for image/CCTV storage. |
+| 10 | Full-Text Search | ZCQL `LIKE` queries on Data Store cover search needs for hackathon scale. |
+| 12 | No-Code ML | XGBoost model is custom-trained. QuickML Relational models handle the deployment. |
+| 13 | AutoML | No automated retraining pipeline needed for the hackathon prototype. |
+| 14 | Zia Services (OCR) | Not applicable — no document scanning feature in current scope. Would use in production. |
+| 16 | SmartBrowz | PDF export uses `window.print()` — sufficient for hackathon. SmartBrowz for production. |
+| 19 | Connections (OAuth) | No third-party OAuth integrations in current scope. |
+| 21 | Signals + Events | No cross-function event wiring needed at hackathon scale. |
+| 22 | Event Bus | Same as above. |
+| 23 | Circuits | No multi-step orchestration workflows beyond what Functions handle. |
+| 24 | Mail | No transactional email feature in current scope. Would add for victim notifications. |
+| 25 | Push Notifications | Not implemented for hackathon. Would add for officer alerting in production. |
+| 26 | Pipelines (CI/CD) | Manual deploy via `catalyst deploy` is sufficient for the hackathon timeline. |

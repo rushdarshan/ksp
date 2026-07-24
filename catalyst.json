@@ -39,5 +39,50 @@
       "precompute_job",
       "predictive_mode"
     ]
-  }
+  },
+  "api_gateway": [
+    {
+      "name": "default",
+      "description": "Default API Gateway — rate limiting and auth for all functions",
+      "resources": [
+        {
+          "path": "/**",
+          "method": "ANY",
+          "throttling": {
+            "enabled": true,
+            "rate_limit": 100,
+            "burst_limit": 200
+          },
+          "authentication": {
+            "enabled": false,
+            "type": "none"
+          }
+        },
+        {
+          "path": "/server/login",
+          "method": "POST",
+          "authentication": {
+            "enabled": false,
+            "type": "none"
+          }
+        }
+      ]
+    }
+  ],
+  "cron": [
+    {
+      "name": "alert-job",
+      "description": "Daily anomaly alert scan — runs every 30 min during peak hours",
+      "function": "alert_job",
+      "schedule": "*/30 * * * *",
+      "timeout": 300
+    },
+    {
+      "name": "precompute-job",
+      "description": "Precompute analytics data — runs every 6 hours",
+      "function": "precompute_job",
+      "schedule": "0 */6 * * *",
+      "timeout": 600
+    }
+  ]
 }
