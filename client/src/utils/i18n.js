@@ -50,6 +50,16 @@ const TRANSLATIONS = {
     intelligence: 'Intelligence',
     publicIntel: 'Public Intelligence',
     workspace: 'Workspace',
+    // Case Workspace Tabs
+    tabOverview: 'Overview',
+    tabBrief: 'AI Brief',
+    tabTheory: 'Theory Board',
+    tabEvidence: 'Evidence Locker',
+    tabNetwork: 'Entity Graph',
+    tabLog: 'Decision Log',
+    tabTimeline: 'Timeline',
+    tabNotes: 'Notes',
+    tabChargesheet: 'Chargesheet Clock',
   },
   kn: {
     appName: 'ಅಪರಾಧ ಜಿನೋಮ್',
@@ -100,6 +110,16 @@ const TRANSLATIONS = {
     intelligence: 'ಗುಪ್ತಚರ ಮಾಹಿತಿ',
     publicIntel: 'ಸಾರ್ವಜನಿಕ ಮಾಹಿತಿ',
     workspace: 'ಕೆಲಸದ ಸ್ಥಳ',
+    // Case Workspace Tabs
+    tabOverview: 'ಅವಲೋಕನ',
+    tabBrief: 'ಜಿಯಾ ಸಂಕ್ಷಿಪ್ತ',
+    tabTheory: 'ಸಿದ್ಧಾಂತ ಬೋರ್ಡ್',
+    tabEvidence: 'ಸಾಕ್ಷ್ಯ ಲಾಕರ್',
+    tabNetwork: 'ಸಂಪರ್ಕ ಜಾಲ',
+    tabLog: 'ನಿರ್ಧಾರ ಲಾಗ್',
+    tabTimeline: 'ಟೈಮ್‌ಲೈನ್',
+    tabNotes: 'ಟಿಪ್ಪಣಿಗಳು',
+    tabChargesheet: 'ದೋಷಾರೋಪಣೆ ಪಟ್ಟಿ',
   }
 };
 

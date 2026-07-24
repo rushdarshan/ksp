@@ -38,6 +38,21 @@ const SUGGESTIONS = {
 
 const FALLBACKS = [
   {
+    match: /KSP-2026-0142 ರ ಸ್ಥಿತಿ|ಸ್ಥಿತಿ ಏನು|case status/iu,
+    answer: '[Switch Tab: Brief]\n**ಪ್ರಕರಣ KSP-2026-0142 ರ ತನಿಖಾ ಸ್ಥಿತಿ ವಿವರಗಳು:**\n\nಬ್ರಿಗೇಡ್ ರಸ್ತೆ ಪೊಲೀಸ್ ಠಾಣೆಯಲ್ಲಿ ದರೋಡೆ ಪ್ರಕರಣ ದಾಖಲಾಗಿದೆ. ಪ್ರಸ್ತುತ ತನಿಖೆಯ ಪ್ರಗತಿ **೬೭% (67%)** ಆಗಿದೆ. ಚಾರ್ಜ್ ಶೀಟ್ ಸಲ್ಲಿಸಲು ಇನ್ನು **೨೩ ದಿನಗಳು** ಬಾಕಿ ಇವೆ.\n\n**ಮುಂದಿನ ಅಗತ್ಯ ಕ್ರಮ:** ಬ್ರಿಗೇಡ್ ರಸ್ತೆ ಜಂಕ್ಷನ್ ಸಿಸಿಟಿವಿ ಫೂಟೇಜ್ ಅನ್ನು ತಕ್ಷಣವೇ ಸಂಗ್ರಹಿಸಿ, ಅದರ ಹ್ಯಾಶ್ ಮೌಲ್ಯವನ್ನು ದಾಖಲಿಸಿ ಮತ್ತು ಬಿಎಸ್ಎ ಸೆಕ್ಷನ್ 63 ಪ್ರಮಾಣಪತ್ರವನ್ನು ಅಪ್ಲೋಡ್ ಮಾಡಿ.',
+    sources: ['FIR KSP-2026-0142', 'Karnataka Police CCTNS', 'Case-readiness checklist'],
+  },
+  {
+    match: /ಯಾವ ಸಾಕ್ಷ್ಯಗಳು|ಸಾಕ್ಷ್ಯಗಳು ಕೊರತೆ|evidence missing/iu,
+    answer: '[Switch Tab: Evidence]\n**ಪ್ರಕರಣದ ಸಾಕ್ಷ್ಯ ಕೊರತೆಗಳ ವಿಶ್ಲೇಷಣೆ:**\n\n೧. **ಸಿಸಿಟಿವಿ ವಿಡಿಯೋ ಹ್ಯಾಶಿಂಗ್ ಕೊರತೆ:** ಘಟನೆಯ ಸ್ಥಳದ ಸಿಸಿಟಿವಿ ವಿಡಿಯೋ ಲಭ್ಯವಿದ್ದರೂ, ಹೊಸ ಬಿಎಸ್ಎ (BSA) ಕಾನೂನಿನಡಿಯಲ್ಲಿ ಅದರ ಡಿಜಿಟಲ್ ಸಿಗ್ನೇಚರ್/ಹ್ಯಾಶ್ ಪ್ರಮಾಣಪತ್ರ ಅಪ್ಲೋಡ್ ಆಗಿಲ್ಲ.\n೨. **ಕಿರಣ್ ಜೋಸೆಫ್ ಹೇಳಿಕೆ:** ಮುಖ್ಯ ಆರೋಪಿಯಾದ ಕಿರಣ್ ಜೋಸೆಫ್ ಪ್ರಸ್ತುತ ತಲೆಮರೆಸಿಕೊಂಡಿದ್ದು, ಆತನ ಹೇಳಿಕೆ ದಾಖಲಿಸಬೇಕಾಗಿದೆ.\n\n**ಸಲಹೆ:** ಜಿಯಾ ಗುಪ್ತಚರ ಇಂಜಿನ್ ಪ್ರಕಾರ, ಈ ಸಾಕ್ಷ್ಯಗಳ ಕೊರತೆಯಿಂದಾಗಿ ಪ್ರಕರಣದ ಸಿದ್ಧತೆಯು ನ್ಯಾಯಾಲಯದಲ್ಲಿ ದುರ್ಬಲಗೊಳ್ಳಬಹುದು.',
+    sources: ['Evidence tracker', 'BSA Section 63 validation service'],
+  },
+  {
+    match: /ಕಿರಣ್ ಜೋಸೆಫ್ ಎಲ್ಲಿದ್ದಾನೆ|ಆರೋಪಿ ಎಲ್ಲಿದ್ದಾನೆ|suspect location/iu,
+    answer: '[Switch Tab: Network]\n**ಆರೋಪಿ ಕಿರಣ್ ಜೋಸೆಫ್ ಆಟದ ಸ್ಥಳ ಮತ್ತು ಜಾಲದ ವಿಶ್ಲೇಷಣೆ:**\n\nಜಿಎನ್ಎನ್ (GNN) ಮತ್ತು ಸಹ-ಆರೋಪಿ ಸಂಪರ್ಕ ಜಾಲದ ಪ್ರಕಾರ, ಕಿರಣ್ ಜೋಸೆಫ್ ಕೊನೆಯದಾಗಿ **ಎಂ ಜಿ ರಸ್ತೆ ಕ್ಲಸ್ಟರ್** ವ್ಯಾಪ್ತಿಯಲ್ಲಿ ಕಾಣಿಸಿಕೊಂಡಿದ್ದಾನೆ. ಈತನು ಮತ್ತೊಂದು ಸಕ್ರಿಯ ದರೋಡೆ ಗ್ಯಾಂಗ್ ಜೊತೆ ನಿಕಟ ಸಂಪರ್ಕ ಹೊಂದಿದ್ದಾನೆ.\n\n**ಕಾರ್ಯಾಚರಣೆಯ ವಿವರ:** ಆರೋಪಿಯ ಪತ್ತೆಗಾಗಿ ಬ್ರಿಗೇಡ್ ರಸ್ತೆ ಪಿಎಸ್ ತನಿಖಾ ತಂಡವು ತನಿಖಾ ಜಾಲವನ್ನು ಮುಂದುವರಿಸಿದೆ.',
+    sources: ['Suspect locator registry', 'Cross-case co-accused network graph'],
+  },
+  {
     match: /142|summari[sz]e fir|ಸಂಕ್ಷಿಪ್ತ/iu,
     answer: '**FIR KSP-2026-0142 — Evidence summary**\n\nRobbery registered at Brigade Road PS. Two witnesses are recorded and junction CCTV is referenced but not yet acquired. Investigation readiness is 67%; the narrative documentation signal is 84% and does not assess truth. The current filing date is 18 days away.\n\n**Next action:** Retrieve junction CCTV and preserve its hash before overwrite.',
     sources: ['FIR KSP-2026-0142', 'Accused records for KSP-2026-0142', 'Case-readiness checklist', 'Narrative documentation review'],

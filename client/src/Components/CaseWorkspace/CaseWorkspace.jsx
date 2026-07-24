@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   PiArrowLeft, PiCalendar, PiClipboardText, PiFlask, PiGraph,
-  PiNotePencil, PiRobot, PiScales, PiTarget
+  PiNotePencil, PiRobot, PiScales, PiTarget, PiShieldCheck
 } from 'react-icons/pi';
 import EntityGraphPanel from './EntityGraphPanel';
 import MemoryNotSearch from './MemoryNotSearch';
@@ -16,11 +16,13 @@ import CaseNotes from './CaseNotes';
 import ChargesheetIntelligence from './ChargesheetIntelligence';
 import InvestigationCopilot from './InvestigationCopilot';
 import InvestigationReportButton from './InvestigationReportButton';
+import DecisionLog from './DecisionLog';
 import { CaseContext } from './caseContext';
 import { ACTIVE_CASE_FACTS, getActiveCaseData } from './caseFacts';
 import { buildCaseWorkspaceSearch, getRouteTab } from './caseWorkspaceRouting';
 import { bridgeEvents } from '../../utils/bridgeEvents';
 import toast from 'react-hot-toast';
+import { useI18n } from '../../utils/i18n';
 import './CaseWorkspace.scss';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
@@ -31,6 +33,7 @@ const TABS = [
   { id: 'theory', label: 'Theory Board', icon: PiTarget },
   { id: 'evidence', label: 'Evidence', icon: PiFlask },
   { id: 'network', label: 'Entity Graph', icon: PiGraph },
+  { id: 'log', label: 'Decision Log', icon: PiShieldCheck },
   { id: 'timeline', label: 'Timeline', icon: PiCalendar },
   { id: 'notes', label: 'Notes', icon: PiNotePencil },
   { id: 'chargesheet', label: 'Chargesheet', icon: PiScales },
@@ -46,6 +49,7 @@ function statusClass(stage) {
 
 export default function CaseWorkspace() {
   const { caseId } = useParams();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => getRouteTab(location.search));
@@ -166,6 +170,8 @@ export default function CaseWorkspace() {
         <div className="case-tabs">
           {TABS.map(tab => {
             const TabIcon = tab.icon;
+            const i18nKey = `tab${tab.id.charAt(0).toUpperCase()}${tab.id.slice(1)}`;
+            const tabLabel = t(i18nKey) !== i18nKey ? t(i18nKey) : tab.label;
             return (
             <button
               key={tab.id}
@@ -173,7 +179,7 @@ export default function CaseWorkspace() {
               className={`case-tab ${activeTab === tab.id ? 'case-tab--active' : ''}`}
             >
               <span className="case-tab-icon"><TabIcon /></span>
-              <span>{tab.label}</span>
+              <span>{tabLabel}</span>
             </button>
             );
           })}
@@ -199,6 +205,7 @@ export default function CaseWorkspace() {
               {activeTab === 'timeline' && <CaseTimeline />}
               {activeTab === 'notes' && <CaseNotes />}
               {activeTab === 'chargesheet' && <ChargesheetIntelligence />}
+              {activeTab === 'log' && <DecisionLog />}
             </div>
           )}
         </div>
