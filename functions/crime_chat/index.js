@@ -7,6 +7,7 @@ app.use(express.json({ limit: '256kb' }));
 
 const GEMINI_KEY = () => process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-2.0-flash';
+const SARVAM_KEY = () => process.env.SARVAM_API_KEY;
 
 const ALLOWED_ROLES = new Set(['acp', 'dysp', 'dsp', 'inspector', 'subinspector', 'superintendent', 'admin']);
 const MAX_HISTORY = 8;
@@ -273,6 +274,42 @@ async function legalQuery(query) {
     };
 }
 
+async function callSarvam(query, history, language) {
+    if (!SARVAM_KEY()) throw new Error('SARVAM_API_KEY not configured');
+    const messages = [];
+    if (history.length) {
+        for (const msg of history.slice(-6)) {
+            messages.push({ role: msg.role || 'user', content: msg.text || msg.content || '' });
+        }
+    }
+    messages.push({ role: 'user', content: query });
+    const resp = await fetch('https://api.sarvam.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'api-subscription-key': SARVAM_KEY(),
+        },
+        body: JSON.stringify({
+            model: 'sarvam-105b',
+            messages,
+            temperature: 0.3,
+            max_tokens: 512,
+        }),
+    });
+    if (!resp.ok) {
+        const errText = await resp.text().catch(() => 'unknown error');
+        throw new Error(`Sarvam API returned ${resp.status}: ${errText}`);
+    }
+    const data = await resp.json();
+    const answer = data?.choices?.[0]?.message?.content || 'No response from Sarvam.';
+    return {
+        answer,
+        sources: [{ label: 'Sarvam AI', table: 'LLM' }],
+        confidence: 0.65,
+        method: 'sarvam-llm',
+    };
+}
+
 app.post('/query', async (req, res) => {
     let catalystApp;
     try {
@@ -297,12 +334,17 @@ app.post('/query', async (req, res) => {
         if (intent === 'hotspots' || intent === 'trends') result = await aggregateIntelligence(catalystApp, intent);
         if (intent === 'legal') result = await legalQuery(analysisQuery);
         if (!result) {
-            result = {
-                answer: 'I could not ground that request in an approved query plan. Add an FIR number, crime type, district, or legal provision.',
-                sources: [],
-                confidence: 0.2,
-                method: 'clarification-required',
-            };
+            try {
+                result = await callSarvam(analysisQuery, history, language);
+            } catch (sarvamErr) {
+                console.warn('Sarvam fallback failed:', sarvamErr.message);
+                result = {
+                    answer: 'I could not ground that request. Try adding an FIR number, crime type, district, or legal provision.',
+                    sources: [],
+                    confidence: 0.2,
+                    method: 'clarification-required',
+                };
+            }
         }
 
         if (language === 'kn') result.answer = await translateKannada(catalystApp, result.answer);
