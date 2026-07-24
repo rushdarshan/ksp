@@ -21,6 +21,7 @@
       "legal_rag",
       "quickml_predict",
       "alert_job",
+      "ocr_extract",
       "veracity_index",
       "topology_navigator",
       "victim_risk_shield",

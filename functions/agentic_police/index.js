@@ -31,6 +31,18 @@ app.post('/agentic/cross-check/:firId', async (req, res) => {
         }));
         await table.insertRows(alertRows);
 
+        // Publish Catalyst Signal event
+        try {
+            const signal = catalystApp.signal();
+            await signal.publish('new_case_alert', {
+                firId: firId,
+                title: `New Case Registered: #${firId}`,
+                timestamp: new Date().toISOString()
+            });
+        } catch (sigErr) {
+            console.warn('Catalyst Signal publish skipped/unavailable in sandbox:', sigErr.message);
+        }
+
         res.status(200).json({ findings, alertsStored: alertRows.length });
     } catch (err) {
         console.error(err);
@@ -74,6 +86,18 @@ app.post('/agentic/cross-check/:firId/demo', async (req, res) => {
             Type: 'AGENT_ACTION'
         }));
         await table.insertRows(alertRows);
+
+        // Publish Catalyst Signal event
+        try {
+            const signal = catalystApp.signal();
+            await signal.publish('new_case_alert', {
+                firId: firId,
+                title: `New Case Registered: #${firId}`,
+                timestamp: new Date().toISOString()
+            });
+        } catch (sigErr) {
+            console.warn('Catalyst Signal publish skipped/unavailable in sandbox:', sigErr.message);
+        }
 
         res.status(200).json({ findings: demoFindings, alertsStored: alertRows.length, demoMode: true });
     } catch (err) {

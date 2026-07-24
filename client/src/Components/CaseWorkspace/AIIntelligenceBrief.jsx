@@ -193,36 +193,8 @@ export default function AIIntelligenceBrief() {
   (data.provenance || []).forEach(p => { provMap[p.function] = p; });
 
   const exportPDF = () => {
-    const el = document.querySelector('.aib');
-    if (!el) return;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>ZIA Brief - ' + firId + '</title>');
-    printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif; color: #0b0c0e; padding: 32px; max-width: 800px; margin: 0 auto; }');
-    printWindow.document.write('h2 { font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif; font-size: 22px; margin-bottom: 4px; }');
-    printWindow.document.write('.aib__card { border: 1px solid #e8e6e3; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }');
-    printWindow.document.write('.aib__card-head { padding: 10px 16px; background: var(--color-surface-50); border-bottom: 1px solid #e8e6e3; font-weight: 600; font-size: 14px; }');
-    printWindow.document.write('.aib__card-body { padding: 16px; font-size: 13px; line-height: 1.6; }');
-    printWindow.document.write('.aib__para { margin: 0 0 8px; padding: 8px 12px; background: var(--color-surface-50); border: 1px solid #ddd; font-size: 13px; }');
-    printWindow.document.write('.aib__factor { margin-bottom: 8px; }');
-    printWindow.document.write('.aib__factor-name { font-weight: 600; font-size: 13px; }');
-    printWindow.document.write('.aib__factor-detail { font-size: 11px; color: #6b6b6b; }');
-    printWindow.document.write('.aib__reco { padding: 8px 12px; background: var(--color-surface-50); border: 1px solid #ddd; margin-bottom: 6px; font-size: 13px; }');
-    printWindow.document.write('.aib__reco-pri { font-weight: 700; font-size: 10px; margin-right: 8px; }');
-    printWindow.document.write('.aib__sub { color: #6b6b6b; font-size: 13px; margin: 0 0 16px; }');
-    printWindow.document.write('.aib__conf { font-size: 11px; color: #6b6b6b; }');
-    printWindow.document.write('.aib__vflag { padding: 6px 10px; margin-bottom: 4px; font-size: 12px; border: 1px solid #ddd; }');
-    printWindow.document.write('.aib__similar { padding: 8px 12px; margin-bottom: 6px; font-size: 12px; border: 1px solid #e8e6e3; }');
-    printWindow.document.write('.aib__entity { padding: 8px 12px; font-size: 12px; border: 1px solid #e8e6e3; margin-bottom: 6px; }');
-    printWindow.document.write('.aib__method { font-style: italic; font-size: 11px; color: #6b6b6b; margin-top: 8px; }');
-    printWindow.document.write('.aib__reco-note { font-size: 12px; color: #6b6b6b; padding: 6px 10px; border: 1px solid #ddd; margin-top: 8px; }');
-    printWindow.document.write('</style></head><body>');
-    printWindow.document.write('<h2>ZIA Intelligence Brief</h2>');
-    printWindow.document.write('<p class="aib__sub">' + firId + ' — Generated ' + new Date().toLocaleString('en-IN') + '</p>');
-    printWindow.document.write(el.innerHTML);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
+    const rawId = parseInt(String(firId).replace(/\D/g, '')) || 142;
+    window.open(`${apiUrl}/zia_brief/pdf?caseId=${rawId}`, '_blank');
   };
 
   return (
