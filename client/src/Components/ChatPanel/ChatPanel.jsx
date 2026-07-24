@@ -180,26 +180,6 @@ const ChatPanel = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ language, messages: messages.slice(-40) }));
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [language, messages]);
-
-  useEffect(() => {
-    if (isOpen) inputRef.current?.focus();
-  }, [isOpen]);
-
-  useEffect(() => {
-    const unsubscribe = bridgeEvents.on('query-from-dashboard', (query) => {
-      setIsOpen(true);
-      // Wait for opening animation, then send query
-      setTimeout(() => {
-        handleSend(query);
-      }, 300);
-    });
-    return unsubscribe;
-  }, [handleSend]);
-
   const clearConversation = useCallback(() => {
     setMessages([makeWelcome(language)]);
     setStatus('Idle');
@@ -279,6 +259,26 @@ const ChatPanel = () => {
 
     setStatus('Idle');
   }, [clearConversation, input, language, messages, navigate, status, workspaceBase]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ language, messages: messages.slice(-40) }));
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [language, messages]);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
+
+  useEffect(() => {
+    const unsubscribe = bridgeEvents.on('query-from-dashboard', (query) => {
+      setIsOpen(true);
+      // Wait for opening animation, then send query
+      setTimeout(() => {
+        handleSend(query);
+      }, 300);
+    });
+    return unsubscribe;
+  }, [handleSend]);
 
   const switchLanguage = () => {
     const next = language === 'en' ? 'kn' : 'en';
