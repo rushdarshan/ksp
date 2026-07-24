@@ -26,6 +26,7 @@ import {
 } from 'react-icons/pi';
 import { useAuth } from '../../AuthContext';
 import logo from '../../LoginAssets/logo.png';
+import { useI18n } from '../../utils/i18n';
 import './sidebar.scss';
 
 const SECTIONS = [
@@ -76,22 +77,49 @@ const SECTIONS = [
   },
 ];
 
+const routeToKey = (to) => {
+  if (to === 'home') return 'home';
+  if (to === 'notifications') return 'notifications';
+  if (to === 'firdetails') return 'cases';
+  if (to.startsWith('case/')) return 'cases';
+  if (to === 'co-accused') return 'coAccused';
+  if (to === 'voice') return 'voice';
+  if (to === 'location') return 'map';
+  if (to === 'officers') return 'officers';
+  if (to === 'veracity') return 'veracity';
+  if (to === 'chargesheet-clock') return 'chargesheetClock';
+  if (to === 'accused-at-large') return 'accusedLarge';
+  if (to === 'arrest-vector') return 'arrestVector';
+  if (to === 'predictive') return 'predictive';
+  if (to === 'beat-optimizer') return 'beatOpt';
+  if (to === 'gbv') return 'gbv';
+  if (to === 'victim-risk') return 'victimRisk';
+  if (to === 'retraction-rate') return 'retraction';
+  if (to === 'deterrence') return 'deterrence';
+  return to;
+};
+
 function NavigationItems({ items, basePath, collapsed, onNavigate }) {
+  const { t } = useI18n();
   return (
     <ul className="menuLists">
-      {items.map(({ to, icon: Icon, label }) => (
-        <li className="listItem" key={to}>
-          <NavLink
-            to={`${basePath}/${to}`}
-            className={({ isActive }) => `menuLink${isActive ? ' active' : ''}`}
-            title={collapsed ? label : undefined}
-            onClick={onNavigate}
-          >
-            <Icon className="icon" weight="regular" aria-hidden="true" />
-            {!collapsed && <span className="smallText">{label}</span>}
-          </NavLink>
-        </li>
-      ))}
+      {items.map(({ to, icon: Icon, label }) => {
+        const i18nKey = routeToKey(to);
+        const translatedLabel = t(i18nKey) !== i18nKey ? t(i18nKey) : label;
+        return (
+          <li className="listItem" key={to}>
+            <NavLink
+              to={`${basePath}/${to}`}
+              className={({ isActive }) => `menuLink${isActive ? ' active' : ''}`}
+              title={collapsed ? translatedLabel : undefined}
+              onClick={onNavigate}
+            >
+              <Icon className="icon" weight="regular" aria-hidden="true" />
+              {!collapsed && <span className="smallText">{translatedLabel}</span>}
+            </NavLink>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -101,6 +129,16 @@ export default function Sidebar({ basePath, sidebarOpen, setSidebarOpen, userRol
   const searchRef = useRef(null);
   const [search, setSearch] = useState('');
   const { user } = useAuth();
+  const { t } = useI18n();
+
+  const sectionIdToKey = (id) => {
+    if (id === 'my-work') return 'myWork';
+    if (id === 'investigate') return 'investigate';
+    if (id === 'command') return 'commandStaff';
+    if (id === 'insights') return 'intelligence';
+    if (id === 'admin') return 'publicIntel';
+    return id;
+  };
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -166,7 +204,7 @@ export default function Sidebar({ basePath, sidebarOpen, setSidebarOpen, userRol
 
       <nav className="sidebarNav">
         <section className="menuDiv">
-          {!isCollapsed && <h2 className="divTitle">Workspace</h2>}
+          {!isCollapsed && <h2 className="divTitle">{t('workspace')}</h2>}
           <NavigationItems
             items={[{ to: 'home', icon: PiSquaresFour, label: 'My day' }]}
             basePath={basePath}
@@ -178,14 +216,14 @@ export default function Sidebar({ basePath, sidebarOpen, setSidebarOpen, userRol
         {filteredSections.map((section) => section.collapsible && !isCollapsed ? (
           <details className="menuDiv sidebar-section" key={section.id} open={section.id === 'insights'}>
             <summary className="sidebar-section-header">
-              <span className="divTitle">{section.label}</span>
+              <span className="divTitle">{t(sectionIdToKey(section.id))}</span>
               <PiCaretDown aria-hidden="true" />
             </summary>
             <NavigationItems items={section.items} basePath={basePath} collapsed={false} onNavigate={closeOnMobile} />
           </details>
         ) : (
           <section className="menuDiv" key={section.id}>
-            {!isCollapsed && <h2 className="divTitle">{section.label}</h2>}
+            {!isCollapsed && <h2 className="divTitle">{t(sectionIdToKey(section.id))}</h2>}
             <NavigationItems items={section.items} basePath={basePath} collapsed={isCollapsed} onNavigate={closeOnMobile} />
           </section>
         ))}

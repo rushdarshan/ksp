@@ -14,7 +14,7 @@ async function apiFetch(path, options = {}) {
     const target = String(path || '').startsWith(BASE_URL) ? path : `${BASE_URL}${path}`;
     const res = await fetch(target, { credentials: 'same-origin', ...options, headers });
 
-    if (res.status === 401) {
+    if (res && res.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.hash = '/login';

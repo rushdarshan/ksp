@@ -18,6 +18,14 @@ import AuthProvider, {
 import { FilterProvider } from './FilterContext';
 import PanelGuard from './PanelGuard';
 import Loader from './ui/Dropdown/Loader';
+import { installFetchInterceptor } from './utils/fetchInterceptor';
+import { startWarmup, registerWarmupProgress } from './utils/apiWarmup';
+import { toast } from 'react-hot-toast';
+import { I18nProvider } from './utils/i18n';
+
+// Install global fetch hook to queue calls during function cold starts and auto-retry
+installFetchInterceptor();
+
 
 const Body = React.lazy(() => import('./Components/Dashboard/Components/Body Section/Body'));
 const InspectorBody = React.lazy(() => import('./Components/InspectorDash/Components/Body Section/Body'));
@@ -257,11 +265,34 @@ const router = createHashRouter([
 });
 
 function App() {
+  React.useEffect(() => {
+    // Show a loading toast for the warmups
+    const toastId = toast.loading('Powering on KSP Crime Genome engine...', {
+      position: 'bottom-right',
+    });
+
+    registerWarmupProgress((pct) => {
+      toast.loading(`Engine warming: ${pct}% ready...`, {
+        id: toastId,
+        position: 'bottom-right',
+      });
+    });
+
+    startWarmup().then(() => {
+      toast.success('KSP Engine fully powered up. 27 modules active.', {
+        id: toastId,
+        position: 'bottom-right',
+      });
+    });
+  }, []);
+
   return (
     <AuthProvider>
-      <FilterProvider>
-        <RouterProvider router={router} />
-      </FilterProvider>
+      <I18nProvider>
+        <FilterProvider>
+          <RouterProvider router={router} />
+        </FilterProvider>
+      </I18nProvider>
     </AuthProvider>
   )
 }

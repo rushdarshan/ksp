@@ -71,3 +71,95 @@
     min-height: 44px !important;
   }
 }
+
+/* Mobile Phone Simulator for Persona Mode */
+.dashboard.persona-phone {
+  background: #000000e0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  height: 100vh !important;
+  width: 100% !important;
+}
+
+.dashboard.persona-phone .dashboardContainer {
+  width: 375px !important;
+  height: 812px !important;
+  max-height: 95vh !important;
+  border: 12px solid #2d2d2d !important;
+  border-radius: 40px !important;
+  box-shadow: 0 25px 75px -12px rgba(0, 0, 0, 0.85) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: var(--surface) !important;
+}
+
+.dashboard.persona-phone .sideBar {
+  display: none !important;
+}
+
+.dashboard.persona-phone .mainContent {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.dashboard.persona-phone .mainRight {
+  display: none !important;
+}
+
+.dashboard.persona-phone .topSection {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+.dashboard.persona-phone .mainScroll {
+  height: calc(100% - 110px) !important;
+  padding-bottom: 65px !important;
+}
+
+.dashboard.persona-phone .dashboard-footer {
+  display: none !important;
+}
+
+/* Bottom Navigation Bar for Simulated Phone Mode */
+.phone-nav-bar {
+  display: none;
+}
+
+.dashboard.persona-phone .phone-nav-bar {
+  display: flex !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 55px !important;
+  background: var(--surface-alt) !important;
+  border-top: 1px solid var(--border-light) !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  z-index: 1000 !important;
+  padding-bottom: 5px;
+}
+
+.phone-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 10px;
+  gap: 3px;
+}
+
+.phone-nav-item.active {
+  color: var(--color-blue-400);
+}
+
+.phone-nav-item svg {
+  font-size: 20px;
+}
+

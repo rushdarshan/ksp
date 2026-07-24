@@ -11,6 +11,7 @@ import {
   PiX,
 } from 'react-icons/pi';
 import apiFetch from '../../utils/apiFetch';
+import { bridgeEvents } from '../../utils/bridgeEvents';
 import './ChatPanel.scss';
 
 const STORAGE_KEY = 'ksp-zia-conversation-v2';
@@ -173,6 +174,17 @@ const ChatPanel = () => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
+  useEffect(() => {
+    const unsubscribe = bridgeEvents.on('query-from-dashboard', (query) => {
+      setIsOpen(true);
+      // Wait for opening animation, then send query
+      setTimeout(() => {
+        handleSend(query);
+      }, 300);
+    });
+    return unsubscribe;
+  }, [handleSend]);
+
   const clearConversation = useCallback(() => {
     setMessages([makeWelcome(language)]);
     setStatus('Idle');
@@ -231,16 +243,25 @@ const ChatPanel = () => {
       };
     }
 
+    const textContent = payload.answer || payload.text || '';
     setMessages((current) => [...current, {
       id: crypto.randomUUID(),
       role: 'bot',
-      text: payload.answer || payload.text,
+      text: textContent,
       sources: payload.sources || [],
       method: payload.method,
       confidence: payload.confidence,
       mode: payload.mode || 'live',
       ts: new Date().toISOString(),
     }]);
+
+    const cmdMatch = textContent.match(/\[(Switch Tab|Highlight|Filter):\s*([^\]]+)\]/i);
+    if (cmdMatch) {
+      const action = cmdMatch[1].toLowerCase().replace(' ', '_');
+      const value = cmdMatch[2].trim();
+      bridgeEvents.emit('visual-command', { action, value });
+    }
+
     setStatus('Idle');
   }, [clearConversation, input, language, messages, navigate, status, workspaceBase]);
 

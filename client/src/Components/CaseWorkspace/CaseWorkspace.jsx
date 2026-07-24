@@ -19,6 +19,8 @@ import InvestigationReportButton from './InvestigationReportButton';
 import { CaseContext } from './caseContext';
 import { ACTIVE_CASE_FACTS, getActiveCaseData } from './caseFacts';
 import { buildCaseWorkspaceSearch, getRouteTab } from './caseWorkspaceRouting';
+import { bridgeEvents } from '../../utils/bridgeEvents';
+import toast from 'react-hot-toast';
 import './CaseWorkspace.scss';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/server';
@@ -63,6 +65,20 @@ export default function CaseWorkspace() {
   useEffect(() => {
     setActiveTab(getRouteTab(location.search));
   }, [location.search]);
+
+  useEffect(() => {
+    const unsubscribe = bridgeEvents.on('visual-command', (cmd) => {
+      if (cmd.action === 'switch_tab') {
+        const targetTab = cmd.value.toLowerCase().trim();
+        const found = TABS.find(t => t.id === targetTab || t.label.toLowerCase() === targetTab);
+        if (found) {
+          switchTab(found.id);
+          toast.success(`ZIA auto-switched to the ${found.label} tab!`, { position: 'bottom-right' });
+        }
+      }
+    });
+    return unsubscribe;
+  }, [switchTab]);
 
   useEffect(() => {
     setLoading(true);

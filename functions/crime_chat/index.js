@@ -95,7 +95,7 @@ async function caseSummary(catalystApp, caseId) {
     const legal = sections.map(item => `${item.ActID || item.ActCode || 'Act'} ${item.SectionID || item.SectionCode || ''}`.trim());
 
     return {
-        answer: `**Case ${record.CrimeNo || record.CaseNo || caseId}**\n\nRegistered ${record.CrimeRegisteredDate || 'date unavailable'} at police station ${record.PoliceStationID || 'unknown'}. ${record.BriefFacts || 'No brief facts recorded.'}\n\n- Accused: ${accused.length}; not matched to an arrest event: ${atLarge.length}\n- Victims: ${victims.length}\n- Arrest or surrender events: ${arrests.length}\n- Invoked provisions: ${legal.join(', ') || 'not recorded'}\n\n**Evidence note:** This summary is assembled directly from relational records. Investigative conclusions still require officer verification.`,
+        answer: `**Case ${record.CrimeNo || record.CaseNo || caseId}**\n\nRegistered ${record.CrimeRegisteredDate || 'date unavailable'} at police station ${record.PoliceStationID || 'unknown'}. ${record.BriefFacts || 'No brief facts recorded.'}\n\n- Accused: ${accused.length}; not matched to an arrest event: ${atLarge.length}\n- Victims: ${victims.length}\n- Arrest or surrender events: ${arrests.length}\n- Invoked provisions: ${legal.join(', ') || 'not recorded'}\n\n**Evidence note:** This summary is assembled directly from relational records. Investigative conclusions still require officer verification. [Switch Tab: brief]`,
         sources: [
             { label: `CaseMaster #${caseId}`, table: 'CaseMaster', record: caseId },
             { label: `Accused records (${accused.length})`, table: 'Accused', record: caseId },
@@ -156,7 +156,7 @@ async function investigativeSupport(catalystApp, caseId, intent) {
         ];
         const complete = checks.filter(check => check.ready).length;
         return {
-            answer: `The supplied relational record is complete on ${complete} of ${checks.length} measurable checks. ${checks.filter(check => !check.ready).map(check => check.label).join(', ') || 'No relational gap'} requires review. Digital evidence completeness cannot be calculated because the required evidence tables were not supplied.`,
+            answer: `The supplied relational record is complete on ${complete} of ${checks.length} measurable checks. ${checks.filter(check => !check.ready).map(check => check.label).join(', ') || 'No relational gap'} requires review. Digital evidence completeness cannot be calculated because the required evidence tables were not supplied. [Switch Tab: evidence]`,
             sources,
             confidence: 0.91,
             method: 'schema-completeness-check',
@@ -172,7 +172,7 @@ async function investigativeSupport(catalystApp, caseId, intent) {
                 ? 'Review the legal classification and outstanding evidence before the next supervisory case review; no chargesheet record was found.'
                 : 'Reconcile the chargesheet record against the linked legal provisions and victim records before supervisory approval.';
         return {
-            answer: lead,
+            answer: `${lead} [Switch Tab: overview]`,
             sources,
             confidence: 0.88,
             method: 'priority-rule-over-relational-gaps',
@@ -191,7 +191,7 @@ async function investigativeSupport(catalystApp, caseId, intent) {
         const matches = rows.map(row => unwrap(row, 'CaseMaster')).filter(item => Number(item.CaseMasterID) !== Number(caseId)).slice(0, 5);
         return {
             answer: matches.length
-                ? `Found ${matches.length} candidates sharing crime major head ${head}. They are candidates for officer comparison, not confirmed linked cases.`
+                ? `Found ${matches.length} candidates sharing crime major head ${head}. They are candidates for officer comparison, not confirmed linked cases. [Switch Tab: theory]`
                 : 'No same-head comparison cases were found in the current query window.',
             sources: [...sources, { label: `CaseMaster crime-head comparison (${matches.length})`, table: 'CaseMaster' }],
             confidence: matches.length ? 0.84 : 0.4,
@@ -208,7 +208,7 @@ async function investigativeSupport(catalystApp, caseId, intent) {
     const factors = [Boolean(record.BriefFacts), victims.length > 0, accused.length > 0, sections.length > 0, arrests.length > 0, chargesheets.length > 0];
     const readiness = Math.round(factors.filter(Boolean).length / factors.length * 100);
     return {
-        answer: `Investigation record readiness is ${readiness}% across six observable relational checks. This is a completeness forecast, not a prediction of conviction, guilt, or judicial outcome.`,
+        answer: `Investigation record readiness is ${readiness}% across six observable relational checks. This is a completeness forecast, not a prediction of conviction, guilt, or judicial outcome. [Switch Tab: overview]`,
         sources,
         confidence: 0.9,
         method: 'transparent-readiness-score',
@@ -233,7 +233,7 @@ async function accusedAtLarge(catalystApp) {
     const atLarge = accused.filter(item => !arrestedIds.has(String(item.AccusedMasterID)));
     const sample = atLarge.slice(0, 8).map(item => `${item.AccusedName} (${item.PersonID || 'role unknown'}, case ${item.CaseMasterID})`).join('; ');
     return {
-        answer: `**Accused-at-large relational check**\n\n${atLarge.length} of ${accused.length} reviewed accused records have no matching ArrestSurrender event in the current query window.\n\n${sample || 'No unmatched accused records were found.'}\n\nOpen the Accused at Large ledger and verify warrants before operational use.`,
+        answer: `**Accused-at-large relational check**\n\n${atLarge.length} of ${accused.length} reviewed accused records have no matching ArrestSurrender event in the current query window.\n\n${sample || 'No unmatched accused records were found.'}\n\nOpen the Accused at Large ledger and verify warrants before operational use. [Switch Tab: network]`,
         sources: [
             { label: `Accused query (${accused.length})`, table: 'Accused' },
             { label: `ArrestSurrender query (${arrests.length})`, table: 'ArrestSurrender' },
@@ -250,7 +250,7 @@ async function aggregateIntelligence(catalystApp, intent) {
     const facts = rows.map(row => unwrap(row, 'CaseMaster')).slice(0, 12);
     const top = [...facts].sort((a, b) => Number(b.CaseCount || 0) - Number(a.CaseCount || 0)).slice(0, 5);
     return {
-        answer: `**${intent === 'hotspots' ? 'Hotspot' : 'Crime trend'} evidence window**\n\nThe strongest station and crime-head combinations in the current aggregate are:\n${top.map((item, index) => `${index + 1}. Station ${item.PoliceStationID}, crime head ${item.CrimeMajorHeadID}/${item.CrimeMinorHeadID}: ${item.CaseCount} cases`).join('\n')}\n\nUse the command map for spatial inspection. Counts describe correlation and concentration, not causation.`,
+        answer: `**${intent === 'hotspots' ? 'Hotspot' : 'Crime trend'} evidence window**\n\nThe strongest station and crime-head combinations in the current aggregate are:\n${top.map((item, index) => `${index + 1}. Station ${item.PoliceStationID}, crime head ${item.CrimeMajorHeadID}/${item.CrimeMinorHeadID}: ${item.CaseCount} cases`).join('\n')}\n\nUse the command map for spatial inspection. Counts describe correlation and concentration, not causation. [Switch Tab: network]`,
         sources: [{ label: 'CaseMaster aggregate', table: 'CaseMaster' }],
         confidence: top.length ? 0.86 : 0.35,
         method: 'whitelisted-zcql-aggregate',
