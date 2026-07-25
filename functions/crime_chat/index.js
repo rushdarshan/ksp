@@ -325,14 +325,32 @@ app.post('/query', async (req, res) => {
         const intent = detectIntent(analysisQuery, caseId);
         let result;
 
-        if (intent === 'case_summary') result = await caseSummary(catalystApp, caseId);
-        if (['evidence_gaps', 'next_lead', 'similar_cases', 'readiness_forecast'].includes(intent)) {
-            if (!caseId) return res.status(400).json({ error: 'An FIR or case number is required for this copilot action' });
-            result = await investigativeSupport(catalystApp, caseId, intent);
-        }
-        if (intent === 'accused_at_large') result = await accusedAtLarge(catalystApp);
-        if (intent === 'hotspots' || intent === 'trends') result = await aggregateIntelligence(catalystApp, intent);
-        if (intent === 'legal') result = await legalQuery(analysisQuery);
+        const HANDLERS = {
+            case_summary: () => caseSummary(catalystApp, caseId),
+            evidence_gaps: () => {
+                if (!caseId) return res.status(400).json({ error: 'An FIR or case number is required for this copilot action' });
+                return investigativeSupport(catalystApp, caseId, 'evidence_gaps');
+            },
+            next_lead: () => {
+                if (!caseId) return res.status(400).json({ error: 'An FIR or case number is required for this copilot action' });
+                return investigativeSupport(catalystApp, caseId, 'next_lead');
+            },
+            similar_cases: () => {
+                if (!caseId) return res.status(400).json({ error: 'An FIR or case number is required for this copilot action' });
+                return investigativeSupport(catalystApp, caseId, 'similar_cases');
+            },
+            readiness_forecast: () => {
+                if (!caseId) return res.status(400).json({ error: 'An FIR or case number is required for this copilot action' });
+                return investigativeSupport(catalystApp, caseId, 'readiness_forecast');
+            },
+            accused_at_large: () => accusedAtLarge(catalystApp),
+            hotspots: () => aggregateIntelligence(catalystApp, 'hotspots'),
+            trends: () => aggregateIntelligence(catalystApp, 'trends'),
+            legal: () => legalQuery(analysisQuery),
+        };
+
+        const handler = HANDLERS[intent];
+        if (handler) result = await handler();
         if (!result) {
             try {
                 result = await callSarvam(analysisQuery, history, language);
