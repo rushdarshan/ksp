@@ -72,6 +72,12 @@ const SECTIONS = [
     ],
   },
   {
+    id: 'demo-hub',
+    label: 'Demo',
+    collapsible: false,
+    items: [{ to: '/demo', icon: PiLightning, label: 'Demo pipeline' }],
+  },
+  {
     id: 'admin',
     label: 'Public intelligence',
     collapsible: true,
@@ -112,7 +118,7 @@ function NavigationItems({ items, basePath, collapsed, onNavigate }) {
         return (
           <li className="listItem" key={to}>
             <NavLink
-              to={`${basePath}/${to}`}
+              to={to.startsWith('/') ? to : `${basePath}/${to}`}
               className={({ isActive }) => `menuLink${isActive ? ' active' : ''}`}
               title={collapsed ? translatedLabel : undefined}
               onClick={onNavigate}

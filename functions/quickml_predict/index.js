@@ -79,7 +79,10 @@ app.get('/predict', async (req, res) => {
                     tempFile = path.join(os.tmpdir(), `ksp_features_${Date.now()}_${Math.random().toString(36).slice(2)}.json`);
                     fs.writeFileSync(tempFile, JSON.stringify(features));
                     const stdout = await new Promise((resolve, reject) => {
-                        execFile('python', [path.join(__dirname, 'predict.py'), tempFile], { timeout: 30000, encoding: 'utf-8' }, (err, out) => err ? reject(err) : resolve(out));
+                        execFile('python', [path.join(__dirname, 'predict.py'), tempFile], { timeout: 30000, encoding: 'utf-8' }, (err, out) => {
+                            if (err && !out) return reject(err);
+                            resolve(out || '');
+                        });
                     });
                     const result = JSON.parse(stdout.trim());
                     if (Array.isArray(result) && result.length > 0) {

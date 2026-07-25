@@ -23,6 +23,7 @@ import { startWarmup, registerWarmupProgress } from './utils/apiWarmup';
 import { toast } from 'react-hot-toast';
 import { I18nProvider } from './utils/i18n';
 import { setupOfflineDemo } from './utils/offlineDemo';
+import useLiveSimulation from './hooks/useLiveSimulation';
 
 // Install global fetch hook to queue calls during function cold starts and auto-retry
 installFetchInterceptor();
@@ -81,6 +82,7 @@ const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoar
 const FaceAnalyticsPanel = React.lazy(() => import('./Components/FaceAnalyticsPanel'))
 const TextAnalyticsPanel = React.lazy(() => import('./Components/TextAnalyticsPanel'))
 const ObjectRecognitionPanel = React.lazy(() => import('./Components/ObjectRecognitionPanel'))
+const DemoHub = React.lazy(() => import('./Components/DemoHub/DemoHub'))
 
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
@@ -267,6 +269,7 @@ const router = createHashRouter([
     ]
   },
   { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> },
+  { path: "/demo", element: <AppFrame showChat={false}><Lazy><DemoHub/></Lazy></AppFrame> },
   { path: "*", element: <Navigate to="/" replace /> },
 ], {
   future: {
@@ -276,6 +279,9 @@ const router = createHashRouter([
 });
 
 function App() {
+  const isLive = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('live') === 'true'
+  const { events: liveEvents, start: startLive, stop: stopLive } = useLiveSimulation(15000)
+
   React.useEffect(() => {
     // Show a loading toast for the warmups
     const toastId = toast.loading('Powering on KSP Crime Genome engine...', {
@@ -296,6 +302,21 @@ function App() {
       });
     });
   }, []);
+
+  React.useEffect(() => {
+    if (isLive) { startLive(); return stopLive }
+  }, [isLive, startLive, stopLive])
+
+  React.useEffect(() => {
+    if (!liveEvents.length) return
+    const evt = liveEvents[liveEvents.length - 1]
+    const iconMap = { new_fir: '📋', evidence_match: '🔗', chargesheet_update: '📄', alert: '🚨' }
+    toast(`${iconMap[evt.type] || '📢'} ${evt.title}`, {
+      description: evt.description,
+      duration: 6000,
+      position: 'bottom-right',
+    })
+  }, [liveEvents])
 
   return (
     <AuthProvider>

@@ -23,6 +23,7 @@ const TITLES = {
   'victim-risk': ['Victim risk', 'Repeat harm prevention'],
   'retraction-rate': ['Retraction rate', 'Investigation quality signals'],
   deterrence: ['Deterrence portal', 'Public crime intelligence'],
+  demo: ['Demo pipeline', 'End-to-end case intelligence demo'],
 };
 
 export default function Top({ setSidebarOpen }) {
