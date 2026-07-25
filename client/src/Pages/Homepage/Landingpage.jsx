@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCommand, FiArrowRight, FiShield } from 'react-icons/fi';
 import gsap from 'gsap';
@@ -15,11 +15,7 @@ const DEMO_SCREENS = [
 const LandingPage = () => {
   const root = useRef(null);
   const navigate = useNavigate();
-  const { authenticate, isAuthenticated, token } = useAuth();
-
-  useEffect(() => {
-    if (token) navigate('/demo', { replace: true });
-  }, [token, navigate]);
+  const { authenticate } = useAuth();
 
   const enterCommandCenter = () => {
     authenticate('mock-jwt-demo-acp', { rank: 'ACP', name: 'Demo Officer' });
@@ -45,8 +41,6 @@ const LandingPage = () => {
       scrollTrigger: { trigger: '.demo-screenshots', start: 'top 82%' },
     });
   }, { scope: root });
-
-  if (isAuthenticated && token) return null;
 
   return (
     <main ref={root} className="landing-page">
