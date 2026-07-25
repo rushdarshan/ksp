@@ -320,11 +320,24 @@ function App() {
     })
   }, [liveEvents])
 
+  const isDev = typeof window !== 'undefined' && import.meta.env.DEV;
+
   return (
     <AuthProvider>
       <I18nProvider>
         <FilterProvider>
           <RouterProvider router={router} />
+          {isDev && (
+            <div style={{
+              position: 'fixed', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+              zIndex: 9999, background: 'rgba(0,0,0,0.75)', color: '#fff',
+              padding: '6px 14px', borderRadius: 20, fontSize: 11,
+              fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.3px',
+              backdropFilter: 'blur(8px)', pointerEvents: 'none',
+            }}>
+              Demo: anjumala / 123
+            </div>
+          )}
         </FilterProvider>
       </I18nProvider>
     </AuthProvider>

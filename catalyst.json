@@ -43,10 +43,11 @@
       "entity_graph",
       "object_recognition",
       "text_analytics",
-      "circuits_orchestrator",
-      "mail_service",
-      "push_service",
-      "signals_bus"
+      "notifications",
+      "evidence_storage",
+      "field_notes",
+      "fir_workflow",
+      "pdf_generator"
     ]
   },
   "api_gateway": [

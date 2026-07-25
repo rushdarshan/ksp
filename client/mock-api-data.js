@@ -1632,6 +1632,186 @@ export function defineMockApi() {
         }
       };
     },
+
+    // === Catalyst Mail + Push Notifications ===
+    'POST /server/notifications/fir-filed': ({ body }) => ({
+      success: true,
+      firNo: body?.firNo || 'KSP-DEMO-0142',
+      results: {
+        mail: {
+          sent: true,
+          to: body?.complainantEmail || 'complainant@demo.in',
+          provider: 'Catalyst Mail',
+          subject: `FIR Registered: ${body?.firNo || 'KSP-DEMO-0142'} | Karnataka State Police`
+        },
+        push: {
+          sent: true,
+          to: body?.ioDeviceToken || 'demo-device-token',
+          provider: 'Catalyst Push',
+          message: `New high-priority case ${body?.firNo || 'KSP-DEMO-0142'} assigned.`
+        }
+      },
+      metadata: { dataSource: 'catalyst_mail_push' }
+    }),
+
+    'POST /server/notifications/alert': ({ body }) => ({
+      success: true,
+      results: {
+        mail: { sent: true, to: body?.supervisorEmail || 'sp@ksp.gov.in', provider: 'Catalyst Mail' }
+      }
+    }),
+
+    // === Catalyst Stratus Evidence Storage ===
+    'POST /server/evidence_storage/upload': ({ body }) => ({
+      success: true,
+      objectKey: `evidence/${body?.firNo || 'KSP-DEMO-0142'}/${Date.now()}_demo_evidence.jpg`,
+      signedUrl: 'https://ksp-evidence.demo.stratus.zoho.in/evidence/demo/file.jpg',
+      fileName: 'crime_scene_photo.jpg',
+      fileSize: 245810,
+      mimeType: 'image/jpeg',
+      evidenceType: body?.evidenceType || 'photograph',
+      description: body?.description || 'Crime scene documentation',
+      uploadedAt: new Date().toISOString(),
+      metadata: { dataSource: 'catalyst_stratus', bucket: 'ksp-evidence' }
+    }),
+
+    'GET /server/evidence_storage/list': ({ query }) => ({
+      firNo: query?.firNo || 'KSP-2026-0142',
+      files: [
+        { objectKey: `evidence/${query?.firNo}/crime_scene_photo.jpg`, fileName: 'crime_scene_photo.jpg', fileSize: 245000, lastModified: new Date(Date.now() - 86400000).toISOString(), signedUrl: '#' },
+        { objectKey: `evidence/${query?.firNo}/cctv_screenshot.png`, fileName: 'cctv_screenshot.png', fileSize: 189000, lastModified: new Date(Date.now() - 72000000).toISOString(), signedUrl: '#' },
+        { objectKey: `evidence/${query?.firNo}/medical_report.pdf`, fileName: 'medical_report.pdf', fileSize: 512000, lastModified: new Date(Date.now() - 36000000).toISOString(), signedUrl: '#' },
+        { objectKey: `evidence/${query?.firNo}/witness_statement.pdf`, fileName: 'witness_statement.pdf', fileSize: 98000, lastModified: new Date(Date.now() - 18000000).toISOString(), signedUrl: '#' }
+      ],
+      count: 4,
+      metadata: { dataSource: 'catalyst_stratus_demo' }
+    }),
+
+    // === Catalyst NoSQL Field Notes ===
+    'POST /server/field_notes/save': ({ body }) => ({
+      success: true,
+      documentId: `nosql-${Date.now()}`,
+      note: {
+        firNo: body?.firNo || 'KSP-2026-0142',
+        officerId: body?.officerId || 'IO-1042',
+        noteText: body?.noteText || '',
+        tags: body?.tags || [],
+        priority: body?.priority || 'Normal',
+        createdAt: new Date().toISOString(),
+        expireAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+        ttlDays: 30
+      },
+      metadata: { dataSource: 'catalyst_nosql', ttlDays: 30 }
+    }),
+
+    'GET /server/field_notes/list': ({ query }) => ({
+      firNo: query?.firNo || 'KSP-2026-0142',
+      notes: [
+        {
+          documentId: 'nosql-demo-1',
+          firNo: query?.firNo || 'KSP-2026-0142',
+          officerId: 'IO-1042',
+          noteText: 'Witness confirms suspect was wearing a red jacket. Shop owner at corner store has CCTV footage from 21:30 hrs.',
+          tags: ['witness', 'cctv', 'suspect'],
+          priority: 'High',
+          createdAt: new Date(Date.now() - 3600000).toISOString(),
+          expireAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+          ttlDays: 30
+        },
+        {
+          documentId: 'nosql-demo-2',
+          firNo: query?.firNo || 'KSP-2026-0142',
+          officerId: 'IO-1042',
+          noteText: 'Forensic team scheduled for site visit tomorrow 0800 hrs. Co-ordinate with Dr. Srinivas from FSL Bangalore.',
+          tags: ['forensic', 'schedule', 'FSL'],
+          priority: 'Normal',
+          createdAt: new Date(Date.now() - 1800000).toISOString(),
+          expireAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+          ttlDays: 30
+        },
+        {
+          documentId: 'nosql-demo-3',
+          firNo: query?.firNo || 'KSP-2026-0142',
+          officerId: 'IO-1042',
+          noteText: 'Accused was found near Yeshwantpur flyover. Preparing photo lineup for witness identification.',
+          tags: ['accused', 'identification', 'photo-lineup'],
+          priority: 'High',
+          createdAt: new Date(Date.now() - 900000).toISOString(),
+          expireAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+          ttlDays: 30
+        }
+      ],
+      expiredCount: 0,
+      metadata: { dataSource: 'catalyst_nosql_demo', ttlDays: 30 }
+    }),
+
+    // === Catalyst Circuits FIR Workflow ===
+    'POST /server/fir_workflow/advance': ({ body }) => {
+      const step = body?.currentStep || 'start';
+      if (step === 'start' || step === 'fir_received') {
+        return {
+          success: true, mode: 'catalyst_circuits',
+          step: 'fir_received', status: 'Active',
+          firNo: body?.firNo, ioId: body?.ioId || 'IO-1042',
+          assignedAt: new Date().toISOString(), nextStep: 'forensic_pending'
+        };
+      } else if (step === 'forensic_pending') {
+        return {
+          success: true, mode: 'catalyst_circuits',
+          step: 'forensic_pending', status: 'Under Investigation',
+          firNo: body?.firNo,
+          forensicRequestedAt: new Date().toISOString(),
+          forensicDeadline: new Date(Date.now() + 48 * 3600000).toISOString(),
+          nextStep: 'court_ready'
+        };
+      } else {
+        return {
+          success: true, mode: 'catalyst_circuits',
+          step: 'court_ready', status: 'Chargesheet Pending',
+          firNo: body?.firNo,
+          checklistCompletionPercent: 43,
+          checklist: [
+            { item: 'FIR copy certified', done: true },
+            { item: 'Witness statements recorded', done: false },
+            { item: 'Forensic report received', done: false },
+            { item: 'Accused identification confirmed', done: true },
+            { item: 'Property seized and listed', done: false },
+            { item: 'Medical examination report', done: false },
+            { item: 'Final chargesheet drafted', done: false }
+          ],
+          courtFilingDeadline: new Date(Date.now() + 60 * 86400000).toISOString()
+        };
+      }
+    },
+
+    'GET /server/fir_workflow/status': ({ query }) => ({
+      firNo: query?.firNo || 'KSP-2026-0142',
+      currentStep: 'forensic_pending',
+      nextStep: 'court_ready',
+      steps: [
+        { id: 'fir_received',     label: 'FIR Registered',    status: 'done',    icon: '📋', at: new Date(Date.now() - 5 * 86400000).toISOString() },
+        { id: 'forensic_pending', label: 'Forensic Assigned', status: 'active',  icon: '🔬', at: new Date(Date.now() - 3 * 86400000).toISOString() },
+        { id: 'court_ready',      label: 'Court Ready',       status: 'pending', icon: '⚖️', at: null }
+      ],
+      metadata: { dataSource: 'catalyst_circuits' }
+    }),
+
+    // === Catalyst SmartBrowz PDF Generator ===
+    'POST /server/pdf_generator/chargesheet': ({ body }) => ({
+      success: true,
+      mode: 'html_fallback',
+      firNo: body?.firNo || 'KSP-2026-0142',
+      downloadUrl: null,
+      html: null,
+      metadata: { dataSource: 'catalyst_smartbrowz_demo', note: 'PDF rendered via SmartBrowz on production deployment' }
+    }),
+
+    'POST /server/pdf_generator/fir-summary': ({ body }) => ({
+      success: true,
+      mode: 'html_fallback',
+      firNo: body?.firNo || 'KSP-2026-0142',
+      metadata: { dataSource: 'catalyst_smartbrowz_demo' }
+    }),
   };
 }
 
