@@ -83,6 +83,7 @@ const FaceAnalyticsPanel = React.lazy(() => import('./Components/FaceAnalyticsPa
 const TextAnalyticsPanel = React.lazy(() => import('./Components/TextAnalyticsPanel'))
 const ObjectRecognitionPanel = React.lazy(() => import('./Components/ObjectRecognitionPanel'))
 const DemoHub = React.lazy(() => import('./Components/DemoHub/DemoHub'))
+const PlatformHub = React.lazy(() => import('./Components/PlatformHub'))
 
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
@@ -270,6 +271,7 @@ const router = createHashRouter([
   },
   { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> },
   { path: "/demo", element: <AppFrame showChat={false}><Lazy><DemoHub/></Lazy></AppFrame> },
+  { path: "/platform", element: <AppFrame showChat={false}><Lazy><PlatformHub/></Lazy></AppFrame> },
   { path: "*", element: <Navigate to="/" replace /> },
 ], {
   future: {

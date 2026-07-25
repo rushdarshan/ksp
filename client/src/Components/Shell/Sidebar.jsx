@@ -79,7 +79,10 @@ const SECTIONS = [
     id: 'demo-hub',
     label: 'Demo',
     collapsible: false,
-    items: [{ to: '/demo', icon: PiLightning, label: 'Demo pipeline' }],
+    items: [
+      { to: '/demo', icon: PiLightning, label: 'Demo pipeline' },
+      { to: '/platform', icon: PiSquaresFour, label: 'Platform status' },
+    ],
   },
   {
     id: 'admin',

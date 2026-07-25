@@ -42,7 +42,11 @@
       "face_analytics",
       "entity_graph",
       "object_recognition",
-      "text_analytics"
+      "text_analytics",
+      "circuits_orchestrator",
+      "mail_service",
+      "push_service",
+      "signals_bus"
     ]
   },
   "api_gateway": [
