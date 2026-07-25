@@ -16,6 +16,8 @@ import './AIIntelligenceBrief.scss';
 
 import apiFetch from '../../utils/apiFetch';
 
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
+
 // ── Skeleton loader (redaction-bar pattern) ────────────────
 function Skeleton() {
   const bars = [85, 65, 72, 55, 90, 40, 78];

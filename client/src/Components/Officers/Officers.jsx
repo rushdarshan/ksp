@@ -6,6 +6,8 @@ import inspector from "../Details/Inspector.png";
 
 import apiFetch from '../../utils/apiFetch';
 
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
+
 export async function loader() {
   try {
     const response = await apiFetch('/getofficers', {

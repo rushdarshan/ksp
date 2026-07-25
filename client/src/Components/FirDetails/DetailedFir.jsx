@@ -15,6 +15,8 @@ import {
 
 import apiFetch from '../../utils/apiFetch';
 
+const apiUrl = import.meta.env.VITE_API_URL || '/server';
+
 function QualityBadge({ firData }) {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
