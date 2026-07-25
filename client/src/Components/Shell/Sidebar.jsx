@@ -8,6 +8,7 @@ import {
   PiCaretRight,
   PiChartLineDown,
   PiCrosshair,
+  PiFaceMask,
   PiFolderOpen,
   PiGenderIntersex,
   PiGitBranch,
@@ -43,6 +44,7 @@ const SECTIONS = [
       { to: 'case/KSP-2026-0142', icon: PiGitBranch, label: 'Active workspace' },
       { to: 'co-accused', icon: PiUsersThree, label: 'Crime network' },
       { to: 'voice', icon: PiMicrophone, label: 'ZIA voice query' },
+      { to: 'face-analytics', icon: PiFaceMask, label: 'Face analytics' },
     ],
   },
   {
@@ -84,6 +86,7 @@ const routeToKey = (to) => {
   if (to.startsWith('case/')) return 'cases';
   if (to === 'co-accused') return 'coAccused';
   if (to === 'voice') return 'voice';
+  if (to === 'face-analytics') return 'faceAnalytics';
   if (to === 'location') return 'map';
   if (to === 'officers') return 'officers';
   if (to === 'veracity') return 'veracity';

@@ -60,6 +60,7 @@ const TRANSLATIONS = {
     tabTimeline: 'Timeline',
     tabNotes: 'Notes',
     tabChargesheet: 'Chargesheet Clock',
+    faceAnalytics: 'Face Analytics',
   },
   kn: {
     appName: 'ಅಪರಾಧ ಜಿನೋಮ್',
@@ -120,6 +121,7 @@ const TRANSLATIONS = {
     tabTimeline: 'ಟೈಮ್‌ಲೈನ್',
     tabNotes: 'ಟಿಪ್ಪಣಿಗಳು',
     tabChargesheet: 'ದೋಷಾರೋಪಣೆ ಪಟ್ಟಿ',
+    faceAnalytics: 'ಮುಖದ ವಿಶ್ಲೇಷಣೆ',
   }
 };
 
