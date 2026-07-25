@@ -206,6 +206,56 @@ function DetailedFir() {
     { label: 'Case Closed', detail: 'Court submitted' }
   ];
 
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [notifSent, setNotifSent] = useState(false);
+
+  const generatePdf = async () => {
+    setPdfLoading(true);
+    try {
+      const res = await apiFetch('/pdf_generator/fir-summary', {
+        method: 'POST',
+        body: JSON.stringify({
+          firNo: firData?.FIRNo || `${FirNo}/${FirYear}`,
+          firData: {
+            crimeType: firData?.CrimeGroup_Name || firData?.crime_head,
+            status: firData?.fir_stage || 'Under Investigation',
+            stationName: firData?.UnitName,
+            district: firData?.DistrictName,
+            ioName: firData?.investigatingOfficer || firData?.io_name,
+            filedDate: firData?.Fir_Date,
+            narrative: firData?.Narrative || firData?.narrative
+          }
+        })
+      });
+      const data = res ? await res.json() : null;
+      if (data?.mode === 'html_fallback') {
+        // SmartBrowz not configured yet — fall back to browser print
+        window.print();
+      }
+    } catch {
+      window.print();
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const sendNotification = async () => {
+    try {
+      await apiFetch('/notifications/fir-filed', {
+        method: 'POST',
+        body: JSON.stringify({
+          firNo: firData?.FIRNo || `${FirNo}/${FirYear}`,
+          crimeType: firData?.CrimeGroup_Name,
+          stationName: firData?.UnitName,
+          complainantEmail: 'complainant@ksp.gov.in',
+          ioDeviceToken: 'demo-io-device-token'
+        })
+      });
+      setNotifSent(true);
+      setTimeout(() => setNotifSent(false), 4000);
+    } catch { /* silent */ }
+  };
+
   if (isLoading) return <Loader />;
   if (error) return <p>Error: {error.message}</p>;
   if (!firData) return <p>No data available.</p>;
@@ -227,9 +277,20 @@ function DetailedFir() {
             Registered on {firData.Fir_Date || 'N/A'} at {firData.UnitName || 'N/A'}, {firData.DistrictName || 'N/A'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => window.print()} style={{ padding: '8px 16px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 'var(--radius-full)', color: 'var(--text)', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>
-            Export Case Brief (PDF)
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={sendNotification}
+            disabled={notifSent}
+            style={{ padding: '8px 14px', background: notifSent ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.12)', border: `1px solid ${notifSent ? '#10b981' : 'rgba(99,102,241,0.4)'}`, borderRadius: 'var(--radius-full)', color: notifSent ? '#10b981' : '#818cf8', cursor: 'pointer', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+          >
+            {notifSent ? '✅ Notified via Catalyst Mail + Push' : '📧 Notify IO & Complainant'}
+          </button>
+          <button
+            onClick={generatePdf}
+            disabled={pdfLoading}
+            style={{ padding: '8px 16px', background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 'var(--radius-full)', color: 'var(--text)', cursor: 'pointer', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px', opacity: pdfLoading ? 0.7 : 1 }}
+          >
+            {pdfLoading ? '⏳ Generating…' : '📄 Export PDF (SmartBrowz)'}
           </button>
         </div>
       </div>

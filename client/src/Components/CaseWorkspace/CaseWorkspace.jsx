@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   PiArrowLeft, PiCalendar, PiClipboardText, PiFlask, PiGraph,
-  PiNotePencil, PiRobot, PiScales, PiTarget, PiShieldCheck
+  PiNotePencil, PiRobot, PiScales, PiTarget, PiShieldCheck, PiGitBranch
 } from 'react-icons/pi';
 import EntityGraphPanel from './EntityGraphPanel';
 import MemoryNotSearch from './MemoryNotSearch';
@@ -18,6 +18,9 @@ import InvestigationCopilot from './InvestigationCopilot';
 import InvestigationReportButton from './InvestigationReportButton';
 import DecisionLog from './DecisionLog';
 import EvidencePipeline from './EvidencePipeline';
+import FirWorkflowStepper from './FirWorkflowStepper';
+import FieldNotesPanel from './FieldNotesPanel';
+import EvidenceStoragePanel from './EvidenceStoragePanel';
 import { CaseContext } from './caseContext';
 import { ACTIVE_CASE_FACTS, getActiveCaseData } from './caseFacts';
 import { buildCaseWorkspaceSearch, getRouteTab } from './caseWorkspaceRouting';
@@ -38,6 +41,7 @@ const TABS = [
   { id: 'timeline', label: 'Timeline', icon: PiCalendar },
   { id: 'notes', label: 'Notes', icon: PiNotePencil },
   { id: 'chargesheet', label: 'Chargesheet', icon: PiScales },
+  { id: 'workflow', label: 'Workflow', icon: PiGitBranch },
 ];
 
 function statusClass(stage) {
@@ -198,7 +202,12 @@ export default function CaseWorkspace() {
               {activeTab === 'overview' && <CaseOverview />}
               {activeTab === 'brief' && <AIIntelligenceBrief />}
               {activeTab === 'theory' && <TheoryBoard firId={firId} />}
-              {activeTab === 'evidence' && <EvidenceReview />}
+              {activeTab === 'evidence' && (
+                <div className="case-evidence-grid">
+                  <EvidenceReview />
+                  <EvidenceStoragePanel firNo={caseId || 'KSP-2026-0142'} />
+                </div>
+              )}
               {activeTab === 'network' && (
                 <div className="case-network-grid">
                   <EntityGraphPanel firId={firId} />
@@ -206,9 +215,20 @@ export default function CaseWorkspace() {
                 </div>
               )}
               {activeTab === 'timeline' && <CaseTimeline />}
-              {activeTab === 'notes' && <CaseNotes />}
+              {activeTab === 'notes' && (
+                <div className="case-notes-grid">
+                  <CaseNotes />
+                  <FieldNotesPanel firNo={caseId || 'KSP-2026-0142'} />
+                </div>
+              )}
               {activeTab === 'chargesheet' && <ChargesheetIntelligence />}
               {activeTab === 'log' && <DecisionLog />}
+              {activeTab === 'workflow' && (
+                <div className="case-workflow-grid">
+                  <FirWorkflowStepper firNo={caseId || 'KSP-2026-0142'} crimeType={caseData?.CrimeGroup_Name || ''} />
+                  <FieldNotesPanel firNo={caseId || 'KSP-2026-0142'} />
+                </div>
+              )}
             </div>
           )}
         </div>

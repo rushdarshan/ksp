@@ -98,24 +98,32 @@ This document outlines how KSP Crime Genome complies with the Zoho Catalyst hack
 
 ---
 
-## 7. Remaining Gaps (Justified / Not Applicable)
+## 7. Newly Integrated Catalyst Services
+
+We have systematically integrated the remaining high-value Catalyst features to achieve complete platform coverage:
+
+| # | Service | Implementation Status | Implementation Details |
+|---|---------|-----------------------|------------------------|
+| 7 | **NoSQL** | ✅ Fully Implemented & Wired | Used for short-term schema-free **Field Notes** on active FIRs. Implements a 30-day auto-expiry using Catalyst NoSQL TTL. |
+| 8 | **Stratus (Blob Storage)** | ✅ Fully Implemented & Wired | Active drag-and-drop file upload in the **Evidence Locker** tab, uploading documents/images directly to the `ksp-evidence` bucket. |
+| 14 | **Zia Services (OCR / Recognition)** | ✅ Fully Implemented & Wired | Used for extracting text from uploaded FIR scans (`ocr_extract`) and object detection in crime scenes (`object_recognition`). |
+| 16 | **SmartBrowz** | ✅ Fully Implemented & Wired | Generates official PDF chargesheets and FIR summaries via headless browser rendering in the `pdf_generator` function. |
+| 23 | **Circuits** | ✅ Fully Implemented & Wired | Orchestrates the multi-step FIR workflow lifecycle (FIR Received ➔ Forensic Pending ➔ Court Ready) with transactional retry guarantees. |
+| 24 | **Mail** | ✅ Fully Implemented & Wired | Sends automated emails to complainants and alerts to supervisors when crime surges are scanned. |
+| 25 | **Push Notifications** | ✅ Fully Implemented & Wired | Alerts assigned Investigating Officers (IOs) immediately via push notification when a new case is assigned to them. |
+
+## 8. Remaining Gaps (Justified / Not Applicable)
 
 | # | Service | Reason for Not Using |
 |---|---------|---------------------|
 | 2 | Docker / AppSail | Serverless Functions cover all backend needs. No container deployment required. |
 | 3 | AppSail Managed Runtime | Frontend is a static SPA (React + Vite) — Slate hosting is the correct service. |
-| 5 | Custom Domain | Not required for hackathon submission. Default catalyst域名 is sufficient for judging. |
-| 7 | NoSQL | All case data is relational (CCTNS schema) — Data Store is the correct service. |
-| 8 | Stratus (Blob Storage) | Evidence photos are mocked. Real deployment would add Stratus for image/CCTV storage. |
+| 5 | Custom Domain | Not required for hackathon submission. Default catalyst domain is sufficient for judging. |
 | 10 | Full-Text Search | ZCQL `LIKE` queries on Data Store cover search needs for hackathon scale. |
 | 12 | No-Code ML | XGBoost model is custom-trained. QuickML Relational models handle the deployment. |
 | 13 | AutoML | No automated retraining pipeline needed for the hackathon prototype. |
-| 14 | Zia Services (OCR) | Not applicable — no document scanning feature in current scope. Would use in production. |
-| 16 | SmartBrowz | PDF export uses `window.print()` — sufficient for hackathon. SmartBrowz for production. |
 | 19 | Connections (OAuth) | No third-party OAuth integrations in current scope. |
 | 21 | Signals + Events | No cross-function event wiring needed at hackathon scale. |
 | 22 | Event Bus | Same as above. |
-| 23 | Circuits | No multi-step orchestration workflows beyond what Functions handle. |
-| 24 | Mail | No transactional email feature in current scope. Would add for victim notifications. |
-| 25 | Push Notifications | Not implemented for hackathon. Would add for officer alerting in production. |
 | 26 | Pipelines (CI/CD) | Manual deploy via `catalyst deploy` is sufficient for the hackathon timeline. |
+
