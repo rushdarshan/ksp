@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './DemoHub.scss'
 
 const FIR_DB = {
@@ -86,6 +87,7 @@ const DEFAULT_FIR = FIR_DB['KSP-2026-0142']
 
 export default function DemoHub() {
   const [firInput, setFirInput] = useState('KSP-2026-0142')
+  const navigate = useNavigate()
   const fir = useMemo(() => {
     const key = firInput.trim().toUpperCase()
     return FIR_DB[key] || null
@@ -121,17 +123,17 @@ export default function DemoHub() {
           </div>
 
           <div className="demo-hub-actions">
-            <button className="demo-hub-btn btn-primary">
+            <button className="demo-hub-btn btn-primary" onClick={() => navigate('/dashboard/voice', { state: { query: `Show case details for ${fir.firNo}` } })}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               Ask ZIA
             </button>
-            <button className="demo-hub-btn btn-secondary">
+            <button className="demo-hub-btn btn-secondary" onClick={() => navigate('/dashboard/hotspots')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               View on Map
             </button>
-            <button className="demo-hub-btn btn-secondary">
+            <button className="demo-hub-btn btn-secondary" onClick={() => navigate('/dashboard/face-analytics')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              Export Brief
+              Face Analytics
             </button>
           </div>
         </>
