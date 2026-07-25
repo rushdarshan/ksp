@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import apiFetch from '../utils/apiFetch';
 
 function getScoreColor(score) {
     if (score >= 70) return '#16a34a';
@@ -21,7 +22,7 @@ export default function SolvabilityBadge({ firData }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch('/server/solvability_index/solvability', {
+            const res = await apiFetch('/solvability_index/solvability', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -35,7 +36,7 @@ export default function SolvabilityBadge({ firData }) {
                     suspectIdentified: false
                 })
             });
-            if (!res.ok) throw new Error('Case readiness analysis unavailable');
+            if (!res || !res.ok) throw new Error('Case readiness analysis unavailable');
             const data = await res.json();
             setResult(data);
         } catch (err) {

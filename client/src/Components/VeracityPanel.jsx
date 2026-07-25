@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PanelCard, PanelHeader, PanelTable, PanelBadge } from './panels';
+import apiFetch from '../utils/apiFetch';
 
 const PRESET_FIRS = {
   detailed: {
@@ -53,12 +54,12 @@ const VeracityPanel = ({
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/server/veracity_index/analyze', {
+      const res = await apiFetch('/veracity_index/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      if (!res || !res.ok) throw new Error(`Server error: ${res?.status || 'network error'}`);
       setResult(await res.json());
     } catch (err) {
       setError(err.message);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import apiFetch from '../utils/apiFetch';
 
 function CrimeBar({ crimeType, actual, lowerBound, upperBound }) {
     const safeLower = Number(lowerBound) || 0;
@@ -40,8 +41,8 @@ export default function DarkFigurePanel() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/server/dark_figure/dark-figure?district=${dId}`);
-            if (!res.ok) throw new Error('Dark figure data unavailable');
+            const res = await apiFetch(`/dark_figure/dark-figure?district=${dId}`);
+            if (!res || !res.ok) throw new Error('Dark figure data unavailable');
             const json = await res.json();
             setData(json.data);
         } catch (err) {

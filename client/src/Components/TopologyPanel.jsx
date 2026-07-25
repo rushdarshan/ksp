@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { PiGraph, PiSpinnerGap, PiWarningCircle } from 'react-icons/pi';
+import apiFetch from '../utils/apiFetch';
 
 const CRIME_COLORS = {
     theft: '#f59e0b', burglary: '#f97316', robbery: '#ef4444',
@@ -21,18 +22,20 @@ const TopologyPanel = () => {
     const baselineRef = useRef(null);
 
     useEffect(() => {
-        fetch('/server/topology_navigator/topology')
-            .then(res => res.json())
+        apiFetch('/topology_navigator/topology')
+            .then(res => res ? res.json() : null)
             .then(json => {
-                setData(json);
-                baselineRef.current = json;
+                if (json) {
+                    setData(json);
+                    baselineRef.current = json;
+                }
                 setLoading(false);
             })
             .catch(err => { setError(err.message); setLoading(false); });
 
-        fetch('/server/topology_navigator/topology/months')
-            .then(res => res.json())
-            .then(json => setMonths(json.months || []))
+        apiFetch('/topology_navigator/topology/months')
+            .then(res => res ? res.json() : null)
+            .then(json => { if (json) setMonths(json.months || []); })
             .catch(() => {});
     }, []);
 
@@ -40,9 +43,9 @@ const TopologyPanel = () => {
         if (currentMonthIndex < 0 || !months[currentMonthIndex]) return;
         const month = months[currentMonthIndex];
         setLoading(true);
-        fetch(`/server/topology_navigator/topology?month=${month}`)
-            .then(res => res.json())
-            .then(json => { setData(json); setLoading(false); })
+        apiFetch(`/topology_navigator/topology?month=${month}`)
+            .then(res => res ? res.json() : null)
+            .then(json => { if (json) setData(json); setLoading(false); })
             .catch(err => { setError(err.message); setLoading(false); });
     }, [currentMonthIndex, months]);
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ForceGraph2D from 'react-force-graph-2d'
+import apiFetch from '../utils/apiFetch';
 
 const PERSON_COLORS = { A1: '#a33d32', A2: '#c46b08', A3: '#667085' }
 const LINK_COLORS = { 'A1-A1': '#a33d32', 'A1-A2': '#c46b08', 'A1-A3': '#98a2b3' }
@@ -33,9 +34,10 @@ export default function CoAccusedNetworkPanel({ focusPersonName = null, limitToF
   }, [data])
 
   useEffect(() => {
-    fetch('/server/co_accused_network/graph')
-      .then(r => r.json())
+    apiFetch('/co_accused_network/graph')
+      .then(r => r ? r.json() : null)
       .then(d => {
+        if (!d) return;
         setData(d)
         const person = focusPersonName || searchParams.get('person')
         if (person) {

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PiArrowLeft, PiArrowRight, PiBellRinging, PiCheckCircle, PiPhoneCall } from 'react-icons/pi';
-
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../utils/apiFetch';
 
 export default function NotificationInbox() {
   const [notifications, setNotifications] = useState([]);
@@ -10,9 +9,9 @@ export default function NotificationInbox() {
   const [caseDetail, setCaseDetail] = useState(null);
 
   useEffect(() => {
-    fetch(`${apiUrl}/case_management/case-management/notifications`)
-      .then((response) => response.json())
-      .then((data) => setNotifications(data.notifications || []))
+    apiFetch('/case_management/case-management/notifications')
+      .then((response) => response ? response.json() : null)
+      .then((data) => { if (data) setNotifications(data.notifications || []); })
       .catch((requestError) => setError(requestError.message))
       .finally(() => setLoading(false));
   }, []);
@@ -20,8 +19,10 @@ export default function NotificationInbox() {
   const viewCase = async (caseId) => {
     setError('');
     try {
-      const response = await fetch(`${apiUrl}/case_management/case-management/notifications?caseId=${caseId}`);
-      setCaseDetail(await response.json());
+      const response = await apiFetch(`/case_management/case-management/notifications?caseId=${caseId}`);
+      if (response) {
+        setCaseDetail(await response.json());
+      }
     } catch (requestError) {
       setError(requestError.message);
     }

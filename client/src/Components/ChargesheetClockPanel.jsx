@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
+import apiFetch from '../utils/apiFetch';
 
 const STATUS_COLORS = { overdue: 'var(--color-red)', at_risk: '#d97706', safe: '#22c55e' }
 const STATUS_LABELS = { overdue: 'OVERDUE', at_risk: 'AT RISK', safe: 'ON TRACK' }
@@ -15,9 +16,9 @@ export default function ChargesheetClockPanel() {
     if (dateFrom) p.set('dateFrom', dateFrom);
     if (dateTo) p.set('dateTo', dateTo);
     if (crimeType) p.set('crimeType', crimeType);
-    fetch('/server/chargesheet_clock/stats?' + p)
-      .then(r => r.json())
-      .then(setData)
+    apiFetch('/chargesheet_clock/stats?' + p)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setData(d); })
       .catch(() => {})
   }, [station, dateFrom, dateTo, crimeType])
 

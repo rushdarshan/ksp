@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PiSiren } from 'react-icons/pi';
 import styles from './AlertsFeed.module.css';
+import apiFetch from '../utils/apiFetch';
 
 const AlertsFeed = () => {
     const [alerts, setAlerts] = useState([]);
@@ -9,8 +10,8 @@ const AlertsFeed = () => {
     useEffect(() => {
         const fetchAlerts = async () => {
             try {
-                const response = await fetch('/server/fir_api/alerts');
-                if (response.ok) {
+                const response = await apiFetch('/fir_api/alerts');
+                if (response && response.ok) {
                     const data = await response.json();
                     setAlerts(data);
                 }

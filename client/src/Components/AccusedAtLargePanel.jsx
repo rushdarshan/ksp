@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFilter } from '../FilterContext';
 import { Link } from 'react-router-dom';
+import apiFetch from '../utils/apiFetch';
 
 const STATUS_BADGES = { absconding: { label: 'ABSCONDING', color: 'var(--color-red)' }, bailable_warrant: { label: 'BAILABLE WARRANT', color: 'var(--color-amber)' }, warrant_verification: { label: 'VERIFY WARRANT', color: 'var(--color-amber)' }, recent: { label: 'RECENT', color: 'var(--color-green)' } }
 
@@ -14,9 +15,9 @@ export default function AccusedAtLargePanel() {
     if (dateFrom) p.set('dateFrom', dateFrom);
     if (dateTo) p.set('dateTo', dateTo);
     if (crimeType) p.set('crimeType', crimeType);
-    fetch('/server/accused_at_large/ledger?' + p)
-      .then(r => r.json())
-      .then(setData)
+    apiFetch('/accused_at_large/ledger?' + p)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setData(d); })
       .catch(() => {})
   }, [station, dateFrom, dateTo, crimeType])
 

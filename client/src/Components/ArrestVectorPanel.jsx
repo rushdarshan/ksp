@@ -3,6 +3,7 @@ import { useFilter } from '../FilterContext';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import apiFetch from '../utils/apiFetch';
 
 L.Icon.Default.mergeOptions({ iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png', iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png' })
 
@@ -34,9 +35,9 @@ export default function ArrestVectorPanel() {
     if (dateFrom) p.set('dateFrom', dateFrom);
     if (dateTo) p.set('dateTo', dateTo);
     if (crimeType) p.set('crimeType', crimeType);
-    fetch('/server/arrest_vector/vectors?' + p)
-      .then(r => r.json())
-      .then(setData)
+    apiFetch('/arrest_vector/vectors?' + p)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setData(d); })
       .catch(() => {})
   }, [station, dateFrom, dateTo, crimeType])
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import apiFetch from '../utils/apiFetch';
 
 export default function RetractionRatePanel() {
   const [summary, setSummary] = useState(null)
@@ -9,15 +10,17 @@ export default function RetractionRatePanel() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/server/retraction_rate/summary').then(r => r.json()),
-      fetch('/server/retraction_rate/by_station').then(r => r.json()),
-      fetch('/server/retraction_rate/by_io').then(r => r.json()),
-      fetch('/server/retraction_rate/trend').then(r => r.json()),
+      apiFetch('/retraction_rate/summary').then(r => r ? r.json() : null),
+      apiFetch('/retraction_rate/by_station').then(r => r ? r.json() : null),
+      apiFetch('/retraction_rate/by_io').then(r => r ? r.json() : null),
+      apiFetch('/retraction_rate/trend').then(r => r ? r.json() : null),
     ]).then(([s, st, o, t]) => {
-      setSummary(s)
-      setStations(st.stations)
-      setOfficers(o.officers)
-      setTrend(t.months)
+      if (s && st && o && t) {
+        setSummary(s)
+        setStations(st.stations)
+        setOfficers(o.officers)
+        setTrend(t.months)
+      }
     }).catch(() => {})
   }, [])
 

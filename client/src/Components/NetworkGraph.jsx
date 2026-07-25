@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { PanelCard } from './panels';
+import apiFetch from '../utils/apiFetch';
 
 const COMMUNITY_COLORS = ['#1b2c47', '#b8860b', '#6b6b6b', '#a33d32', '#4b79a8', '#7a8f63'];
 
@@ -11,9 +12,9 @@ const NetworkGraph = () => {
   const graphRef = useRef(null);
 
   useEffect(() => {
-    fetch('/server/co_accused_network/graph')
-      .then(res => res.json())
-      .then(data => setGraphData(data))
+    apiFetch('/co_accused_network/graph')
+      .then(res => res ? res.json() : null)
+      .then(data => { if (data) setGraphData(data); })
       .catch(err => console.error("Error fetching graph data:", err));
   }, []);
 
