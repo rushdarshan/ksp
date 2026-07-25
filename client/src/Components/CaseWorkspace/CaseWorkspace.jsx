@@ -26,7 +26,7 @@ import toast from 'react-hot-toast';
 import { useI18n } from '../../utils/i18n';
 import './CaseWorkspace.scss';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: PiClipboardText },
@@ -88,8 +88,8 @@ export default function CaseWorkspace() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`${apiUrl}/fir_api/firs?year=2026`)
-      .then(r => r.json())
+    apiFetch('/fir_api/firs?year=2026')
+      .then(r => r ? r.json() : [])
       .then(data => {
         const firs = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
         const found = firs.find(f => f.FIRNo === firId || f.FirNo === firId);

@@ -2,6 +2,10 @@ const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
 const { getCached, setCached } = require('../shared/cache-utils');
 const { createSeededRandom, numberBetween } = require('../shared/deterministic');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { execFile } = require('child_process');
 
 const app = express();
 app.use(express.json());
@@ -69,10 +73,29 @@ app.get('/predict', async (req, res) => {
                 });
                 predictionSource = 'catalyst_data_store_derived';
             } catch (dataError) {
-                console.warn('Data Store fallback unavailable, using deterministic synthetic demo predictions:', dataError.message);
-                const random = createSeededRandom(`hotspot:${districtId}:${gridSize}:v2`);
-                preds = features.map(() => numberBetween(random, 0.24, 0.82, 4));
-                predictionSource = 'synthetic_demo';
+                console.warn('Data Store fallback unavailable, trying local XGBoost model:', dataError.message);
+                let tempFile;
+                try {
+                    tempFile = path.join(os.tmpdir(), `ksp_features_${Date.now()}_${Math.random().toString(36).slice(2)}.json`);
+                    fs.writeFileSync(tempFile, JSON.stringify(features));
+                    const stdout = await new Promise((resolve, reject) => {
+                        execFile('python', [path.join(__dirname, 'predict.py'), tempFile], { timeout: 30000, encoding: 'utf-8' }, (err, out) => err ? reject(err) : resolve(out));
+                    });
+                    const result = JSON.parse(stdout.trim());
+                    if (Array.isArray(result) && result.length > 0) {
+                        preds = result;
+                        predictionSource = 'xgboost_local_model';
+                    } else {
+                        throw new Error(result?.error || 'Unexpected Python output');
+                    }
+                } catch (pythonErr) {
+                    console.warn('Local XGBoost model failed, using synthetic demo:', pythonErr.message);
+                    const random = createSeededRandom(`hotspot:${districtId}:${gridSize}:v2`);
+                    preds = features.map(() => numberBetween(random, 0.24, 0.82, 4));
+                    predictionSource = 'synthetic_demo';
+                } finally {
+                    if (tempFile) try { fs.unlinkSync(tempFile); } catch { }
+                }
             }
         }
 

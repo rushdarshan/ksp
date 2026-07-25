@@ -1,12 +1,17 @@
 import sys
+import os
 import pickle
 import json
 import pandas as pd
 
 try:
-    # Read incoming JSON features from stdin or args
-    features_json = sys.argv[1]
-    features = json.loads(features_json)
+    # Read incoming JSON features from file path or inline JSON
+    arg = sys.argv[1]
+    if os.path.isfile(arg):
+        with open(arg) as f:
+            features = json.load(f)
+    else:
+        features = json.loads(arg)
     
     # Load model
     # The path will be relative to the function directory

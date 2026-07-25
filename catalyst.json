@@ -39,7 +39,10 @@
       "exceedance_curve",
       "precompute_job",
       "predictive_mode",
-      "face_analytics"
+      "face_analytics",
+      "entity_graph",
+      "object_recognition",
+      "text_analytics"
     ]
   },
   "api_gateway": [

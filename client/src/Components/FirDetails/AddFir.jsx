@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from "../../utils/apiFetch";
 import toast from "react-hot-toast";
 import styles from "./firdetails.module.css";
 import { formatString, smapleFirValues } from "../../utils/utility";
@@ -35,15 +35,14 @@ const AddFir = () => {
     const ocrToastId = toast.loading("Zia OCR: Analyzing handwritten Kannada complaint...");
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const res = await fetch(`${apiUrl}/ocr_extract/ocr`, {
+      const res = await apiFetch('/ocr_extract/ocr', {
         method: 'POST',
         headers: {
-          'Content-Type': file.type || 'image/jpeg',
-          jwt_token: localStorage.getItem("token")
+          'Content-Type': file.type || 'image/jpeg'
         },
         body: arrayBuffer
       });
-      if (!res.ok) throw new Error(`OCR function returned status ${res.status}`);
+      if (!res || !res.ok) throw new Error(`OCR function failed`);
       const data = await res.json();
       
       // Auto-populate relevant fields
@@ -72,27 +71,19 @@ const AddFir = () => {
     // Process the form data (e.g., send to a server)
     try {
       loadingToastId = toast.loading("Processing");
-      const res = await fetch(`${apiUrl}/addfir`, {
+      const res = await apiFetch('/addfir', {
         method: 'POST',
-        headers: {
-          jwt_token: localStorage.getItem("token"),
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({ firValues: Object.values(formData) })
       });
-      const data = await res.json();
-      if (res.ok) {
+      const data = res ? await res.json() : {};
+      if (res && res.ok) {
         // Trigger agentic cross-check
         try {
           const firId = data.firId || `draft-${Date.now()}`;
-          fetch(`${apiUrl}/agentic/cross-check/${firId}/demo`, {
-            method: 'POST',
-            headers: {
-              jwt_token: localStorage.getItem("token"),
-              'Content-Type': 'application/json'
-            }
+          apiFetch(`/agentic/cross-check/${firId}/demo`, {
+            method: 'POST'
           }).then(async crossCheckRes => {
-            if (crossCheckRes.ok) {
+            if (crossCheckRes && crossCheckRes.ok) {
               const crossCheckData = await crossCheckRes.json();
               const findingCount = crossCheckData.findings?.length || 0;
               toast.success(`Cross-case review ready: ${findingCount} item${findingCount === 1 ? '' : 's'} require officer verification.`, { duration: 6000 });

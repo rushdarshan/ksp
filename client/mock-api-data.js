@@ -1456,6 +1456,67 @@ export function defineMockApi() {
       };
     },
 
+    // === Text Analytics ===
+    'POST /server/text_analytics/analyze': ({ body }) => {
+      const text = body?.text || '';
+      const lower = text.toLowerCase();
+      const entities = [];
+      const seen = new Set();
+      const patterns = {
+        person: [
+          /\b(?:Shri|Smt|Mr?s?\.)\s+[A-Z][a-z]+\s+[A-Z][a-z]+\b/g,
+          /\b(?:complainant|victim|accused|witness)[a-z]*\s+(?:named\s+)?[A-Z][a-z]+\s+[A-Z][a-z]+\b/gi,
+          /\b[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b(?=.*(?:reported|stated|said|observed|fled|attacked|demanded|snatched|pushed|spotted))/g,
+        ],
+        location: [
+          /\b(?:MG Road|Brigade Road|Church Street|Commercial Street|Residency Road|Koramangala|Indiranagar|Whitefield|Jayanagar|Rajajinagar|Malleshwaram|Basavanagudi|BTM Layout|HSR Layout|Marathahalli|Electronic City|Yeshwanthpur|Ejipura|Yelahanka|Banashankari)\b/g,
+        ],
+        crime_type: [
+          /\b(?:murder|robbery|theft|burglary|assault|kidnapping|dacoity|rioting|extortion|fraud|homicide|snatching|chain snatching|pickpocketing|house break|vehicle theft|cyber crime|domestic violence|rape|molestation)\b/gi,
+        ],
+        date: [
+          /\b\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/g,
+          /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,
+        ],
+        weapon: [
+          /\b(?:knife|sword|gun|revolver|pistol|country-made pistol|chopper|stick|lathi|iron rod|sharp weapon|firearm)\b/gi,
+        ],
+        vehicle: [
+          /\b(?:motorcycle|scooter|bike|car|auto|auto rickshaw|van|tempo|lorry|truck|bus|cycle)\b/gi,
+          /\b(?:KA-\d{2}[A-Z]{1,3}\s*\d{1,4})\b/g,
+        ],
+      };
+      for (const [type, pats] of Object.entries(patterns)) {
+        for (const pat of pats) {
+          let m; while ((m = pat.exec(text)) !== null) {
+            const k = `${type}:${m[0].toLowerCase()}`;
+            if (!seen.has(k)) { seen.add(k); entities.push({ text: m[0], type }); }
+          }
+        }
+      }
+      const posWords = ['recovered', 'arrested', 'safe', 'rescued', 'returned', 'found', 'identified', 'caught'];
+      const negWords = ['murder', 'dead', 'killed', 'stabbed', 'shot', 'assault', 'rape', 'kidnap', 'stolen', 'attack', 'injured', 'death', 'violence', 'weapon', 'blood'];
+      let p = posWords.filter(w => lower.includes(w)).length;
+      let n = negWords.filter(w => lower.includes(w)).length;
+      const sentiment = p > n ? 'positive' : n > p ? 'negative' : 'neutral';
+      const summary = (() => {
+        const parts = [];
+        const c = entities.filter(e => e.type === 'crime_type'); if (c.length) parts.push('Reported crime type(s): ' + [...new Set(c.map(e => e.text.toLowerCase()))].join(', ') + '.');
+        const l = entities.filter(e => e.type === 'location'); if (l.length) parts.push('Location(s): ' + [...new Set(l.map(e => e.text))].join(', ') + '.');
+        const pe = entities.filter(e => e.type === 'person'); if (pe.length) parts.push('Parties mentioned: ' + [...new Set(pe.map(e => e.text))].join(', ') + '.');
+        const d = entities.filter(e => e.type === 'date'); if (d.length) parts.push('Date(s) referenced: ' + d.map(e => e.text).join(', ') + '.');
+        const sentimentDesc = sentiment === 'positive' ? 'recovery or resolution indicated' : sentiment === 'negative' ? 'crime or harm indicated' : 'factual report';
+        parts.push('Overall tone: ' + sentimentDesc + '.');
+        return parts.join(' ');
+      })();
+      return {
+        sentiment, entities: entities.slice(0, 25), summary,
+        methodology: 'pattern-based extraction',
+        humanReviewRequired: true,
+        warning: 'AI-generated analysis. All outputs must be reviewed by an investigating officer before use.',
+      };
+    },
+
     'POST /server/face_analytics/analyze': ({ body }) => {
       const imageId = body?.imageId || 'suspect-001';
       const DEMO_FACES = [

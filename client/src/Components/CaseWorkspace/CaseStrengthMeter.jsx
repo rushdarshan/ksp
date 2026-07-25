@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ACTIVE_CASE_FACTS } from './caseFacts';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 const ACTIVE_CASE_READINESS = {
   overallScore: ACTIVE_CASE_FACTS.readiness,
@@ -26,9 +26,9 @@ export default function CaseStrengthMeter({ firId, expanded: controlledExpanded,
       setScore(ACTIVE_CASE_READINESS);
       return;
     }
-    fetch(`${apiUrl}/zia/case_strength/${firId}`)
-      .then(r => r.json())
-      .then(d => setScore(d))
+    apiFetch(`/zia/case_strength/${firId}`)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setScore(d); })
       .catch(() => {});
   }, [firId]);
 

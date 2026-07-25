@@ -14,7 +14,7 @@ import {
 import { ACTIVE_CASE_BRIEF, ACTIVE_CASE_FACTS } from './caseFacts';
 import './AIIntelligenceBrief.scss';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 // ── Skeleton loader (redaction-bar pattern) ────────────────
 function Skeleton() {
@@ -144,12 +144,11 @@ export default function AIIntelligenceBrief() {
       if (!cancelled) setLatency(true);
     }, 5000);
 
-    fetch(`${apiUrl}/zia_brief/zia_brief`, {
+    apiFetch('/zia_brief/zia_brief', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ caseId: firId }),
     })
-      .then(r => r.json())
+      .then(r => r ? r.json() : null)
       .then(d => {
         if (!cancelled) setData(d);
       })

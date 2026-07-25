@@ -12,12 +12,13 @@ import video from '../../LoginAssets/video.mp4';
 import logo from '../../LoginAssets/logo.png';
 import { getRoleHome, useAuth } from '../../AuthContext';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 const DEMO_USERS = Object.freeze({
   anjumala: { rank: 'ACP', name: 'Anjumala' },
   dharmendra: { rank: 'Inspector', name: 'Dharmendra' },
   marutig: { rank: 'Subinspector', name: 'Maruti G' },
+  superintendent: { rank: 'Superintendent', name: 'Superintendent of Police' },
 });
 
 const Login = () => {
@@ -50,15 +51,14 @@ const Login = () => {
         return;
       }
 
-      const response = await fetch(`${apiUrl}/login`, {
+      const response = await apiFetch('/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           LoginUsername: loginUsername.trim(),
           LoginPassword: loginPassword,
         }),
       });
-      const data = await response.json().catch(() => ({}));
+      const data = response ? await response.json().catch(() => ({})) : {};
 
       if (!response.ok) {
         throw new Error(data.message || 'The username or password is incorrect.');

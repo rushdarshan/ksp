@@ -79,6 +79,8 @@ const ChargesheetReview = React.lazy(() => import('./Components/Supervisor/Charg
 const ChatPanel = React.lazy(() => import('./Components/ChatPanel/ChatPanel'))
 const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoard'))
 const FaceAnalyticsPanel = React.lazy(() => import('./Components/FaceAnalyticsPanel'))
+const TextAnalyticsPanel = React.lazy(() => import('./Components/TextAnalyticsPanel'))
+const ObjectRecognitionPanel = React.lazy(() => import('./Components/ObjectRecognitionPanel'))
 
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
@@ -145,6 +147,8 @@ const sharedChildren = [
   { path: "arrest-vector", element: <PanelGuard requiredRole="admin"><Lazy><ArrestVectorPanel/></Lazy></PanelGuard> },
   { path: "theory-board", element: <Lazy><TheoryBoard/></Lazy> },
   { path: "face-analytics", element: <Lazy><FaceAnalyticsPanel/></Lazy> },
+  { path: "text-analytics", element: <Lazy><TextAnalyticsPanel/></Lazy> },
+  { path: "object-recognition", element: <Lazy><ObjectRecognitionPanel/></Lazy> },
   { path: "person/:personId", element: <Lazy><PersonPage/></Lazy> },
   { path: "case/:caseId", element: <Lazy><CaseWorkspace/></Lazy> },
   { index: true, path: "network", element: <Lazy><NetworkGraph/></Lazy> },

@@ -23,7 +23,7 @@ import {
   PiXCircle,
 } from 'react-icons/pi';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 // ──────────────────────────────────────────────────────
 // Shared helpers
@@ -77,9 +77,9 @@ function ZIABrief({ firId }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}/zia/case_brief/${firId}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
+    apiFetch(`/zia/case_brief/${firId}`)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setData(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, [firId]);
 
@@ -230,11 +230,11 @@ function TheoryBoard({ firId }) {
 
   const fetchTheories = useCallback(() => {
     setLoading(true);
-    fetch(`${apiUrl}/zia/theories/${firId}`)
-      .then(r => r.json())
+    apiFetch(`/zia/theories/${firId}`)
+      .then(r => r ? r.json() : { theories: [] })
       .then(d => {
-        setTheories(d.theories);
-        setActiveTheory(d.theories[0]?.id || null);
+        setTheories(d.theories || []);
+        setActiveTheory(d.theories?.[0]?.id || null);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -245,12 +245,11 @@ function TheoryBoard({ firId }) {
   const reviewTheory = async (theory) => {
     setReviewing(theory.id);
     try {
-      const res = await fetch(`${apiUrl}/zia/theories/${firId}/confirm`, {
+      const res = await apiFetch(`/zia/theories/${firId}/confirm`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theoryId: theory.id, currentConfidence: theory.confidence }),
       });
-      const data = await res.json();
+      const data = res ? await res.json() : {};
       if (data.success) {
         setTheories(prev => prev.map(t =>
           t.id === theory.id
@@ -279,12 +278,11 @@ function TheoryBoard({ firId }) {
   const addTheory = async () => {
     if (!newTitle.trim()) return;
     try {
-      const res = await fetch(`${apiUrl}/zia/theories/${firId}/add`, {
+      const res = await apiFetch(`/zia/theories/${firId}/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTitle, description: newDesc }),
       });
-      const data = await res.json();
+      const data = res ? await res.json() : {};
       if (data.success) {
         setTheories(prev => [...prev, data.theory]);
         setActiveTheory(data.theory.id);
@@ -569,9 +567,9 @@ function CaseStrengthMeter({ firId }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}/zia/case_strength/${firId}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
+    apiFetch(`/zia/case_strength/${firId}`)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setData(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, [firId]);
 
@@ -716,9 +714,9 @@ function AmbientMemory({ firId }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${apiUrl}/zia/memory?context=${context}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
+    apiFetch(`/zia/memory?context=${context}`)
+      .then(r => r ? r.json() : null)
+      .then(d => { if (d) setData(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, [context, firId]);
 

@@ -13,7 +13,7 @@ import './Register.css';
 import video from '../../LoginAssets/video.mp4';
 import logo from '../../LoginAssets/logo.png';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -31,9 +31,8 @@ const Register = () => {
     setIsPending(true);
 
     try {
-      const response = await fetch(`${apiUrl}/register`, {
+      const response = await apiFetch('/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           Email: email.trim(),
           Username: username.trim(),
@@ -41,7 +40,7 @@ const Register = () => {
           InvitationCode: invitationCode.trim(),
         }),
       });
-      const data = await response.json().catch(() => ({}));
+      const data = response ? await response.json().catch(() => ({})) : {};
 
       if (!response.ok) {
         throw new Error(data.message || 'This invitation could not be activated.');

@@ -5,18 +5,14 @@ import Loader from "../../ui/Dropdown/Loader";
 import { useFilter } from "../../FilterContext";
 import { asArray } from "../../utils/utility";
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from "../../utils/apiFetch";
 
 export async function loader() {
   try {
-    const response = await fetch(`${apiUrl}/getfirdetails`, {
+    const response = await apiFetch('/getfirdetails', {
       method: 'POST',
-      headers: {
-        "jwt_token": localStorage.getItem('token'),
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({})
-    }).then(r => r.json());
+    }).then(r => r ? r.json() : []);
     return response;
   } catch (error) {
     console.log(error);

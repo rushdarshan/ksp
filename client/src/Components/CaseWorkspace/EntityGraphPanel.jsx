@@ -5,7 +5,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { PiArrowSquareOut, PiCursorClick } from 'react-icons/pi';
 import { ACTIVE_CASE_FACTS } from './caseFacts';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 const ENTITY_COLORS = {
   case: '#26231f',
@@ -92,12 +92,11 @@ export default function EntityGraphPanel({ firId = ACTIVE_CASE_FACTS.firId }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${apiUrl}/entity_graph/cross-ref`, {
+    apiFetch('/entity_graph/cross-ref', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ caseId: firId }),
     })
-      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(r => r && r.ok ? r.json() : Promise.reject())
       .then(data => {
         if (!cancelled && data?.nodes) {
           setApiNodes(data.nodes);

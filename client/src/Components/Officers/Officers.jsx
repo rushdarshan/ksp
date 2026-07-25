@@ -4,18 +4,14 @@ import { useFetchData } from '../FirDetails/Firdetails';
 import Loader from '../../ui/Dropdown/Loader';
 import inspector from "../Details/Inspector.png";
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 export async function loader() {
   try {
-    const response = await fetch(`${apiUrl}/getofficers`, {
+    const response = await apiFetch('/getofficers', {
       method: 'POST',
-      headers: {
-        "jwt_token": localStorage.getItem('token'),
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({})
-    }).then(r => r.json());
+    }).then(r => r ? r.json() : []);
     return response;
   } catch (error) {
     console.log(error);

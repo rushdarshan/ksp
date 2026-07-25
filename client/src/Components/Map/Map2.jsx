@@ -8,8 +8,7 @@ import { PiMapPin, PiPath } from "react-icons/pi";
 import {
   useNavigation,
 } from "react-router-dom";
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
-
+import apiFetch from "../../utils/apiFetch";
 
 // src/geocode.j
 // export async function loader() {
@@ -103,14 +102,10 @@ export default function Map2() {
   useEffect(()=>{
     const getPlaces = async () => {
       try {
-        const res = await fetch(`${apiUrl}/getcrimehotspot`, {
+        const res = await apiFetch('/getcrimehotspot', {
           method: 'POST',
-          headers: {
-            "jwt_token" : localStorage.getItem('token'),
-            'Content-Type': 'application/json'
-          },
           body: JSON.stringify({})
-        }).then(r => r.json())
+        }).then(r => r ? r.json() : [])
         
         setBeatData(getCrimeHotspots(res))
       } catch (error) {
