@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { countElements, getRandomColor } from "../../../utils/utility";
-// import FirStageSelect from './Select';
+import apiFetch from "../../../utils/apiFetch";
 const options = {
   stroke: {
     width: 1, // Adjust the border width here
@@ -72,11 +72,12 @@ export function useFetchData(url, variables,config) {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(targetUrl, {
+        const relPath = targetUrl.replace(/^https?:\/\/[^/]+/, '').replace(/^\/server/, '') || '/';
+        const response = await apiFetch(relPath, {
           method: 'POST',
-          headers: { ...JSON.parse(requestHeaders), 'Content-Type': 'application/json' },
+          headers: JSON.parse(requestHeaders),
           body: requestBody,
-        }).then(r => r.json());
+        }).then(r => r ? r.json() : null);
         setData(response);
       } catch (err) {
         setError(err);

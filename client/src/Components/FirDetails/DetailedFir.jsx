@@ -13,7 +13,7 @@ import {
   PiShareNetwork, PiDna, PiSparkle, PiTimer, PiListChecks, PiUser, PiWarning,
 } from 'react-icons/pi';
 
-const apiUrl = import.meta.env.VITE_API_URL || '/server';
+import apiFetch from '../../utils/apiFetch';
 
 function QualityBadge({ firData }) {
     const [result, setResult] = useState(null);
@@ -23,9 +23,8 @@ function QualityBadge({ firData }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(apiUrl ? `${apiUrl}/fir_quality/fir-quality` : `/server/fir_quality/fir-quality`, {
+            const res = await apiFetch('/fir_quality/fir-quality', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     firNo: firData?.FIRNo || '',
                     narrative: firData?.Narrative || firData?.narrative || '',
@@ -38,7 +37,7 @@ function QualityBadge({ firData }) {
                     crimeType: ''
                 })
             });
-            if (!res.ok) throw new Error('Quality analysis unavailable');
+            if (!res || !res.ok) throw new Error('Quality analysis unavailable');
             const data = await res.json();
             setResult(data);
         } catch (err) {
