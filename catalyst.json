@@ -38,7 +38,8 @@
       "transit_detection",
       "exceedance_curve",
       "precompute_job",
-      "predictive_mode"
+      "predictive_mode",
+      "face_analytics"
     ]
   },
   "api_gateway": [

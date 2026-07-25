@@ -78,6 +78,7 @@ const StationOverview = React.lazy(() => import('./Components/Supervisor/Station
 const ChargesheetReview = React.lazy(() => import('./Components/Supervisor/ChargesheetReview'))
 const ChatPanel = React.lazy(() => import('./Components/ChatPanel/ChatPanel'))
 const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoard'))
+const FaceAnalyticsPanel = React.lazy(() => import('./Components/FaceAnalyticsPanel'))
 
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
@@ -143,6 +144,7 @@ const sharedChildren = [
   { path: "agent", element: <Lazy><AgentPanel/></Lazy> },
   { path: "arrest-vector", element: <PanelGuard requiredRole="admin"><Lazy><ArrestVectorPanel/></Lazy></PanelGuard> },
   { path: "theory-board", element: <Lazy><TheoryBoard/></Lazy> },
+  { path: "face-analytics", element: <Lazy><FaceAnalyticsPanel/></Lazy> },
   { path: "person/:personId", element: <Lazy><PersonPage/></Lazy> },
   { path: "case/:caseId", element: <Lazy><CaseWorkspace/></Lazy> },
   { index: true, path: "network", element: <Lazy><NetworkGraph/></Lazy> },
