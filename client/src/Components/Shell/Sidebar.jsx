@@ -8,20 +8,15 @@ import {
   PiCaretRight,
   PiChartLineDown,
   PiCrosshair,
-  PiFaceMask,
   PiFolderOpen,
   PiGenderIntersex,
   PiGitBranch,
   PiGlobeHemisphereWest,
   PiHeartbeat,
-  PiLightning,
   PiMagnifyingGlass,
   PiMapTrifold,
   PiMicrophone,
-  PiScan,
   PiShieldCheck,
-  PiSquaresFour,
-  PiTextAa,
   PiTimer,
   PiUserFocus,
   PiUsersThree,
@@ -46,9 +41,6 @@ const SECTIONS = [
       { to: 'case/KSP-2026-0142', icon: PiGitBranch, label: 'Active workspace' },
       { to: 'co-accused', icon: PiUsersThree, label: 'Crime network' },
       { to: 'voice', icon: PiMicrophone, label: 'ZIA voice query' },
-      { to: 'face-analytics', icon: PiFaceMask, label: 'Face analytics' },
-      { to: 'text-analytics', icon: PiTextAa, label: 'Text analytics' },
-      { to: 'object-recognition', icon: PiScan, label: 'Object recognition' },
     ],
   },
   {
@@ -76,15 +68,6 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'demo-hub',
-    label: 'Demo',
-    collapsible: false,
-    items: [
-      { to: '/demo', icon: PiLightning, label: 'Demo pipeline' },
-      { to: '/platform', icon: PiSquaresFour, label: 'Platform status' },
-    ],
-  },
-  {
     id: 'admin',
     label: 'Public intelligence',
     collapsible: true,
@@ -99,8 +82,7 @@ const routeToKey = (to) => {
   if (to.startsWith('case/')) return 'cases';
   if (to === 'co-accused') return 'coAccused';
   if (to === 'voice') return 'voice';
-  if (to === 'face-analytics') return 'faceAnalytics';
-  if (to === 'location') return 'map';
+    if (to === 'location') return 'map';
   if (to === 'officers') return 'officers';
   if (to === 'veracity') return 'veracity';
   if (to === 'chargesheet-clock') return 'chargesheetClock';
@@ -112,9 +94,7 @@ const routeToKey = (to) => {
   if (to === 'victim-risk') return 'victimRisk';
   if (to === 'retraction-rate') return 'retraction';
   if (to === 'deterrence') return 'deterrence';
-  if (to === 'text-analytics') return 'textAnalytics';
-  if (to === 'object-recognition') return 'objectRecognition';
-  return to;
+      return to;
 };
 
 function NavigationItems({ items, basePath, collapsed, onNavigate }) {
