@@ -31,11 +31,11 @@ export default function ObjectRecognitionPanel() {
     apiFetch('/object_recognition/detect', {
       method: 'POST',
       body: JSON.stringify({ imageId: selected }),
-    }).then(data => {
-      setResult(data);
-    }).catch(() => {
-      setResult(null);
-    }).finally(() => setLoading(false));
+    })
+      .then(r => r ? r.json() : null)
+      .then(data => { if (data) setResult(data); })
+      .catch(() => setResult(null))
+      .finally(() => setLoading(false));
   }, [selected]);
 
   return (

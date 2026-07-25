@@ -61,6 +61,8 @@ const TRANSLATIONS = {
     tabNotes: 'Notes',
     tabChargesheet: 'Chargesheet Clock',
     faceAnalytics: 'Face Analytics',
+    textAnalytics: 'Text Analytics',
+    objectRecognition: 'Object Recognition',
   },
   kn: {
     appName: 'ಅಪರಾಧ ಜಿನೋಮ್',
@@ -122,6 +124,8 @@ const TRANSLATIONS = {
     tabNotes: 'ಟಿಪ್ಪಣಿಗಳು',
     tabChargesheet: 'ದೋಷಾರೋಪಣೆ ಪಟ್ಟಿ',
     faceAnalytics: 'ಮುಖದ ವಿಶ್ಲೇಷಣೆ',
+    textAnalytics: 'ಪಠ್ಯ ವಿಶ್ಲೇಷಣೆ',
+    objectRecognition: 'ವಸ್ತು ಗುರುತಿಸುವಿಕೆ',
   }
 };
 

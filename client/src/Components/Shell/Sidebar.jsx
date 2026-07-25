@@ -18,8 +18,10 @@ import {
   PiMagnifyingGlass,
   PiMapTrifold,
   PiMicrophone,
+  PiScan,
   PiShieldCheck,
   PiSquaresFour,
+  PiTextAa,
   PiTimer,
   PiUserFocus,
   PiUsersThree,
@@ -45,6 +47,8 @@ const SECTIONS = [
       { to: 'co-accused', icon: PiUsersThree, label: 'Crime network' },
       { to: 'voice', icon: PiMicrophone, label: 'ZIA voice query' },
       { to: 'face-analytics', icon: PiFaceMask, label: 'Face analytics' },
+      { to: 'text-analytics', icon: PiTextAa, label: 'Text analytics' },
+      { to: 'object-recognition', icon: PiScan, label: 'Object recognition' },
     ],
   },
   {
@@ -105,6 +109,8 @@ const routeToKey = (to) => {
   if (to === 'victim-risk') return 'victimRisk';
   if (to === 'retraction-rate') return 'retraction';
   if (to === 'deterrence') return 'deterrence';
+  if (to === 'text-analytics') return 'textAnalytics';
+  if (to === 'object-recognition') return 'objectRecognition';
   return to;
 };
 
