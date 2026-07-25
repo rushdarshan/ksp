@@ -23,7 +23,6 @@ import { startWarmup, registerWarmupProgress } from './utils/apiWarmup';
 import { toast } from 'react-hot-toast';
 import { I18nProvider } from './utils/i18n';
 import { setupOfflineDemo } from './utils/offlineDemo';
-import useLiveSimulation from './hooks/useLiveSimulation';
 
 // Install global fetch hook to queue calls during function cold starts and auto-retry
 installFetchInterceptor();
@@ -79,11 +78,6 @@ const StationOverview = React.lazy(() => import('./Components/Supervisor/Station
 const ChargesheetReview = React.lazy(() => import('./Components/Supervisor/ChargesheetReview'))
 const ChatPanel = React.lazy(() => import('./Components/ChatPanel/ChatPanel'))
 const TheoryBoard = React.lazy(() => import('./Components/TheoryBoard/TheoryBoard'))
-const FaceAnalyticsPanel = React.lazy(() => import('./Components/FaceAnalyticsPanel'))
-const TextAnalyticsPanel = React.lazy(() => import('./Components/TextAnalyticsPanel'))
-const ObjectRecognitionPanel = React.lazy(() => import('./Components/ObjectRecognitionPanel'))
-const DemoHub = React.lazy(() => import('./Components/DemoHub/DemoHub'))
-const PlatformHub = React.lazy(() => import('./Components/PlatformHub'))
 
 
 const Lazy = ({ children }) => <Suspense fallback={<RedactionSkeleton />}>{children}</Suspense>;
@@ -149,9 +143,6 @@ const sharedChildren = [
   { path: "agent", element: <Lazy><AgentPanel/></Lazy> },
   { path: "arrest-vector", element: <PanelGuard requiredRole="admin"><Lazy><ArrestVectorPanel/></Lazy></PanelGuard> },
   { path: "theory-board", element: <Lazy><TheoryBoard/></Lazy> },
-  { path: "face-analytics", element: <Lazy><FaceAnalyticsPanel/></Lazy> },
-  { path: "text-analytics", element: <Lazy><TextAnalyticsPanel/></Lazy> },
-  { path: "object-recognition", element: <Lazy><ObjectRecognitionPanel/></Lazy> },
   { path: "person/:personId", element: <Lazy><PersonPage/></Lazy> },
   { path: "case/:caseId", element: <Lazy><CaseWorkspace/></Lazy> },
   { index: true, path: "network", element: <Lazy><NetworkGraph/></Lazy> },
@@ -270,8 +261,6 @@ const router = createHashRouter([
     ]
   },
   { path: "/public/deterrence", element: <AppFrame><Lazy><DeterrenceDashboard/></Lazy></AppFrame> },
-  { path: "/demo", element: <AppFrame showChat={false}><Lazy><DemoHub/></Lazy></AppFrame> },
-  { path: "/platform", element: <AppFrame showChat={false}><Lazy><PlatformHub/></Lazy></AppFrame> },
   { path: "*", element: <Navigate to="/" replace /> },
 ], {
   future: {
@@ -281,63 +270,12 @@ const router = createHashRouter([
 });
 
 function App() {
-  const isLive = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('live') === 'true'
-  const { events: liveEvents, start: startLive, stop: stopLive } = useLiveSimulation(15000)
-
-  React.useEffect(() => {
-    // Show a loading toast for the warmups
-    const toastId = toast.loading('Powering on KSP Crime Genome engine...', {
-      position: 'bottom-right',
-    });
-
-    registerWarmupProgress((pct) => {
-      toast.loading(`Engine warming: ${pct}% ready...`, {
-        id: toastId,
-        position: 'bottom-right',
-      });
-    });
-
-    startWarmup().then(() => {
-      toast.success('KSP Engine fully powered up. 27 modules active.', {
-        id: toastId,
-        position: 'bottom-right',
-      });
-    });
-  }, []);
-
-  React.useEffect(() => {
-    if (isLive) { startLive(); return stopLive }
-  }, [isLive, startLive, stopLive])
-
-  React.useEffect(() => {
-    if (!liveEvents.length) return
-    const evt = liveEvents[liveEvents.length - 1]
-    const iconMap = { new_fir: '📋', evidence_match: '🔗', chargesheet_update: '📄', alert: '🚨' }
-    toast(`${iconMap[evt.type] || '📢'} ${evt.title}`, {
-      description: evt.description,
-      duration: 6000,
-      position: 'bottom-right',
-    })
-  }, [liveEvents])
-
-  const isDev = typeof window !== 'undefined' && import.meta.env.DEV;
 
   return (
     <AuthProvider>
       <I18nProvider>
         <FilterProvider>
           <RouterProvider router={router} />
-          {isDev && (
-            <div style={{
-              position: 'fixed', bottom: 8, left: '50%', transform: 'translateX(-50%)',
-              zIndex: 9999, background: 'rgba(0,0,0,0.75)', color: '#fff',
-              padding: '6px 14px', borderRadius: 20, fontSize: 11,
-              fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.3px',
-              backdropFilter: 'blur(8px)', pointerEvents: 'none',
-            }}>
-              Demo: anjumala / 123
-            </div>
-          )}
         </FilterProvider>
       </I18nProvider>
     </AuthProvider>

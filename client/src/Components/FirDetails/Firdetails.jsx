@@ -258,7 +258,7 @@ const FirTable = () => {
             border: '1px solid var(--border)',
             boxShadow: 'var(--shadow-soft)'
           }}>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Cases</span>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total FIRs</span>
             <div style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text)', marginTop: '8px', fontFamily: 'var(--font-display)' }}>{kpis.total}</div>
             <span style={{ fontSize: '11px', color: 'var(--pastel-green-text)', display: 'block', marginTop: '6px' }}>Active ledger count</span>
           </div>
@@ -284,7 +284,7 @@ const FirTable = () => {
           }}>
             <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Clearance Rate</span>
             <div style={{ fontSize: '28px', fontWeight: 500, color: 'var(--text)', marginTop: '8px', fontFamily: 'var(--font-display)' }}>{kpis.clearance}%</div>
-            <span style={{ fontSize: '11px', color: 'var(--pastel-green-text)', display: 'block', marginTop: '6px' }}>Solved cases ratio</span>
+            <span style={{ fontSize: '11px', color: 'var(--pastel-green-text)', display: 'block', marginTop: '6px' }}>Solved FIRs ratio</span>
           </div>
 
           <div className="card" style={{
@@ -317,7 +317,7 @@ const FirTable = () => {
         <div style={{ flex: 1, minWidth: '200px' }}>
           <input
             type="text"
-            placeholder="Search cases..."
+            placeholder="Search FIR by No, Name, or Crime Type..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{

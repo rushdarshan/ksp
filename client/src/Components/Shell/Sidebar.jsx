@@ -42,7 +42,7 @@ const SECTIONS = [
     id: 'investigate',
     label: 'Investigate',
     items: [
-      { to: 'firdetails', icon: PiFolderOpen, label: 'FIR cases' },
+      { to: 'firdetails', icon: PiFolderOpen, label: 'FIRs' },
       { to: 'case/KSP-2026-0142', icon: PiGitBranch, label: 'Active workspace' },
       { to: 'co-accused', icon: PiUsersThree, label: 'Crime network' },
       { to: 'voice', icon: PiMicrophone, label: 'ZIA voice query' },
@@ -95,7 +95,7 @@ const SECTIONS = [
 const routeToKey = (to) => {
   if (to === 'home') return 'home';
   if (to === 'notifications') return 'notifications';
-  if (to === 'firdetails') return 'cases';
+  if (to === 'firdetails') return 'FIRs';
   if (to.startsWith('case/')) return 'cases';
   if (to === 'co-accused') return 'coAccused';
   if (to === 'voice') return 'voice';
